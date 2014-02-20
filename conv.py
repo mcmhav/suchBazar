@@ -4,12 +4,16 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Convert tab and insert to mongoDB.')
 parser.add_argument('-f', type=str, default="sobev.tab")
+parser.add_argument('-c', type=str, default="test")
 args = parser.parse_args()
 
 client = pymongo.MongoClient()
 db = client.mydb
-col = db.test
+col = db[args.c]
 col.remove()
+
+print ("File used: ", args.f)
+print ("Collection used: ", args.c)
 
 # f = open('test.tab')
 f = open(args.f)
@@ -41,8 +45,11 @@ for line in f:
         c = c + 1
     if tmpJson["event_json"]["eventData"]:
     	tmpJson["event_json"]["eventData"] = json.loads(tmpJson["event_json"]["eventData"])
+
     # dataJson.append(tmpJson)
-    col.insert(tmpJson)
+
+    if tmpJson['server_environment'] == 'prod':
+        col.insert(tmpJson)
 
 f.close()
 

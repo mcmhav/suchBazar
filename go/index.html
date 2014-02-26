@@ -1,0 +1,28 @@
+<html>
+  <head>
+  </head>
+  <body>
+    <h1>SuchWow</h1>
+    <p>Find your next fashion thingy</p>
+    <hr>
+      <form action="." method="get">
+        User ID: <input type="text" name="userid" value="{{.userId}}" />
+        <button type="submit">Endre</button>
+        Forslag:
+        {{range $i, $e := .users}}
+        {{if $i}}- {{end}}<a href="/?userid={{$e}}">{{$e}}</a>
+        {{end}}
+      </form>
+    <hr>
+    <h3>Your recommended products</h3>
+    <div id="products">
+      {{$userId := .userId}}
+      {{range .recommendedProducts}}
+      [<a href="/add?user_id={{$userId}}&event_id=product_detail_clicked&product_id={{.Id}}">click</a>]
+      [<a href="/add?user_id={{$userId}}&event_id=product_wanted&product_id={{.Id}}">want</a>]
+      [<a href="/add?user_id={{$userId}}&event_id=product_purchase_intended&product_id={{.Id}}">purchase</a>]
+      <div class="product" style="display:inline">{{.Name}} => {{.Score}}</div><br />
+      {{end}}
+    </div>
+  </body>
+</html>

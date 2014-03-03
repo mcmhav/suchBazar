@@ -4,7 +4,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Convert tab and insert to mongoDB.')
 parser.add_argument('-f', type=str, default="sobev.tab")
-parser.add_argument('-c', type=str, default="test")
+parser.add_argument('-c', type=str, default="prod")
 args = parser.parse_args()
 
 client = pymongo.MongoClient()

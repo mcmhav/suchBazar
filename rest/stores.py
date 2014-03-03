@@ -8,11 +8,13 @@ import pymongo
 parser = argparse.ArgumentParser(description='Crawl the API db.')
 parser.add_argument('-v',dest='v', action='store_true')
 parser.add_argument('-f',type=str, default="store")
+parser.add_argument('-version',type=str, default="v10")
+parser.add_argument('-e',type=str, default="staging")
 parser.set_defaults(v=False)
 args = parser.parse_args()
 
 # Settings
-base_url = "https://goodiez-staging.appspot.com/api/goodiez"
+base_url = "https://goodiez-" + args.e + ".appspot.com/api/goodiez"
 username = "goodiez"
 password = "goodiez"
 pageSize = 500
@@ -30,7 +32,7 @@ while cursorKey or not current:
   print ("Getting %s %s to %s" % (args.f, current, current + pageSize))
   current += pageSize
 
-  offers_url = "%s/%s?pageSize=%s" % (base_url, args.f + "/v10", pageSize)
+  offers_url = "%s/%s?pageSize=%s" % (base_url, args.f + "/" + args.version, pageSize)
   if cursorKey:
     offers_url = "%s&cursorKey=%s" % (offers_url, cursorKey)
 

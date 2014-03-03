@@ -38,6 +38,12 @@ appStartedV = { # expected to be start of sessions
     "user_logged_in",
 }
 
+productEvents = {
+    'product_detail_clicked',
+    'product_purchase_intended',
+    'product_wanted'
+}
+
 timeFrameHandled = []
 globalTot = 0
 sessions = 0
@@ -72,18 +78,29 @@ def devideIntoSessions(user):
     tmpSession = {}
 
     sessionsCounter = 0
+    currentStoreName = ""
+    currentStoreId = ""
+    currentStorePos = ""
     for e in events:
         if e['event_id'] in appStartedV:
             sessionsCounter += 1
             if args.v:
                 print ("")
                 print ("----------New Session, s %s-----------" % sessionsCounter)
+        elif e['event_id'] == 'storefront_clicked':
+            currentStoreName = e['storefront_name']
+            currentStoreId = e['storefront_id']
+            currentStorePos = e['storefront_position']
+        elif e['event_id'] in productEvents:
+            e['storefront_name'] = currentStoreName
+            e['storefront_id'] = currentStoreId
+            e['storefront_position'] = currentStorePos
         e['session'] = sessionsCounter
+
         if not args.t:
             sessCol.insert(e)
         if args.v:
             print ("%s \t %s" % (e['event_id'],e['time_stamp']))
-
 
     if args.v:
         print ("User: %s \t Events: %s \t Sessions: %s" % (user, events.count(), sessionsCounter))
@@ -91,7 +108,6 @@ def devideIntoSessions(user):
         print ("")
     # print sessions
     # sys.exit()
-
 
 if __name__ == "__main__":
     main()

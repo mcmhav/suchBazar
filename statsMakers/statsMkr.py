@@ -7,7 +7,7 @@ import os
 parser = argparse.ArgumentParser(description='Make csv files from mongoDB values.')
 parser.add_argument('-v',dest='v', action='store_true')
 parser.add_argument('-d',type=str, default="csv")
-parser.add_argument('-c',type=str, default="test")
+parser.add_argument('-c',type=str, default="prod")
 parser.set_defaults(v=False)
 args = parser.parse_args()
 
@@ -19,7 +19,6 @@ client = pymongo.MongoClient()
 db = client.mydb
 col = db[args.c]
 
-dataJson = []
 skipVals = {
                 "epoch_day",
                 "event_data",
@@ -67,6 +66,3 @@ if not os.path.exists(args.d):
 for k in head:
     if k not in skipVals:
         handle_k(k)
-
-
-# print json.dumps(dataJson, sort_keys=True, indent=4, separators=(',', ': '))

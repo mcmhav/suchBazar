@@ -130,12 +130,26 @@ def recommendItems(items, no_items, top_n):
     
     return recommendations
        
-
+def generatePermuations(items, no_items, top_n):
+    
+    print('Alternative 1 permutations:')
+    for i in range(10):
+        list = [math.log(x+1, 2) - random.uniform(10, 2) for x in range(no_items)]
+        list = sorted(range(len(list)), key=lambda x:list[x])
+        print (list[0:top_n])
+    
+    print('Alternative 2 permutations:')
+    for i in range(10):
+        list = [math.log(x+1, 2) - 3.0*random.expovariate(2.5) for x in range(no_items)]
+        list = sorted(range(len(list)), key=lambda x:list[x])
+        print (list[0:top_n])  
+           
 def main():
     #preProcessData()
     items = readPopularityData()
-    recommendations = recommendItems(items, 50, 15)
-    print (recommendations)     
+    generatePermuations(items, 100, 10)
+    #recommendations = recommendItems(items, 50, 15)
+    #print (recommendations)     
      
 if __name__ == '__main__':
     main()

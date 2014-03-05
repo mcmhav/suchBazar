@@ -1,5 +1,5 @@
 #/bin/sh
-if [ "$#" -ne 3 ]; then
+if [ "$#" -ne 2 ]; then
   echo -e "Usage:\n$ createdb.sh data.tab db.sql"
   exit 0
 fi
@@ -18,6 +18,8 @@ fi
 createdb sobazar
 psql -f $2 -d sobazar
 psql -d sobazar -c "COPY sobazar FROM '/tmp/valid.tab' DELIMITER E'\t';"
+psql -d sobazar -c "DROP ROLE IF EXISTS sobazar; CREATE ROLE sobazar WITH LOGIN;"
+psql -d sobazar -c "GRANT ALL PRIVILEGES ON sobazar TO sobazar;"
 
 # Clean-up
 rm /tmp/valid.tab /tmp/tmp.tab

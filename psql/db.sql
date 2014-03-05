@@ -1,6 +1,6 @@
 CREATE TABLE sobazar (
 service_id varchar(25), -- SOBAZAR
-event_id varchar(64),
+event_id varchar(64), -- product_wanted, ...
 event_data json,
 server_time_stamp timestamp,
 client_time_stamp varchar(64),

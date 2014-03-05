@@ -82,8 +82,12 @@ def devideIntoSessions(user):
     currentStoreId = ""
     currentStorePos = ""
     for e in events:
+        # print ("%s \t %s" % (e['event_id'],e['time_stamp']))
         if e['event_id'] in appStartedV:
             sessionsCounter += 1
+            currentStoreName = ""
+            currentStoreId = ""
+            currentStorePos = ""
             if args.v:
                 print ("")
                 print ("----------New Session, s %s-----------" % sessionsCounter)
@@ -92,12 +96,14 @@ def devideIntoSessions(user):
             currentStoreId = e['storefront_id']
             currentStorePos = e['storefront_position']
         elif e['event_id'] in productEvents:
+            # if currentStoreName == "":
+            #     sys.exit()
             e['storefront_name'] = currentStoreName
             e['storefront_id'] = currentStoreId
             e['storefront_position'] = currentStorePos
         e['session'] = sessionsCounter
 
-        if not args.t:
+        if (not args.t):
             sessCol.insert(e)
         if args.v:
             print ("%s \t %s" % (e['event_id'],e['time_stamp']))

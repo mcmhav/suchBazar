@@ -2,6 +2,7 @@ package main
 
 import (
   "fmt"
+  "bytes"
 )
 
 type SlopeOne struct {
@@ -65,5 +66,8 @@ type ByScore []Prediction
 func (bs ByScore) Len() int { return len(bs) }
 func (bs ByScore) Swap(i, j int) { bs[i], bs[j] = bs[j], bs[i] }
 func (bs ByScore) Less(i, j int) bool {
-  return bs[i].Score >= bs[j].Score
+  if (bs[i].Score == bs[j].Score) {
+    return bytes.Compare([]byte(bs[i].Title), []byte(bs[j].Title)) > 0
+  }
+  return bs[i].Score > bs[j].Score
 }

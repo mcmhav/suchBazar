@@ -158,10 +158,12 @@ func getProductRatings(user_id string, db *sql.DB) map[string]float64 {
 
 func main(){
   fmt.Println("Cold start! Doing some analysis before serving ...")
+  /*
   f, err := os.Create("cpuprofile.prof")
   if err != nil { log.Fatal(err) }
   pprof.StartCPUProfile(f)
   defer pprof.StopCPUProfile()
+  */
 
   multipliers := map[string]float64 {
     "product_detail_clicked": 1.0,
@@ -173,7 +175,7 @@ func main(){
   m_users := make(map[string]map[string]float64)
   m_product_rating := make(map[string]float64)
 
-  db, err := sql.Open("postgres", "user=postgres dbname=sobazar sslmode=disable")
+  db, err := sql.Open("postgres", "user=sobazar dbname=sobazar sslmode=disable")
   if err != nil { log.Fatal(err) }
   rows, err := db.Query(`SELECT user_id, product_id, event_id
                          FROM sobazar

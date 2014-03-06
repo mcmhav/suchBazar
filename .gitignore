@@ -2,7 +2,6 @@
 *.json
 csv/
 cvsProd/
-Data/
 .project
 .pydevproject
 rest/venv

@@ -5,3 +5,4 @@ cvsProd/
 .project
 .pydevproject
 rest/venv
+.DS_Store

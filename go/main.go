@@ -15,7 +15,16 @@ import (
 type Product struct {
   Id string
   Name string
+  BrandId string
+  BrandName string
+  Description string
+  Terms string
   Image string
+  OldPrice int
+  NewPrice int
+  Type int
+  Currency string
+  RedirectUrl string
   Score string
 }
 
@@ -97,14 +106,30 @@ func indexPageHandler(w http.ResponseWriter, r *http.Request, s SlopeOne, db *sq
 
   products := make([]Product, 0)
   for _, pred := range predictions[:10] {
-    var product_name string
-    err := db.QueryRow(`SELECT DISTINCT product_name
-                        FROM sobazar
-                        WHERE product_id = $1
-                        AND product_name != 'N/A'
-                        LIMIT 1`, pred.Title).Scan(&product_name)
-    if err != nil { log.Fatal(err) }
-    products = append(products, Product{ Name: product_name, Score: pred.Score, Id: pred.Title})
+    var brand_id, brand_name, product_name, description, terms, image_url, currency, redirect_url string
+    var old_price, new_price, prod_type int
+    err := db.QueryRow(`SELECT brandId, brandName, title, description, terms,
+                               imageUrl, oldPrice, newPrice, type, currency, redirectWebUrl
+                        FROM products
+                        WHERE id = $1
+                        LIMIT 1`, pred.Title).Scan(&brand_id, &brand_name,
+                        &product_name, &description, &terms, &image_url,
+                        &old_price, &new_price, &prod_type, &currency,
+                        &redirect_url)
+    if err != nil { log.Printf(pred.Title); log.Fatal(err) }
+    products = append(products, Product{ Name: product_name,
+                                         Score: pred.Score,
+                                         Id: pred.Title,
+                                         BrandId: brand_id,
+                                         BrandName: brand_name,
+                                         Description: description,
+                                         Terms: terms,
+                                         Image: image_url,
+                                         OldPrice: old_price,
+                                         NewPrice: new_price,
+                                         Type: prod_type,
+                                         Currency: currency,
+                                         RedirectUrl: redirect_url })
   }
 
   users := make([]string, 0)
@@ -178,7 +203,7 @@ func main(){
   db, err := sql.Open("postgres", "user=sobazar dbname=sobazar sslmode=disable")
   if err != nil { log.Fatal(err) }
   rows, err := db.Query(`SELECT user_id, product_id, event_id
-                         FROM sobazar
+                         FROM sobazar RIGHT JOIN products ON products.id = sobazar.product_id
                          WHERE event_id IN (
                             'product_wanted',
                             'product_detail_clicked',

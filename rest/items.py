@@ -3,13 +3,14 @@ import time
 import json
 import sys
 import pymongo
+import psycopg2
 
 # Settings
 base_url = "https://goodiez-staging.appspot.com/api/goodiez"
 username = "goodiez"
 password = "goodiez"
-pageSize = 1000
-increment = 500
+current = 0
+increment = 1000
 cursorKey = None
 
 # Mongo.db
@@ -18,10 +19,16 @@ db = client.mydb
 col = db["items"]
 col.remove()
 
-while pageSize < 20000:
+# Postgresql
+"""
+conn = psycopg2.connect("dbname=products user=postgres")
+cur = conn.cursor()
+"""
+
+while current < 45000:
   # Increase counter and give status to user
-  print "Getting offer %s to %s" % (pageSize, pageSize + increment)
-  pageSize += increment
+  print "Getting offer %s to %s" % (current, current + increment)
+  current += increment
 
   offers_url = "%s/%s?pageSize=%s" % (base_url, "offer/v10", increment)
   if cursorKey:
@@ -35,8 +42,13 @@ while pageSize < 20000:
     continue
   jdata = res.json()
 
-  # Save the cursor key
-  cursorKey = jdata["cursorKey"]
-
   for item in jdata["items"]:
     col.insert(item)
+    #cur.execute("INSERT INTO products(")
+  
+  # Save the cursor key
+  try:
+    cursorKey = jdata["cursorKey"]
+  except:
+    print "Did not recieve cursor key. Exiting."
+    break

@@ -23,14 +23,14 @@ sessCol = helpers.getCollection(args.sc)
 
 uSE = {
     1: "product_wanted",
-    2: "storefront_clicked",
+    2: "stores_map_clicked",
     3: "product_detail_clicked",
-    4: "featured_storefront_clicked",
-    5: "product_purchase_intended",
+    4: "product_purchase_intended",
+    5: "store_clicked",
 }
 
 def main():
-    stores = sessCol.distinct('storefront_name')
+    stores = sessCol.distinct('retailer_brand')
 
     total = len(stores)
     count = 0.0
@@ -45,7 +45,6 @@ def main():
             count += 1
             helpers.printProgress(count,total)
 
-    writeToFlare(sJson)
     writeToCSV(sJson)
 
 def someAwesomeName(store):
@@ -58,11 +57,12 @@ def someAwesomeName(store):
 
     groups = sessCol.group(
                            key={'event_id':1},
-                           condition={'storefront_name':store},
+                           condition={'retailer_brand':store},
                            reduce=reducer,
                            initial={'count':0}
                        )
-
+    for g in groups:
+        print (g)
     storeEvents = {}
     storeEvents['name'] = store
     storeEvents['children'] = []
@@ -74,32 +74,27 @@ def someAwesomeName(store):
 def convertEventToFlare(e):
     return {'name':e['event_id'],'size':e['count']}
 
-def writeToFlare(sJson):
-    e = open('flare.json','w')
-    e.write(json.dumps(sJson, indent=4, separators=(',', ': ')))
-    e.close()
-
 def writeToCSV(sJson):
-    cs = helpers.getCSVWriter('stats/storeEvents')
+    cs = helpers.getCSVWriter('stats/retailerStoreEvents')
     cs.writerow(['',uSE[1],uSE[2],uSE[3],uSE[4],uSE[5]])
     for c in sJson['children']:
         pw = 0
-        sc = 0
+        sm = 0
         pd = 0
-        fs = 0
         pp = 0
+        sc = 0
         for e in c['children']:
             if e['name'] == 'product_wanted':
                 pw = e['size']
-            elif e['name'] == 'storefront_clicked':
-                sc = e['size']
+            elif e['name'] == 'stores_map_clicked':
+                sm = e['size']
             elif e['name'] == 'product_detail_clicked':
                 pd = e['size']
-            elif e['name'] == 'featured_storefront_clicked':
-                fs = e['size']
             elif e['name'] == 'product_purchase_intended':
                 pp = e['size']
-        cs.writerow([c['name'],pw,sc,pd,fs,pp])
+            elif e['name'] == 'store_clicked':
+                sc = e['size']
+        cs.writerow([c['name'],pw,sm,pd,pp,sc])
     helpers.closeF()
 
 if __name__ == "__main__":

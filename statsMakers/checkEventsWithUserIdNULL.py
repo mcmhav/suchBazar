@@ -13,8 +13,8 @@ parser.add_argument('-c',type=str, default="prod")
 parser.set_defaults(v=False)
 args = parser.parse_args()
 
-print "Verbose:         %s" % (args.v)
-print "Collection used: %s" % (args.c)
+print ("Verbose:         %s" % (args.v))
+print ("Collection used: %s" % (args.c))
 
 client = pymongo.MongoClient()
 db = client.mydb
@@ -29,7 +29,8 @@ def handle_appStarted():
 
     for dist in distincts:
         uIdAsNull = col.find({val:dist, 'user_id':'NULL'}).count()
-        print "%s \t\t %s \t\t %s" % (dist,uIdAsNull,col.find({val:dist}).count())
+        uIdNotNull = col.find({val:dist},{'$ne':{'user_id':'NULL'}}).count()
+        print ("%s \t\t %s \t\t %s" % (dist,uIdAsNull,uIdNotNull))
 
 if __name__ == "__main__":
     main()

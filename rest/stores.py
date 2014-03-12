@@ -24,7 +24,7 @@ cursorKey = 0
 # Mongo.db
 client = pymongo.MongoClient()
 db = client.mydb
-col = db[args.f]
+col = db[args.f + args.e0]
 col.remove()
 
 while cursorKey or not current:
@@ -36,7 +36,7 @@ while cursorKey or not current:
   if cursorKey:
     offers_url = "%s&cursorKey=%s" % (offers_url, cursorKey)
 
-  print (offers_url)
+  # print (offers_url)
   # Request all offers in this collection
   time.sleep(3)
   res = requests.get(offers_url, auth=(username, password))

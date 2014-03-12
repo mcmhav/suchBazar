@@ -3,9 +3,9 @@ import argparse
 import sys
 import helpers
 
-parser = argparse.ArgumentParser(description='Constructs overview of how many sessions users have.')
+parser = argparse.ArgumentParser(description='')
 parser.add_argument('-v',dest='v', action='store_true')
-parser.add_argument('-c',type=str, default="sessions")
+parser.add_argument('-c',type=str, default="offer")
 parser.add_argument('-d',type=str, default="stats")
 parser.set_defaults(v=False)
 args = parser.parse_args()

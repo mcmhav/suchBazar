@@ -5,5 +5,5 @@ fi
 
 awk '
   BEGIN { srand() }
-  {f = FILENAME (rand() <= 0.9 ? ".90" : ".10"); print > f}
+  {f = rand() <= 0.9 ? "training.txt" : "validation.txt"; print > f}
 ' $1

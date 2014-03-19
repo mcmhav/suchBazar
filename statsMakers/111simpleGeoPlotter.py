@@ -24,7 +24,10 @@ def plotOnMap(m):
     for location in locations:
         latlon = location.split(',')
         if len(latlon) == 2:
-            lat = latlon[0|bo', markersize=6)
+            lat = latlon[0]
+            lon = latlon[1]
+            x,y = m(lon,lat)
+            m.plot(x, y, 'bo', markersize=6)
 
 
 def makeMap():

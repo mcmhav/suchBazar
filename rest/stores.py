@@ -24,7 +24,7 @@ cursorKey = 0
 # Mongo.db
 client = pymongo.MongoClient()
 db = client.mydb
-col = db[args.f + args.e0]
+col = db[args.f +  args.e]
 col.remove()
 
 while cursorKey or not current:

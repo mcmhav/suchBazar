@@ -4,8 +4,8 @@ import helpers
 from bson import Binary, Code
 
 parser = argparse.ArgumentParser(description='Construct Training, Validation and Prediction files from mongoDB.')
-parser.add_argument('-sc', type=str, default="sessions")
-parser.add_argument('-c', type=str, default="outMF.csv")
+parser.add_argument('-sc', type=str, default="cleanedItems")
+parser.add_argument('-c', type=str, default="userItemRating.csv")
 args = parser.parse_args()
 
 sessCol = helpers.getCollection(args.sc)

@@ -8,14 +8,12 @@ import sys
 parser = argparse.ArgumentParser(description='Divides each store into 5 children events. Count children and visualize this distribution.')
 parser.add_argument('-v',dest='v', action='store_true')
 parser.add_argument('-sc',type=str, default="sessions")
-parser.add_argument('-t',dest='t', action='store_true')
 parser.set_defaults(v=True)
 parser.set_defaults(t=False)
 args = parser.parse_args()
 
 print ("Verbose:                     %d" % args.v)
 print ("Sessions collection used:    %s" % args.sc)
-print ("Test run:                    %s" % args.t)
 print ("")
 
 client = pymongo.MongoClient()
@@ -25,6 +23,7 @@ stCol = db['offerstaging']
 stNCol = db['offerstaging1003']
 prCol = db['prod']
 seCol = db['sessions']
+cleanCol = db['cleanedItems']
 
 def main():
     handle_appStarted()
@@ -37,13 +36,17 @@ def handle_appStarted():
     prItems = prCol.distinct('product_id')
     seItems = seCol.distinct('product_id')
 
+    clItems = cleanCol.distinct('product_id')
+
     # nonMatching(ofItems,prItems)
-    nonMatching(stItems,prItems)
-    nonMatching(stNItems,prItems)
+    # nonMatching(stItems,prItems)
+    # nonMatching(stNItems,prItems)
 
     # nonMatching(ofItems,seItems)
     # nonMatching(stItems,seItems)
     # nonMatching(stNItems,seItems)
+
+    nonMatching(stItems,clItems)
 
 
 

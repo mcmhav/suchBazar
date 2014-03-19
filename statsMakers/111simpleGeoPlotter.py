@@ -27,7 +27,7 @@ def plotOnMap(m):
             lat = latlon[0]
             lon = latlon[1]
             x,y = m(lon,lat)
-            m.plot(x, y, 'bo', markersize=6)
+            m.plot(x, y, 'bo', mchr arkersize=6)
 
 
 def makeMap():

@@ -17,7 +17,10 @@ import org.apache.mahout.cf.taste.impl.eval.RMSRecommenderEvaluator;
 
 class SampleRecommender {
   public static void main(String[] args) throws IOException, TasteException {
+    long startTime = System.currentTimeMillis();
+
     DataModel model = new FileDataModel(new File("../generators/data/userItemRating.csv"));
+    //DataModel model = new FileDataModel(new File("data.csv"));
     RecommenderBuilder builder = new RecommenderBuilder() {
       public Recommender buildRecommender(DataModel model) throws TasteException {
         UserSimilarity similarity = new PearsonCorrelationSimilarity(model);
@@ -38,6 +41,7 @@ class SampleRecommender {
     // Get average score based on evaluations.
     double sum = 0;
     for (double d : scores) { sum += d; }
-    System.out.print("\rAverage score after " + scores.length + " evaluations: " + sum/scores.length + "\n");
+    long endTime = System.currentTimeMillis();
+    System.out.print("\rAverage score after " + scores.length + " evaluations: " + sum/scores.length + " (Took : " + (endTime - startTime) + " ms)\n");
   }
 }

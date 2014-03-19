@@ -3,7 +3,7 @@ import argparse
 import helpers
 from bson import Binary, Code
 
-parser = argparse.ArgumentParser(description='Construct Training, Validation and Prediction files from mongoDB.')
+parser = argparse.ArgumentParser(description='Clean items.')
 parser.add_argument('-sc', type=str, default="sessions")
 parser.add_argument('-oc', type=str, default="offerstaging")
 parser.add_argument('-cic', type=str, default="cleanedItems")
@@ -19,7 +19,7 @@ print ("Collection used: ", args.sc)
 print ("Output file:     ", args.c)
 print ("")
 
-productNameFilter = ['Free', 'Sexy', 'Giftcard', 'Offer', 'Test', 'NULL']
+productNameFilter = ['Free', 'Giftcard', 'Offer', 'Test', 'NULL']
 #Only accept activity originating from the following countries
 countryFilter = ['Norway', 'NULL', 'N/A']
 #Only accept the following event_ids
@@ -37,11 +37,8 @@ def main():
     for event in events:
         if str(event['product_id']) in items and validateEvent(event):
             cleanCol.insert(event)
-        # if validateEvent(event):
-        #     cleanCol.insert(event)
         count += 1
         helpers.printProgress(count,total)
-
     #Do    handleItemAndUserMapReduce()
 
 def validateEvent(event):
@@ -56,7 +53,7 @@ def validateEvent(event):
     if prodId == 'NULL' or prodId == 'null' or prodId == "N/A":
         return False
 
-    if prodName in productNameFilter:
+    if any(s in prodName.split() for s in productNameFilter):
         return False
 
     if not country in countryFilter:

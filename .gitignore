@@ -6,3 +6,4 @@ cvsProd/
 .pydevproject
 rest/venv
 .DS_Store
+*/__pycache__/*

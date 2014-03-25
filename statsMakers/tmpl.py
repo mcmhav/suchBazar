@@ -17,7 +17,12 @@ print ("")
 total = 0
 
 def main():
-    #Do    handleItemAndUserMapReduce()
+    #Do something awesome
+
+    total = len()
+    count = 0
+
+    helpers.printProgress(count,total)
 
 if __name__ == "__main__":
     main()

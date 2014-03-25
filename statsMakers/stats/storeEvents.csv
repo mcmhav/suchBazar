@@ -1,83 +1,86 @@
 ,product_wanted,storefront_clicked,product_detail_clicked,featured_storefront_clicked,product_purchase_intended
-Inwear,230.0,970.0,403.0,74.0,45.0
-Reiss,280.0,1055.0,405.0,84.0,59.0
-Bianco Footwear,504.0,1815.0,1067.0,80.0,141.0
-American Eagle,327.0,967.0,542.0,39.0,93.0
-Bik Bok,677.0,1409.0,888.0,0,71.0
-Gina Tricot,651.0,1095.0,921.0,0,31.0
-Lindex,159.0,528.0,362.0,0,28.0
-Superdry,172.0,677.0,266.0,25.0,39.0
-Anton Sport,432.0,1092.0,741.0,95.0,118.0
-Moods of Norway,409.0,1262.0,682.0,75.0,74.0
-Urban Outfitters,346.0,969.0,976.0,15.0,81.0
+Bianco Footwear,502.0,1749.0,1027.0,79.0,135.0
+BIK BOK,1031.0,2119.0,1724.0,99.0,243.0
+Inwear,230.0,958.0,402.0,72.0,45.0
+Moods of Norway,400.0,1243.0,668.0,74.0,73.0
+Express,168.0,486.0,280.0,89.0,57.0
+Reiss,280.0,1039.0,389.0,81.0,59.0
+Anton Sport,423.0,1052.0,705.0,89.0,112.0
+UO Coming Soon,0,97.0,4.0,14.0,0
+American Eagle,327.0,951.0,540.0,39.0,93.0
+Superdry,172.0,667.0,263.0,18.0,38.0
+French Connection,0,102.0,32.0,15.0,15.0
+Storefront_Test,9.0,7.0,9.0,2.0,0
+The Limited,5.0,89.0,45.0,19.0,12.0
+Luisa Via Roma,6.0,88.0,60.0,7.0,30.0
+Urban Outfitters,346.0,963.0,974.0,14.0,81.0
+Revolve Clothing,14.0,125.0,77.0,4.0,13.0
+H&M,411.0,1377.0,1131.0,8.0,60.0
+Gina Tricot,650.0,1072.0,875.0,0,31.0
+Lindex,159.0,525.0,352.0,0,28.0
+Bik Bok,675.0,1351.0,852.0,0,71.0
 Editors´ Picks,77.0,280.0,285.0,0,7.0
 Acne,203.0,900.0,663.0,0,23.0
-H&M,428.0,1480.0,1240.0,11.0,62.0
 Cubus,143.0,448.0,197.0,0,15.0
+Mood of Cambodia,0,2.0,5.0,1.0,0
+Mood of Cambodia_disable,3.0,19.0,14.0,2.0,0
+Accessories,0,1.0,0,0,0
+Bianco,78.0,265.0,102.0,0,7.0
 Editor´s Picks,29.0,44.0,78.0,0,3.0
-BIK BOK,1036.0,2150.0,1759.0,104.0,246.0
-Express,170.0,503.0,297.0,90.0,57.0
-Bianco,79.0,268.0,106.0,0,7.0
-Gina Tricot 3 for 99 kr,0,0,0,1.0,0
-DARK LUXURY,0,9.0,0,3.0,0
-Active Sports Gina tricot,0,4.0,0,0,0
-GO ATHLETIC,0,3.0,2.0,1.0,0
-Key pieces,0,4.0,0,1.0,0
-UO Coming Soon,0,97.0,4.0,15.0,0
-Ready for a party?,1.0,8.0,2.0,1.0,0
-Party Collection,2.0,14.0,0,1.0,0
-OL KOLLEKSJONEN,0,3.0,0,5.0,0
-Best sellers Lindex,0,6.0,0,3.0,0
-Casual Ease,0,2.0,0,0,0
-COMING SOON CUBUS,0,12.0,0,1.0,0
 Superdry Coming Soon,0,29.0,1.0,2.0,0
-HALLELUJAH,1.0,8.0,0,3.0,0
+SALE,0,1.0,0,0,0
 Premium Quality,1.0,7.0,3.0,2.0,0
-Mary-Kate & Ashley Olsen Third Collection,1.0,16.0,3.0,1.0,0
-Anton sport Nike,0,4.0,6.0,0,0
-BIK BOK Westhill Redbird,0,4.0,2.0,0,0
-Kari Traa Anton sport,2.0,3.0,1.0,0,0
+DARK LUXURY,0,9.0,0,3.0,0
+Party Collection,2.0,14.0,0,1.0,0
 Moods OL KOLLEKSJONEN,1.0,3.0,1.0,0,1.0
-Bik Bok Mary-Kate & Ashley Olsen Third Collection,0,2.0,1.0,0,0
-CUBUS,0,7.0,0,1.0,0
-CUBUS SALE,0,3.0,0,0,0
-Gina Tricot Spring preview,0,5.0,0,0,0
-H&M Premium Quality,0,1.0,1.0,0,0
-H&M Spring Styles,0,1.0,1.0,0,0
-Inwear spring arrivals,1.0,7.0,4.0,0,0
-LindexStreet Chic,0,4.0,0,0,0
-New Arrivals,0,8.0,1.0,0,0
-New Arrivals AE,0,4.0,2.0,0,0
+HALLELUJAH,1.0,8.0,0,3.0,0
 Urban Outfitters 2,0,7.0,6.0,0,0
-Acne Studios LIVE,2.0,19.0,17.0,0,0
-Gina Tricot Weekend Glow,0,7.0,0,0,0
-H&M GO ATHLETIC,0,3.0,0,0,0
-H&M Sunny Getaway,0,9.0,1.0,0,0
-SALE Bianco,0,3.0,0,0,0
-Sale BIKBOK,0,4.0,1.0,1.0,0
-Nike Anton sport,1.0,3.0,0,0,0
+Moods New arrivals,0,3.0,0,0,0
+CUBUS,0,7.0,0,1.0,0
+COMING SOON CUBUS,0,12.0,0,1.0,0
+Mary-Kate & Ashley Olsen Third Collection,1.0,16.0,3.0,1.0,0
+OL KOLLEKSJONEN,0,3.0,0,5.0,0
+Ready for a party?,1.0,8.0,2.0,1.0,0
+Inwear spring arrivals,1.0,7.0,4.0,0,0
 Reiss New Arrivals,0,3.0,2.0,1.0,0
+Key pieces,0,4.0,0,1.0,0
+Acne Studios LIVE,2.0,19.0,17.0,0,0
 Acne Studios,0,5.0,1.0,0,1.0
+GO ATHLETIC,0,3.0,2.0,1.0,0
+Sale BIKBOK,0,4.0,1.0,1.0,0
 Sale Moods,0,3.0,0,0,0
+H&M Western Chic,0,3.0,1.0,1.0,0
+H&M Sunny Getaway,0,9.0,1.0,0,0
+Best sellers Lindex,0,6.0,0,3.0,0
+Active Sports Gina tricot,0,4.0,0,0,0
+Sale Reiss,0,1.0,0,1.0,0
+New Arrivals,0,8.0,1.0,0,0
+SALE Bianco,0,3.0,0,0,0
+New Arrivals AE,0,4.0,2.0,0,0
+Nike Anton sport,1.0,3.0,0,0,0
+BIK BOK Westhill Redbird,0,4.0,2.0,0,0
 New arrivals Gina,0,1.0,0,0,0
 New Arrivals Lindex,0,2.0,0,1.0,0
 Weekend Glow,0,1.0,0,0,0
-Sale Reiss,0,1.0,0,1.0,0
 New Arrivals Acne,0,6.0,9.0,0,0
-H&M Western Chic,0,3.0,1.0,1.0,0
+LindexStreet Chic,0,4.0,0,0,0
+Casual Ease,0,2.0,0,0,0
 Bianco DARK LUXURY,0,2.0,0,0,0
+Gina Tricot Weekend Glow,0,7.0,0,0,0
 Gina Tricot Preppy Perfect,0,2.0,0,0,0
+Anton sport Nike,0,4.0,6.0,0,0
 BIK BOK Sale,0,2.0,0,0,0
 CUBUS New arrivals,0,8.0,2.0,1.0,0
 BIK BOK New Arrivals,0,5.0,0,0,0
-Moods New arrivals,0,3.0,0,0,0
 Gina Tricot New arrivals,0,2.0,0,0,0
 AE New Arrivals,0,3.0,1.0,0,0
 Reiss Sale,0,2.0,0,1.0,0
 H&M New arrivals,0,5.0,5.0,0,0
 Gina Casual Ease,0,6.0,0,0,0
+CUBUS SALE,0,3.0,0,0,0
 "BIK BOK Only 99,-",0,3.0,1.0,0,0
 BIANCO New arrivals,0,2.0,0,0,0
+Gina Tricot Spring preview,0,5.0,0,0,0
 Editor´ s Picks,1.0,4.0,2.0,0,0
 Bianco Geometric,0,2.0,1.0,0,0
 BIK BOK Valentines,0,3.0,1.0,0,0
@@ -86,6 +89,11 @@ Lindex New Arrivals,0,1.0,0,0,0
 Lindex Best sellers,0,2.0,0,0,0
 H&M Feminine Finesse,0,2.0,0,0,0
 Morsdag,0,1.0,0,0,0
+Kari Traa Anton sport,2.0,3.0,1.0,0,0
+Bik Bok Mary-Kate & Ashley Olsen Third Collection,0,2.0,1.0,0,0
+H&M Premium Quality,0,1.0,1.0,0,0
+H&M Spring Styles,0,1.0,1.0,0,0
+H&M GO ATHLETIC,0,3.0,0,0,0
 H&M Key pieces,0,2.0,0,0,0
 CUBUS Undertøy,0,2.0,2.0,0,0
 Anton Sport Sesongen Nyheter,0,1.0,0,0,0
@@ -94,12 +102,4 @@ Gina tricot Active Sports,0,1.0,0,0,0
 Lindex Sale,0,1.0,0,0,0
 Maritime Touch,0,1.0,0,0,0
 Superdry New ins,0,1.0,0,0,0
-Mood of Cambodia_disable,3.0,19.0,14.0,2.0,0
-Revolve Clothing,36.0,138.0,97.0,6.0,13.0
-The Limited,5.0,91.0,45.0,21.0,12.0
-Luisa Via Roma,6.0,89.0,60.0,8.0,30.0
-French Connection,0,106.0,32.0,15.0,15.0
-Storefront_Test,9.0,7.0,9.0,2.0,0
-Mood of Cambodia,0,2.0,5.0,1.0,0
-SALE,0,1.0,0,0,0
-Accessories,0,1.0,0,0,0
+Gina Tricot 3 for 99 kr,0,0,0,1.0,0

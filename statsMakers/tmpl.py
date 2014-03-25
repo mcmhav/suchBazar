@@ -8,7 +8,7 @@ parser.add_argument('-sc', type=str, default="sessions")
 parser.add_argument('-c', type=str, default="outMF.csv")
 args = parser.parse_args()
 
-sessCol = helpers.getCollection(args.sc)
+col = helpers.getCollection(args.sc)
 
 print ("Collection used: ", args.sc)
 print ("Output file:     ", args.c)

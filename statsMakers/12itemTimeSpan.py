@@ -63,9 +63,9 @@ def main():
         print (item)
         if (item['count'] > 1):
             greaterThan1 += 1
-        start = datetime.datetime.fromtimestamp(int(item['min'])/1000).strftime('%Y, %m, %d')
-        end = datetime.datetime.fromtimestamp((int(item['max'])/1000)+(60*60*24)).strftime('%Y, %m, %d')
-        e.write("['" + str(item['product_id']) + "', " + "new Date(" + start + "), " + "new Date(" + end + ")],\n")
+        start = datetime.datetime.fromtimestamp(int(item['min'])/1000).strftime('%m/%d/%Y')
+        end = datetime.datetime.fromtimestamp((int(item['max'])/1000)+(60*60*24)).strftime('%m/%d/%Y')
+        e.write("['" + str(item['product_id']) + "', " + "new Date('" + start + "'), " + "new Date('" + end + "')],\n")
         c.writerow([ 'p' + str(int(item['product_id'])), int(item['count'])])
         cts.writerow([ 'p' + str(int(item['product_id'])), int(item['timespan']/(1000*60))])
         cNts.writerow([ 'p' + str(int(item['product_id'])), int(item['timespan']/(1000*60)), int(item['count'])])
@@ -81,7 +81,7 @@ def main():
 if __name__ == "__main__":
     main()
 
-# javascript/google fucks up jan - feb transition
+# javascript/google fucks up month 0 indexed?
 # ['29778002.0', new Date(2014, 01, 31), new Date(2014, 02, 01)],
 # ['24788050.0', new Date(2014, 01, 30), new Date(2014, 02, 01)],
 # ['29648001.0', new Date(2014, 01, 31), new Date(2014, 02, 02)],

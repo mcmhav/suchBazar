@@ -1,4 +1,5 @@
 import csv
+import numpy as np
 from collections import defaultdict
 
 def is_valid(indata):
@@ -56,7 +57,10 @@ def translate_events(events):
   return rating
 
 def products_to_file(user_id, products, f):
+  ratings = []
   for product_id, events in products.iteritems():
     rating = translate_events(events)
+    ratings.append(rating)
     if rating > 0:
       f.write("%s\t%s\t%s\n" % (user_id, product_id, rating))
+  print "Average: %s, Median: %s" % (np.mean(ratings), np.median(ratings))

@@ -24,7 +24,7 @@ def calc_most_recent(curr, timestamp, today):
   return min(curr, diff.days)
 
 def is_valid(indata):
-  if indata and indata not in ('N/A', '-1', 'NULL'):
+  if indata and indata not in ('N/A', '-1', 'NULL', 'null', 'testimplementation'):
     return True
   return False
 

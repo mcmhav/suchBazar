@@ -2,6 +2,7 @@ import sys
 import argparse
 import helpers
 from bson import Binary, Code
+from operator import itemgetter
 
 parser = argparse.ArgumentParser(description='Construct Training, Validation and Prediction files from mongoDB.')
 parser.add_argument('-sc', type=str, default="sessions")
@@ -17,39 +18,51 @@ print ("")
 total = 0
 
 def main():
-    #Do something awesome
+    makeSimpleItemsRatings()
 
-    total = len()
-    count = 0
+def makeSimpleItemsRatings():
+    """
+    Make a simple item recommendation for testing purposes
+    Using most popular approach
+    Unnecessary user to rating mapping, but meant to be as close to the personalized recommendations
 
-    helpers.printProgress(count,total)
+    change to:
+        user, item, rating
+    """
 
 
-def group():
-    gReducer = Code("""
-        function (cur,result) {
-            result.count += 1
-        }
-   """)
-    eventGoups = col.group(
-       key={'user_id':1},
-       condition={'user_id':user,'product_id':item,'$or':[{'event_id':'product_purchase_intended'}, {'event_id':'product_wanted'},{'event_id':'product_detail_clicked'}]},
-       reduce=gReducer,
-       initial={'count':0}
-   )
+    users = col.distinct('user_id')
+    ratings = {}
+    userRatings = getRatingsForUser("")
+    e = open('mostPopular' + '.ratings','w')
 
-def mr():
+    # e.write("user, item, rating" + "\n")
+
+    for user in users:
+        for itemRating in userRatings:
+            item = str(int(itemRating['_id']))
+            rating = str(int(itemRating['value']))
+            e.write(str(int(user)) + "," + item + "," + rating + "\n")
+
+    e.close()
+    return ratings
+
+def getRatingsForUser(user):
+    tmp = sorted(mostPopularMR().find(), key=itemgetter('value'),reverse=True)
+    return tmp
+
+
+def mostPopularMR():
     mapper = Code(  """
         function () {
-            key = this.user_id + "\t" + this.product_id;
+            key = this.product_id;
             if (this.event_id == 'product_purchase_intended'){
-                emit(key, 10);
+                emit(key, 20);
             } else if (this.event_id == 'product_wanted'){
-                emit(key, 5);
+                emit(key, 15);
             } else if (this.event_id == 'product_detail_clicked'){
                 emit(key, 1);
             }
-
         }
     """)
 

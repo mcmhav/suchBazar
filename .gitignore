@@ -10,3 +10,4 @@ rest/venv
 */__pycache__/*
 *.pyc
 *.class
+*.ratings

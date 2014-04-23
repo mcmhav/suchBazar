@@ -23,6 +23,28 @@ is penalized more than the newest (which is not penalized at all).
 
 The two sigmoid functions are good candidates for combining in a blending function :-)
 
+## Blending
+
+In order to blend two rating-files, you need a blending-configuration file, looking like:
+
+    file1.txt 0.2
+    file2.txt 0.6
+    file3.txt 0.2
+
+The ratios need to add up to 1.0. Further the files (of course) need to exist in the current directory.
+
+So you can generate a set of files by:
+
+    ./ratings.py proddata.tab -o file1.txt -m sigmoid
+    ./ratings.py proddata.tab -o file2.txt -m sigmoid_count
+    ./ratings.py proddata.tab -o file3.txt -m naive 
+
+And then running the blending:
+
+    ./blend -c files.conf -d ratings.csv
+
+Voila.
+
 ## Split into a testing and validation set
 
     ./split.sh ratings.csv

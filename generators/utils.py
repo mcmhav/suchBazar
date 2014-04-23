@@ -3,6 +3,7 @@ import sys
 import math
 from datetime import datetime
 from collections import defaultdict
+from operator import itemgetter
 
 # Dictionary holding the number of days since the most recent event,
 # for user i.
@@ -14,6 +15,15 @@ def normalize(score, k):
 
 def sigmoid(k):
   return 1 / (1 + math.exp(-0.2*(k-30)))
+
+def sigmoid(k, c):
+  # Some special cases when c is small:
+  f = 6
+  if c == 1:
+    return 0
+  if c > 2:
+    f = 5/c
+  return 1 / (1 + math.exp(-f*(k-c)))
 
 def parse_timestamp(timestamp):
   return datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
@@ -28,22 +38,25 @@ def is_valid(indata):
     return True
   return False
 
+def parse_eventline(row, users):
+  today = datetime.now()
+  event_id = row[1]
+  timestamp = row[3]
+  product_id = row[12]
+  user_id = row[16]
+  if is_valid(user_id) and is_valid(product_id) and is_valid(event_id):
+    users[user_id][product_id].append({'event_id': event_id, 'timestamp': timestamp, 'product_id': product_id})
+    mr[user_id] = calc_most_recent(mr[user_id], timestamp, today)
+
 def create_usermatrix(filename):
   # The dictionary containing all events for one user
   users = defaultdict(lambda: defaultdict(list))
-  today = datetime.now()
 
   # Read the input .tab file.
   with open(filename) as f:
     next(f, None)  # skip the headers
     for row in csv.reader(f, delimiter='\t'):
-      event_id = row[1]
-      timestamp = row[3]
-      product_id = row[12]
-      user_id = row[16]
-      if is_valid(user_id) and is_valid(product_id) and is_valid(event_id):
-        users[user_id][product_id].append({'event_id': event_id, 'timestamp': timestamp})
-        mr[user_id] = calc_most_recent(mr[user_id], timestamp, today)
+      parse_eventline(row, users)
 
   return users
 
@@ -112,21 +125,66 @@ def sigmoid_events(events, d):
     rating = max(rating, normalize(score, 5.0))
   return rating
 
+def sigmoid_count(events):
+  multipliers = {
+    'featured_product_clicked': [10,60],
+    'product_detail_clicked': [10,60],
+    'product_wanted': [60,80],
+    'product_purchase_intended': [80,100],
+    'product_purchased': [80,100]
+  }
 
-def products_to_file(user_id, products, f, sigmoid):
+  # Remove events which we dont care about.
+  events[:] = [d for d in events if d.get('event_id') in multipliers]
+
+  # We want to sort all events by most recent to oldest.
+  events = sorted(events, key=itemgetter('timestamp'), reverse=True)
+
+  num_events = len(events)
+
+  ratings = {}
+  for i, event in enumerate(events):
+    product_penalization = sigmoid((i+1), num_events)
+    scores = multipliers.get(event['event_id'])
+    score = scores[1] - ((scores[1] - scores[0]) * product_penalization)
+
+    r = max(ratings.get(event['product_id'], 0.0), normalize(score, 5.0))
+    ratings[event['product_id']] = r
+  return ratings
+
+def products_to_file(user_id, products, f, method):
+  """
+    Writes to a file:
+       user_id, product_id, rating
+
+    Input is all products than has an event, for user_id.
+    Thus, this function is typically run inside a loop for all users in the system.
+
+    The returned ratings array is just an array we use in order to calculate the
+    final average in the end of the program.
+  """
   ratings = []
-  for product_id, events in products.iteritems():
 
-    # Get the rating from one of the different calculation schemes.
-    rating = 1.0
-    if sigmoid:
-      rating = sigmoid_events(events, mr[user_id])
-    else:
-      rating = translate_events(events)
-    ratings.append(rating)
+  if method == 'sigmoid_count':
+    e = []
+    for product_id, events in products.iteritems():
+      e.extend(events)
+    rts = sigmoid_count(e)
 
-    #if rating > 0:
-    f.write("%s\t%s\t%.2f\n" % (user_id, product_id, rating))
-  #print ignored
-  #print ratings
+    for product_id, rating in rts.iteritems():
+      f.write("%s\t%s\t%.2f\n" % (user_id, product_id, rating))
+      ratings.append(rating)
+  else:
+    for product_id, events in products.iteritems():
+
+      # Get the rating from one of the different calculation schemes.
+      rating = 1.0
+      if method == 'sigmoid_recentness':
+        rating = sigmoid_events(events, mr[user_id])
+      else:
+        rating = translate_events(events)
+      ratings.append(rating)
+
+      f.write("%s\t%s\t%.2f\n" % (user_id, product_id, rating))
+    return ratings
   return ratings

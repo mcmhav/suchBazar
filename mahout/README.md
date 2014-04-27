@@ -18,4 +18,4 @@
 
 ## Run and compile:
 
-    $ javac SampleRecommender.java && java SampleRecommender
+    $ javac Recommender.java && java Recommender

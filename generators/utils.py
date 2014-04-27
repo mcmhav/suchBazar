@@ -13,10 +13,12 @@ ignored = 0
 def normalize(score, k):
   return ((k-1)/100.0) * score + 1
 
-def sigmoid(k):
+def sigmoid(k, **kwargs):
+  if "c" in kwargs:
+    return sigmoid_count(k, kwargs["c"])
   return 1 / (1 + math.exp(-0.2*(k-30)))
 
-def sigmoid(k, c):
+def sigmoid_count(k, c):
   # Some special cases when c is small:
   f = 6
   if c == 1:

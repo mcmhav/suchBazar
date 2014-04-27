@@ -25,17 +25,21 @@ def read_config(fname):
   s = 0
   for rfile in config['files']:
     s += rfile['ratio']
-  if s != 1.0:
+  if abs(s - 1.0) > 0.000000001:
     print "Error: ratios does not add up to 1.0"
     sys.exit(1)
   f.seek(0)
 
   # Check that the line numbers in all files are equal.
-  r = config["files"][0]["ratio"]
+  r = len(config["files"][0]["fh"].readlines())
   for rfile in config["files"][1:]:
-    if rfile["ratio"] != r:
+    if len(rfile["fh"].readlines()) != r:
       print "Line numbers in various files does not match"
       sys.exit(1)
+
+  # Reset filehandles for all rating files
+  for rfile in config["files"]:
+    rfile["fh"].seek(0)
 
   # And close the config file at the end.
   f.close()

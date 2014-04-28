@@ -14,8 +14,8 @@
 
 ## Add this JAR to the CLASSPATH:
 
-    export CLASSPATH=.:$CLASSPATH:/usr/local/Cellar/mahout/0.9/libexec/mahout-core-0.9-job.jar
+    export CLASSPATH=.:$CLASSPATH:./jars/
 
 ## Run and compile:
 
-    $ javac Recommender.java && java Recommender
+    $ javac SobazarRecommender.java && java SobazarRecommender

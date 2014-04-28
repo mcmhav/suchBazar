@@ -2,19 +2,22 @@
 import sys
 import argparse
 from collections import defaultdict
+import numpy as np
 
 def read_config(fname):
   config = { 'files' : []}
   f = open(fname)
 
+  lines = list(line for line in (l.strip() for l in f) if line)
+
   # Ensure we have more than 1 file to blend.
-  if len(f.readlines()) < 2:
+  if len(lines) < 2:
     print "Error: we need more than one file in the config file to blend"
     sys.exit(1)
   f.seek(0)
 
   # Read the config and open the file handlers
-  for l in f.readlines():
+  for l in lines:
     args = l.split()
     fh = open(args[0])
     ratio = float(args[1])
@@ -63,9 +66,13 @@ def blend(users, f, ratio):
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description = 'Blend ratings')
-  parser.add_argument('-c', dest='conf', default="files.conf")
-  parser.add_argument('-d', dest='dest', default='ratings.csv')
+  parser.add_argument('-c', dest='conf', default="files.conf", help="Config file for how to linearly weight the different ratings")
+  parser.add_argument('-d', dest='dest', default="ratings", help="Where should the blended file be put? Default to: 'ratings'")
+  parser.add_argument('-o', dest='filename', default='blend.txt', help="Filename for the blended result. Default to: 'blend.txt'")
   args = parser.parse_args()
+
+  # Add the directory + filename
+  args.dest = args.dest + '/' + args.filename
 
   conf = read_config(args.conf)
 
@@ -76,12 +83,23 @@ if __name__ == '__main__':
   for rfile in conf["files"]:
     blend(users, rfile["fh"], rfile["ratio"])
 
+  # Data structures for statistics
+  num_ratings = 0
+  ratings = []
+
   # Write the output-file.
   out = open(args.dest, "w+")
   for user_id, product in users.iteritems():
     for product_id, rating in product.iteritems():
       out.write("%s\t%s\t%s\n" % (user_id, product_id, rating))
 
+      # Save for statistics
+      num_ratings += 1
+      ratings.append(rating)
+
   # Close all open files
   for rfile in conf["files"]:
     rfile["fh"].close()
+
+  # Write back to the user
+  print "Wrote %d ratings to %s. Average: %.4f,  Median: %.4f" % (num_ratings, args.dest, np.average(ratings), np.median(ratings))

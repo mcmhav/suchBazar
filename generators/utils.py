@@ -171,7 +171,7 @@ def products_to_file(user_id, products, f, method):
     e = []
     for product_id, events in products.iteritems():
       e.extend(events)
-    rts = sigmoid(e)
+    rts = sigmoid_count(e)
 
     for product_id, rating in rts.iteritems():
       f.write("%s\t%s\t%.2f\n" % (user_id, product_id, rating))

@@ -11,3 +11,4 @@ rest/venv
 *.pyc
 *.class
 *.ratings
+generators/ratings

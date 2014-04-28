@@ -1,10 +1,14 @@
 # Used to measure the user satisfaction in an ordered list.
-# rank_ui is the precentile-ranking of item i within the ordered list of all items for user u.
+# rank_ui is the precentile-ranking of item i within the ordered list of all
+# items for user u.
 # Rank_ui = 0% means that item i is most preffered by user u.
 # Higher ranking indicates that i is predicted to be less desirale for user u.
 
 # The way of calcualting tthe MPR:
-# For each actual pair of a user and the purchased item, we randomly select 1000 other items, and produce an ordered list of these items. Then, we keep track of where the actual purchased item is ranked, and calculate the expected percentage ranking for all users and items.
+# For each actual pair of a user and the purchased item, we randomly select
+# 1000 other items, and produce an ordered list of these items. Then, we keep
+# track of where the actual purchased item is ranked, and calculate the
+# expected percentage ranking for all users and items.
 
 import sys
 import argparse

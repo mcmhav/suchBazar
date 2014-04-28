@@ -2,6 +2,7 @@
 import argparse
 from collections import defaultdict
 import numpy as np
+import sys
 
 import utils
 
@@ -20,10 +21,21 @@ def usermatrix_to_file(users, filename, sigmoid):
 def main():
   parser = argparse.ArgumentParser(description = 'Generate ratings file')
   parser.add_argument('inputfile')
-  parser.add_argument('-o', dest='outputfile', default='output.csv')
-  parser.add_argument('-m', dest='method', default='sigmoid')
-  parser.add_argument('-d', dest='debug', action='store_true', default=False)
+  parser.add_argument('-o', dest='outputfile', default='')
+  parser.add_argument('-d', dest='outputfolder', default='ratings')
+  parser.add_argument('-m', dest='method', default='naive', help="Choose between 'naive', 'scount' and 'srecent'")
+  parser.add_argument('--debug', dest='debug', action='store_true', default=False)
   args = parser.parse_args()
+
+  if args.method not in ['scount', 'srecent', 'naive']:
+    print "Wrong method '%s', please choose between 'scount', 'srecent' and 'naive'" % (args.method)
+    sys.exit(1)
+
+  if args.outputfile == '':
+    args.outputfile = args.method + '.txt'
+  args.outputfile = args.outputfolder + '/' + args.outputfile
+
+  print "Using method '%s' in order to generate rankings to '%s'" % (args.method, args.outputfile)
 
   if args.debug:
     # event_id, timestamp, product_id, user_id 

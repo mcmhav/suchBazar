@@ -15,10 +15,10 @@ def normalize(score, k):
 
 def sigmoid(k, **kwargs):
   if "c" in kwargs:
-    return sigmoid_count(k, kwargs["c"])
+    return sigmoid_c(k, kwargs["c"])
   return 1 / (1 + math.exp(-0.2*(k-30)))
 
-def sigmoid_count(k, c):
+def sigmoid_c(k, c):
   # Some special cases when c is small:
   f = 6
   if c == 1:
@@ -146,7 +146,7 @@ def sigmoid_count(events):
 
   ratings = {}
   for i, event in enumerate(events):
-    product_penalization = sigmoid((i+1), num_events)
+    product_penalization = sigmoid((i+1), c=num_events)
     scores = multipliers.get(event['event_id'])
     score = scores[1] - ((scores[1] - scores[0]) * product_penalization)
 
@@ -167,7 +167,7 @@ def products_to_file(user_id, products, f, method):
   """
   ratings = []
 
-  if method == 'sigmoid_count':
+  if method == 'scount':
     e = []
     for product_id, events in products.iteritems():
       e.extend(events)
@@ -181,9 +181,9 @@ def products_to_file(user_id, products, f, method):
 
       # Get the rating from one of the different calculation schemes.
       rating = 1.0
-      if method == 'sigmoid_recentness':
+      if method == 'srecent':
         rating = sigmoid_events(events, mr[user_id])
-      else:
+      elif method == 'naive':
         rating = translate_events(events)
       ratings.append(rating)
 

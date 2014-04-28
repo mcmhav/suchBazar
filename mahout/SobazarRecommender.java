@@ -22,7 +22,7 @@ import org.apache.mahout.cf.taste.impl.eval.AverageAbsoluteDifferenceRecommender
 import org.apache.mahout.cf.taste.impl.eval.RMSRecommenderEvaluator;
 
 class SobazarRecommender {
-  static String dataPath = "../generators/data";
+  static String dataPath = "../generators/ratings";
   /* static String[] files = { "naive.txt", "sigmoid_count.txt", "sigmoid_recent.txt", "blend.txt" }; */
   static String[] files = { "blend.txt" };
   /* static String recommender = "itembased"; */
@@ -45,7 +45,7 @@ class SobazarRecommender {
           return new ItemUserAverageRecommender(model);
         } else if (recommender.equals("svd")) {
           // ALSWRFactorizer(DataModel dataModel, int numFeatures, double lambda, int numIterations)
-          // ALSWRFactorizer(DataModel dataModel, int numFeatures, double lambda, int numIterations, boolean usesImplicitFeedback, double alpha) 
+          // ALSWRFactorizer(DataModel dataModel, int numFeatures, double lambda, int numIterations, boolean usesImplicitFeedback, double alpha)
           //ALSWRFactorizer factorizer = new ALSWRFactorizer(model, 20, 0.01, 5, true, 0.01);
           ALSWRFactorizer factorizer = new ALSWRFactorizer(model, 20, 0.01, 5);
           return new SVDRecommender(model, factorizer);

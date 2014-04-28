@@ -84,7 +84,7 @@ def makeRankListForUsers():
     count = 0
 
     for line in e.readlines():
-        userItemRating = line.split(',')
+        userItemRating = line.split('\t')
         user = userItemRating[0]
         item = userItemRating[1]
         rating = int(userItemRating[2])

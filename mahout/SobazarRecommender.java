@@ -1,5 +1,10 @@
 import java.io.*;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.logging.Logger;
+import java.util.logging.LogManager;
+import java.util.logging.Handler;
+import java.util.logging.Level;
 
 import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.impl.model.file.FileDataModel;
@@ -24,10 +29,10 @@ import org.apache.mahout.cf.taste.impl.eval.RMSRecommenderEvaluator;
 class SobazarRecommender {
   static String dataPath = "../generators/ratings";
   /* static String[] files = { "naive.txt", "sigmoid_count.txt", "sigmoid_recent.txt", "blend.txt" }; */
-  static String[] files = { "blend.txt" };
+  String[] files = { "blend.txt" };
   /* static String recommender = "itembased"; */
 
-  public static void evaluate(String filename, final String recommender) throws IOException, TasteException {
+  public void evaluate(String filename, final String recommender, String kfold) throws IOException, TasteException {
     System.out.println("Using recommender-engine: " + recommender);
     long startTime = System.currentTimeMillis();
 
@@ -60,9 +65,10 @@ class SobazarRecommender {
     RecommenderEvaluator rmseEvaluator= new RMSRecommenderEvaluator();
 
     // K-fold evaluation.
-    double[][] scores = new double[5][2];
+    int k = Integer.parseInt(kfold);
+    double[][] scores = new double[k][2];
     for (int i = 0; i < scores.length; i++) {
-      System.out.print("\rRunning evaluation number " + i + " on " + filename);
+      System.out.print("\rRunning evaluation number " + (i+1) + "/" + k + " on " + filename);
       scores[i][0] = avgdiffEvaluator.evaluate(builder, null, model, 0.9, 1.0);
       scores[i][1] = rmseEvaluator.evaluate(builder, null, model, 0.9, 1.0);
     }
@@ -79,13 +85,49 @@ class SobazarRecommender {
     System.out.print("\r===================== " + filename + "========================\n");
     System.out.print("RMSE: " + rmse/scores.length + "\n");
     System.out.print("AvgDiff: " + avgdiff/scores.length + "\n");
-    System.out.print("Took " + (endTime - startTime) + "ms\n");
+    System.out.print("Took " + (endTime - startTime) + "ms to calculate " + k + "-fold cross-validation\n");
     System.out.print("===========================================================\n\n");
   }
 
-  public static void main(String[] args) throws IOException, TasteException {
-    for (int i = 0; i < files.length; i++) {
-      evaluate(files[i], args[0]);
+  public List<String> parseConfig(String filename) throws IOException {
+    List<String> ratingFiles = new ArrayList<String>();
+    File file = new File(filename);
+    BufferedReader reader = new BufferedReader(new FileReader(file));
+    String text = null;
+    while ((text = reader.readLine()) != null){
+      ratingFiles.add(text);
+    }
+    return ratingFiles;
+  }
+
+  public void start(String[] args) throws IOException, TasteException {
+    String[] vals = new String[4];
+    if (args.length < 4) {
+      System.out.print("Needs arguments: <ratings-folder> <method> <k-fold> <files-config>\n");
+      System.out.print("Defaulting to: ../generators/ratings itembased 10\n");
+      vals[0] = "../generators/ratings";
+      vals[1] = "itembased";
+      vals[2] = "10";
+      vals[3] = "files.conf";
+    } else {
+      vals = args;
+    }
+
+    List<String> files = parseConfig(vals[3]);
+
+    this.dataPath = vals[0];
+    for (int i = 0; i < files.size(); i++) {
+      evaluate(files.get(i), vals[1], vals[2]);
     }
   }
+
+  public static void main(String[] args) throws IOException, TasteException {
+    Logger log = LogManager.getLogManager().getLogger("");
+    for (Handler h : log.getHandlers()) {
+          h.setLevel(Level.SEVERE);
+    }
+    SobazarRecommender engine = new SobazarRecommender();
+    engine.start(args);
+  }
+
 }

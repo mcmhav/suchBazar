@@ -5,6 +5,9 @@ import java.util.logging.Logger;
 import java.util.logging.LogManager;
 import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.HashMap;
+import java.util.Map;
+
 
 import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.impl.model.file.FileDataModel;
@@ -68,15 +71,18 @@ class SobazarRecommender {
     RecommenderEvaluator rmseEvaluator= new RMSRecommenderEvaluator();
     RecommenderIRStatsEvaluator irStatsEvaluator = new GenericRecommenderIRStatsEvaluator();
 
+
     // K-fold evaluation.
     int k = Integer.parseInt(kfold);
     double[][] scores = new double[k][8];
     IRStatistics irStats = null;
+    int at = 5; // at - as in, "precision at 5". The number of recommendations to consider when evaluating precision, etc.
+    double rt = 3; // relevanceThreshold - items whose preference value is at least this value are considered "relevant" for the purposes of computations.
     for (int i = 0; i < scores.length; i++) {
       System.out.print("\rRunning evaluation number " + (i+1) + "/" + k + " on " + filename);
       scores[i][0] = avgdiffEvaluator.evaluate(builder, null, model, 0.9, 1.0);
       scores[i][1] = rmseEvaluator.evaluate(builder, null, model, 0.9, 1.0);
-      irStats = irStatsEvaluator.evaluate(builder, null, model, null, 5, 4, 0.5);
+      irStats = irStatsEvaluator.evaluate(builder, null, model, null, at, rt, 1.0);
       scores[i][2] = irStats.getPrecision();
       scores[i][3] = irStats.getRecall();
       scores[i][4] = irStats.getF1Measure();
@@ -151,13 +157,15 @@ class SobazarRecommender {
     }
   }
 
-  public static void main(String[] args) throws IOException, TasteException {
-    Logger log = LogManager.getLogManager().getLogger("");
-    for (Handler h : log.getHandlers()) {
-          h.setLevel(Level.SEVERE);
-    }
-    SobazarRecommender engine = new SobazarRecommender();
-    engine.start(args);
-  }
-
+/*===================== testur========================
+RMSE: 1.2692955172180542
+AvgDiff: 0.9100378792394291
+Precision: 0.034020521509931324
+Recall: 0.003581286484268638
+F1Measure: 0.006480392319969338
+nDCG: 0.034084846430383786
+Reach: 0.396240138756784
+FallOut: 1.4278112033939378E-4
+Took 9403990ms to calculate 1-fold cross-validation
+===========================================================*/
 }

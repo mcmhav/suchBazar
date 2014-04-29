@@ -12,3 +12,4 @@ rest/venv
 *.class
 *.ratings
 generators/ratings
+mahout/jars/*

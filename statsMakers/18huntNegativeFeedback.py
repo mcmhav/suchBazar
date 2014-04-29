@@ -17,49 +17,66 @@ print ("")
 
 total = 0
 
+showInterest = {
+    'product_purchase_intended',
+    'product_wanted'
+}
+
 def main():
-    purchsedList = col.find({'event_id':'product_purchase_intended'})
-    # 15074.550855991944
-    # {
-    #     'product_wanted': 103,
-    #     'product_detail_clicked': 767,
-    #     'product_purchase_intended': 120
-    # }
-    # 19939.903638814016
-    # {
-    #     'activity_clicked': 11,
-    #     'storefront_clicked': 16,
-    #     'around_me_clicked': 4,
-    #     'user_logged_in': 5,
-    #     'featured_storefront_clicked': 0,
-    #     'stores_map_clicked': 45,
-    #     'product_detail_clicked': 1058,
-    #     'product_purchase_intended': 184,
-    #     'app_started': 33,
-    #     'product_wanted': 117,
-    #     'store_clicked': 0
-    # }
+    users = col.distinct('user_id')
+    total = len(users)
+    count = 0
+    globalTot = 0
+    zeroC = 0
+    for user in users:
+        userEvents = col.find({'user_id':user}).sort('ts',1)
+        avgViewTimeOnIgnoredItem = 0
+        viewTimeStart = -1
+        viewedItem = ''
+        viewedItemSession = -1
+        c = 0
+        for event in userEvents:
+            # print ("%s - %s" % (event['event_id'],event['ts']))
+            if event['event_id'] == "product_detail_clicked":
+                viewTimeStart = event['ts']
+                viewedItem = event['product_id']
+                viewedItemSession = event['session']
+            if viewTimeStart != -1 and event['session'] == viewedItemSession and event['product_id'] != viewedItem:
+                avgViewTimeOnIgnoredItem += (event['ts'] - viewTimeStart)
+                viewTimeStart = -1
+                viewedItemSession = -1
+            c += 1
 
-    wantedList = col.find({'event_id':'product_wanted'})
-    # 19833.43308309604
-    # {
-    #     'around_me_clicked': 13,
-    #     'featured_storefront_clicked': 47,
-    #     'app_started': 277,
-    #     'featured_collection_clicked': 67,
-    #     'stores_map_clicked': 40,
-    #     'product_purchase_intended': 39,
-    #     'activity_clicked': 4,
-    #     'friend_invited': 0,
-    #     'product_detail_clicked': 1847,
-    #     'user_logged_in': 9,
-    #     'storefront_clicked': 1095,
-    #     'store_clicked': 1,
-    #     'product_wanted': 4274
-    # }
+        # if avgViewTimeOnIgnoredItem == 0:
+        #     sys.exit()
+        # for sessionN in sessions:
+        #     sessionEvents = col.find({'user_id':user,'session':sessionN})
+        #     for event in sessionEvents:
+        #         continue
+                # print (event)
+        if avgViewTimeOnIgnoredItem > 0:
+            globalTot += avgViewTimeOnIgnoredItem/c
+        else:
+            zeroC += 1
+        # print (avgViewTimeOnIgnoredItem)
+        count += 1
+        helpers.printProgress(count,total)
+    print ()
+    print (globalTot/(count-zeroC))
+    print (zeroC)
+    print (count)
+    print (globalTot)
 
-    iterateEventsAction(purchsedList)
-    iterateEventsAction(wantedList)
+    # 6062.000959310428
+    # 623
+    # 1656
+    # 6262046.990967672
+
+    # purchsedList = col.find({'event_id':'product_purchase_intended'})
+    # wantedList = col.find({'event_id':'product_wanted'})
+
+    # iterateEventsAction(purchsedList)
+    # iterateEventsAction(wantedList)
 
 
     reducer = Code("""
@@ -77,50 +94,12 @@ def main():
                    """)
 
     groups = col.group(
-                           key={'product_id':1},
+                           key={'user_id':1,'session':1},
                            condition={},
                            reduce=reducer,
                            initial={'count':0,'max':0,'min':13842573649850,'timespan':0,'avgTime':0}
                        )
 
-    # total = len(groups)
-    # maxTimespan = 0
-    # maxItem = ''
-    # greaterThan1 = 0
-
-    # e = open("piss" + '.json','w')
-    # e.write("[\n")
-
-    # c = helpers.getCSVWriter("itemEventCount")
-    # c.writerow([ 'product_id', 'count' ])
-
-    # cts = helpers.getCSVWriter("timespanStats")
-    # cts.writerow([ 'product_id', 'timespan' ])
-
-    # cNts = helpers.getCSVWriter("timespanWithCountStats")
-    # cNts.writerow([ 'product_id', 'timespan', 'count' ])
-
-    # for item in groups:
-    #     if item['timespan'] > maxTimespan:
-    #         maxTimespan = item['timespan']
-    #         maxItem = item['product_id']
-    #     print (item)
-    #     if (item['count'] > 1):
-    #         greaterThan1 += 1
-    #     start = datetime.datetime.fromtimestamp(int(item['min'])/1000).strftime('%m/%d/%Y')
-    #     end = datetime.datetime.fromtimestamp((int(item['max'])/1000)+(60*60*24)).strftime('%m/%d/%Y')
-    #     e.write("['" + str(item['product_id']) + "', " + "new Date('" + start + "'), " + "new Date('" + end + "')],\n")
-    #     c.writerow([ 'p' + str(int(item['product_id'])), int(item['count'])])
-    #     cts.writerow([ 'p' + str(int(item['product_id'])), int(item['timespan']/(1000*60))])
-    #     cNts.writerow([ 'p' + str(int(item['product_id'])), int(item['timespan']/(1000*60)), int(item['count'])])
-
-    # print (maxTimespan)
-    # print (maxItem)
-    # print (greaterThan1)
-    # e.write("]")
-
-    # e.close()
-    # helpers.closeF()
 def mr():
     mapper = Code(  """
         function () {

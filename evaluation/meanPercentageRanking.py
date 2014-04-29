@@ -50,11 +50,11 @@ def main():
     print ("Rank items")
     for pair in userItemPurchaseGroups:
         user = str(int(pair['user_id']))
-        # userRankedRatings = addRankToRatings(allRatings[user])
+        userRankedRatings = addRankToRatings(allRatings[user])
 
         userPurchasedItems = purchsedItemsByUser(int(user))
         randomItems = random.sample(items, 3600)
-        userRankedRatings = getRankInRandomListOfItem(randomItems,allRatings[user],pair['product_id'])
+        # userRankedRatings = getRankInRandomListOfItem(randomItems,allRatings[user],pair['product_id'])
         # rank = getRankInRandomListOfItem(rankedItems,userRatings,pair['product_id'])
         for item in randomItems:
             if item in userPurchasedItems:

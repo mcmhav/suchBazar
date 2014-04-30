@@ -1,6 +1,7 @@
 import csv
 import sys
 import math
+import pymongo
 from datetime import datetime
 from collections import defaultdict
 from operator import itemgetter
@@ -50,15 +51,32 @@ def parse_eventline(row, users):
     users[user_id][product_id].append({'event_id': event_id, 'timestamp': timestamp, 'product_id': product_id})
     mr[user_id] = calc_most_recent(mr[user_id], timestamp, today)
 
+def parse_mongo(users):
+  client = pymongo.MongoClient()
+  db = client.mydb
+  col = db['cleanedItems']
+  mongoDB = col.find()
+  for instance in mongoDB:
+    row = [''] * 17
+    row[1] = instance['event_id']
+    row[3] = instance['server_time_stamp']
+    row[12] = instance['product_id']
+    row[16] = instance['user_id'] # 2014-02-03T18:59+0100
+    parse_eventline(row,users)
+
+
 def create_usermatrix(filename):
   # The dictionary containing all events for one user
   users = defaultdict(lambda: defaultdict(list))
-
-  # Read the input .tab file.
-  with open(filename) as f:
-    next(f, None)  # skip the headers
-    for row in csv.reader(f, delimiter='\t'):
-      parse_eventline(row, users)
+  # Use data from mongo?
+  if filename == "mongo":
+    parse_mongo(users)
+  else:
+    # Read the input .tab file.
+    with open(filename) as f:
+      next(f, None)  # skip the headers
+      for row in csv.reader(f, delimiter='\t'):
+        parse_eventline(row, users)
 
   return users
 

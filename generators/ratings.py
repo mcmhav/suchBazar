@@ -4,6 +4,7 @@ from collections import defaultdict
 import numpy as np
 import sys
 
+
 import utils
 
 def usermatrix_to_file(users, filename, sigmoid):
@@ -38,7 +39,7 @@ def main():
   print "Using method '%s' in order to generate rankings to '%s'" % (args.method, args.outputfile)
 
   if args.debug:
-    # event_id, timestamp, product_id, user_id 
+    # event_id, timestamp, product_id, user_id
     users = defaultdict(lambda: defaultdict(list))
     f = [
       ['','product_detail_clicked','','2014-02-22T14:00:00.00001Z','','','','','','','','','1','','','','1337'],

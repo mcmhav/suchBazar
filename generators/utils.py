@@ -21,13 +21,11 @@ def sigmoid(k, **kwargs):
   return 1 / (1 + math.exp(-0.2*(k-30)))
 
 def sigmoid_c(k, c):
-  # Some special cases when c is small:
-  f = 6
-  if c == 1:
-    return 0
-  if c > 2:
-    f = 5/c
-  return 1 / (1 + math.exp(-f*(k-c)))
+  # http://fooplot.com/#W3sidHlwZSI6MCwiZXEiOiIxLygxK2VeKCgtKDIqNCkvMSkqKHgtKDEvMikpKSkiLCJjb2xvciI6IiMwMDAwMDAifSx7InR5cGUiOjEwMDAsIndpbmRvdyI6WyIwIiwiMSIsIjAiLCIxIl19XQ--
+  f = 4
+  steep = -((2*f)/c)
+  shift = k - (c/2.0)
+  return 1 / (1 + math.exp(steep*shift))
 
 def parse_timestamp(timestamp):
   return datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
@@ -146,10 +144,14 @@ def sigmoid_events(events, d):
     # Calculate the diff between the scores, and multiply with penalization.
     score = scores[1] - ((scores[1] - scores[0]) * penalization)
 
-    rating = max(rating, normalize(score=score, a=0, b=5.0))
+    rating = max(rating, normalize(score=score, a=1, b=5.0))
   return rating
 
 def sigmoid_count(events):
+  """
+    Input is all events related to user u.
+    Output is the ratings for this all items the user has interacted with.
+  """
   multipliers = {
     'featured_product_clicked': [10,60],
     'product_detail_clicked': [10,60],
@@ -168,10 +170,9 @@ def sigmoid_count(events):
 
   ratings = {}
   for i, event in enumerate(events):
-    product_penalization = sigmoid((i+1), c=num_events)
+    product_penalization = sigmoid(i, c=num_events)
     scores = multipliers.get(event['event_id'])
     score = scores[1] - ((scores[1] - scores[0]) * product_penalization)
-
     r = max(ratings.get(event['product_id'], 0.0), normalize(score=score, a=0, b=5.0))
     ratings[event['product_id']] = r
   return ratings
@@ -196,7 +197,7 @@ def products_to_file(user_id, products, f, method):
     rts = sigmoid_count(e)
 
     for product_id, rating in rts.iteritems():
-      f.write("%s\t%s\t%.2f\n" % (user_id, product_id, rating))
+      f.write("%s\t%s\t%.3f\n" % (user_id, product_id, rating))
       ratings.append(rating)
   else:
     for product_id, events in products.iteritems():

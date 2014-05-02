@@ -11,8 +11,9 @@ from operator import itemgetter
 mr = defaultdict(lambda: sys.maxint)
 ignored = 0
 
-def normalize(score, k):
-  return ((k-1)/100.0) * score + 1
+def normalize(score,xmax=100,xmin=0,a=0,b=5):
+  # From http://en.wikipedia.org/wiki/Normalization_(statistics)#Examples
+  return a + (((score-xmin)*(b-a))/(xmax-xmin))
 
 def sigmoid(k, **kwargs):
   if "c" in kwargs:
@@ -107,11 +108,14 @@ def translate_events(events):
 
     # Just get the score. And if it is higher than existing rating, replace it.
     # and normalize to k
-    rating = max(rating, normalize(multi[idx], 5.0))
+    rating = max(rating, normalize(score=multi[idx], a=0, b=5))
 
     # Increase the count for this event.
     count[event['event_id']] += 1
   return rating
+
+def translate_global(events):
+  pass
 
 def sigmoid_events(events, d):
   multipliers = {
@@ -142,7 +146,7 @@ def sigmoid_events(events, d):
     # Calculate the diff between the scores, and multiply with penalization.
     score = scores[1] - ((scores[1] - scores[0]) * penalization)
 
-    rating = max(rating, normalize(score, 5.0))
+    rating = max(rating, normalize(score=score, a=0, b=5.0))
   return rating
 
 def sigmoid_count(events):
@@ -168,7 +172,7 @@ def sigmoid_count(events):
     scores = multipliers.get(event['event_id'])
     score = scores[1] - ((scores[1] - scores[0]) * product_penalization)
 
-    r = max(ratings.get(event['product_id'], 0.0), normalize(score, 5.0))
+    r = max(ratings.get(event['product_id'], 0.0), normalize(score=score, a=0, b=5.0))
     ratings[event['product_id']] = r
   return ratings
 

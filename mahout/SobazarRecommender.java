@@ -142,7 +142,7 @@ class SobazarRecommender {
       System.out.print("Needs arguments: <ratings-folder> <method> <k-fold> <files-config>\n");
       System.out.print("Defaulting to: ../generators/ratings itembased 10\n");
       vals[0] = "../generators/ratings";
-      vals[1] = "itembased";
+      vals[1] = "itemuseraverage";
       vals[2] = "10";
       vals[3] = "files.conf";
     } else {
@@ -156,6 +156,11 @@ class SobazarRecommender {
       evaluate(files.get(i), vals[1], vals[2]);
     }
   }
+
+    public static void main(String[] args) throws IOException, TasteException{
+        SobazarRecommender tp = new SobazarRecommender();
+        tp.start(args);
+    }
 
 /*===================== testur========================
 RMSE: 1.2692955172180542

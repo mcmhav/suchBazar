@@ -31,12 +31,14 @@ import meanap
 parser = argparse.ArgumentParser(description='MAP for ratings. Input on the form <user, item, rating> in one file, as of now. Must have populated mongoDB with event-data, as of now.')
 parser.add_argument('-sc', type=str, default="sessions")
 parser.add_argument('-c', type=str, default="outMF.csv")
-parser.add_argument('-f', type=str, default="mostPopular.ratings")
+parser.add_argument('-k', type=int, default="20")
+parser.add_argument('-f', type=str, default="testikus.txt")
 args = parser.parse_args()
 
 col = helpers.getCollection(args.sc)
 
 print ("Collection used: ", args.sc)
+print ("K size file:     ", args.k)
 print ("Output file:     ", args.c)
 print ("")
 
@@ -45,25 +47,40 @@ total = 0
 def main():
     allRatings = makeRankListForUsers()
     userItemPurchaseGroups = group()
-    total = len(userItemPurchaseGroups)
     items = col.distinct('product_id')
     items.remove('NULL')
     totalItems = len(items)
     count = 0
     users = col.distinct('user_id')
-    k = 70
+    total = len(users)
+    k = args.k
     actual = []
     predicted = []
     for user in users:
-        userProd = col.find({'user_id':user}).distinct('product_id')
-        if len(userProd) > k:
-            actual.append((userProd))
-
+        # userProd = col.find({'user_id':user}).distinct('product_id')
+        if str(user) in allRatings:
+            # get actual top items for user
+            topItemsForUser = findTopItemsForUser(user)
+            # add the top items to the list
+            actual.append((topItemsForUser))
+            # get the rank of the predicted items
             userRankedRatings = addRankToRatings((allRatings[str(user)]))
-            predicted.append(userRankedRatings[:len(userProd)])
+            # add the ranked list of the predicted items to the predicted list
+            predicted.append(userRankedRatings[:k])
 
+            tmp = meanap.apk(topItemsForUser,userRankedRatings,k)
+
+            if tmp > 0.0:
+                print (topItemsForUser)
+                print (userRankedRatings)
+                print (tmp)
+                # sys.exit()
+
+        count += 1
+        helpers.printProgress(count,total)
 
     # def mapk(actual, predicted, k=10):
+    print ()
     print ("Calculating score ")
     score = meanap.mapk(actual,predicted,k)
 
@@ -73,6 +90,61 @@ def main():
 
     sys.exit()
 
+def findTopItemsForUser(user):
+    gReducer = Code("""
+        function (cur,result) {
+            if (cur.event_id == 'product_purchase_intended'){
+                result.value += 10;
+            } else if (cur.event_id == 'product_wanted'){
+                result.value += 5;
+            } else if (cur.event_id == 'product_detail_clicked'){
+                result.value += 1;
+            }
+        }
+    """)
+
+    eventGoups = col.group(
+        key = {
+            'user_id':1,
+            'product_id':1
+        },
+        condition = {
+            'user_id':user,
+            'product_id':{'$ne' : "NULL"}
+        },
+        reduce = gReducer,
+        initial = {
+            'value':0
+            # 'rating':0,
+            # 'weight':0.6
+        }
+    )
+
+    if len(eventGoups) > args.k:
+        sortedGroups = sorted(eventGoups, key=lambda k: k['value'],reverse=True)
+        productIds = getProductIdOnly(sortedGroups[:args.k])
+        return productIds
+
+    productIds = getProductIdOnly(eventGoups)
+    return productIds
+
+def getProductIdOnly(eventGoups):
+    productIds = []
+    for event in eventGoups:
+        productIds.append(int(event.get('product_id')))
+
+    return productIds
+
+# [{'user_id': 874800601.0, 'product_id': 6318008.0, 'value': 10.0},
+#  {'user_id': 874800601.0, 'product_id': 6368013.0, 'value': 5.0},
+#   {'user_id': 874800601.0, 'product_id': 1998021.0, 'value': 5.0},
+#   {'user_id': 874800601.0, 'product_id': 6398004.0, 'value': 5.0},
+#    {'user_id': 874800601.0, 'product_id': 5188007.0, 'value': 5.0},
+#     {'user_id': 874800601.0, 'product_id': 2008028.0, 'value': 5.0},
+#      {'user_id': 874800601.0, 'product_id': 2018023.0, 'value': 5.0},
+#       {'user_id': 874800601.0, 'product_id': 2038027.0, 'value': 5.0},
+#       {'user_id': 874800601.0, 'product_id': 6368012.0, 'value': 5.0},
+#        {'user_id': 874800601.0, 'product_id': 5168001.0, 'value': 1.0}]
 
 def makeRankListForUsers():
     e = open(args.f,'r')
@@ -82,12 +154,13 @@ def makeRankListForUsers():
     usersItemsRatings = {}
     total = sum(1 for line in open(args.f))
     count = 0
+    print (total)
 
     for line in e.readlines():
-        userItemRating = line.split('\t')
+        userItemRating = line.split(',')
         user = userItemRating[0]
         item = userItemRating[1]
-        rating = int(userItemRating[2])
+        rating = float(userItemRating[2])
 
         if user in usersItemsRatings:
             usersItemsRatings[user][item] = rating
@@ -109,7 +182,7 @@ def addRankToRatings(ratings):
         item = itemRating[0]
         rating = itemRating[1]
         rank = (count/total)*100
-        userRankedRatings.append(item)
+        userRankedRatings.append(int(item))
         count = count + 1
     return userRankedRatings
 
@@ -161,8 +234,6 @@ def group():
        reduce=gReducer,
        initial={'count':0}
    )
-
-
     return groups
 
 def mostPopularMR():

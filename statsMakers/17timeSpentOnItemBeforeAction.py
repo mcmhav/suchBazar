@@ -2,23 +2,23 @@ import datetime
 import sys
 import argparse
 import helpers
+import math
 from bson import Binary, Code
 
 parser = argparse.ArgumentParser(description='Time spent on item before action is taken, and what action.')
 parser.add_argument('-sc', type=str, default="sessions")
-parser.add_argument('-c', type=str, default="outMF.csv")
 args = parser.parse_args()
 
 col = helpers.getCollection(args.sc)
 
 print ("Collection used: ", args.sc)
-print ("Output file:     ", args.c)
 print ("")
 
-total = 0
 
 def main():
-    purchsedList = col.find({'event_id':'product_purchase_intended'})
+    actionTime('product_purchase_intended')
+    actionTime('product_wanted')
+
     # 15074.550855991944
     # {
     #     'product_wanted': 103,
@@ -40,7 +40,6 @@ def main():
     #     'store_clicked': 0
     # }
 
-    wantedList = col.find({'event_id':'product_wanted'})
     # 19833.43308309604
     # {
     #     'around_me_clicked': 13,
@@ -58,93 +57,31 @@ def main():
     #     'product_wanted': 4274
     # }
 
-    iterateEventsAction(purchsedList)
-    iterateEventsAction(wantedList)
+def actionTime(action):
+    users = col.distinct('user_id')
+    buckets = [0] * 102
 
+    count = 0
+    total = len(users)
+    e = open(action + 'average.csv','w')
+    for user in users:
+        userAverage = 0
+        actionList = col.find({'event_id':action,'user_id':user}).sort()
+        buckets,userAverage = iterateEventsAction(actionList,buckets)
+        count += 1
+        if userAverage != 0:
+            e.write("uid" + str(user) + "," + str(userAverage) + "\n")
+        helpers.printProgress(count,total)
 
-    reducer = Code("""
-                    function (cur,result) {
-                        if (cur.ts > result.max) {
-                            result.max = cur.ts;
-                        }
-                        if (cur.ts < result.min) {
-                            result.min = cur.ts;
-                        }
-                        result.count += 1;
-                        result.timespan = result.max - result.min;
-                        result.avgTime = result.timespan/result.count;
-                    }
-                   """)
+    e.close()
+    writeToFile(buckets,action)
 
-    groups = col.group(
-                           key={'product_id':1},
-                           condition={},
-                           reduce=reducer,
-                           initial={'count':0,'max':0,'min':13842573649850,'timespan':0,'avgTime':0}
-                       )
-
-    # total = len(groups)
-    # maxTimespan = 0
-    # maxItem = ''
-    # greaterThan1 = 0
-
-    # e = open("piss" + '.json','w')
-    # e.write("[\n")
-
-    # c = helpers.getCSVWriter("itemEventCount")
-    # c.writerow([ 'product_id', 'count' ])
-
-    # cts = helpers.getCSVWriter("timespanStats")
-    # cts.writerow([ 'product_id', 'timespan' ])
-
-    # cNts = helpers.getCSVWriter("timespanWithCountStats")
-    # cNts.writerow([ 'product_id', 'timespan', 'count' ])
-
-    # for item in groups:
-    #     if item['timespan'] > maxTimespan:
-    #         maxTimespan = item['timespan']
-    #         maxItem = item['product_id']
-    #     print (item)
-    #     if (item['count'] > 1):
-    #         greaterThan1 += 1
-    #     start = datetime.datetime.fromtimestamp(int(item['min'])/1000).strftime('%m/%d/%Y')
-    #     end = datetime.datetime.fromtimestamp((int(item['max'])/1000)+(60*60*24)).strftime('%m/%d/%Y')
-    #     e.write("['" + str(item['product_id']) + "', " + "new Date('" + start + "'), " + "new Date('" + end + "')],\n")
-    #     c.writerow([ 'p' + str(int(item['product_id'])), int(item['count'])])
-    #     cts.writerow([ 'p' + str(int(item['product_id'])), int(item['timespan']/(1000*60))])
-    #     cNts.writerow([ 'p' + str(int(item['product_id'])), int(item['timespan']/(1000*60)), int(item['count'])])
-
-    # print (maxTimespan)
-    # print (maxItem)
-    # print (greaterThan1)
-    # e.write("]")
-
-    # e.close()
-    # helpers.closeF()
-def mr():
-    mapper = Code(  """
-        function () {
-            values = {this.session, this.user_id, this.ts}
-            emit(this, values)
-        }
-    """)
-
-    reducer = Code( """
-                    function (key, values) {
-                        var total = 0;
-                        for (var i = 0; i < values.length; i++) {
-                            total += values[i];
-                        }
-                        return total;
-                    }
-                    """)
-    result = col.map_reduce(mapper, reducer, "myresults")
-    return result
-
-def iterateEventsAction(eventList):
+def iterateEventsAction(eventList,buckets):
     totalTime = 0
     count = 0
     eventType = {}
+    total = eventList.count()
+
     for purchase in eventList:
         preEvent = getEventBeforeAction(purchase)
         if preEvent == -1 or preEvent == {}:
@@ -153,14 +90,30 @@ def iterateEventsAction(eventList):
             timeSpent = purchase['ts'] - preEvent['ts']
             totalTime = totalTime + timeSpent
             count += 1
+
+            bucetLocation = math.floor(timeSpent/1000)
+            if bucetLocation > 100:
+                buckets[101] += 1
+            else:
+                buckets[bucetLocation] += 1
+
             if not preEvent['event_id'] in eventType:
-                eventType[preEvent['event_id']] = 0
+                eventType[preEvent['event_id']] = 1
             else:
                 eventType[preEvent['event_id']] += 1
             # print(timeSpent)
+    # print (totalTime/count)
+    # print (eventType)
+    if count == 0:
+        return (buckets,0)
+    else:
+        return (buckets,(totalTime/count))
 
-    print (totalTime/count)
-    print (eventType)
+def writeToFile(buckets,action):
+    e = open(action + '.csv','w')
+    for key, bucket in enumerate(buckets):
+        e.write(str(key) + "," + str(bucket) + "\n")
+    e.close()
 
 def getEventBeforeAction(e):
     # 2892302.2136465325

@@ -10,9 +10,9 @@ import csv
 import random
 
 def generateColdStartUserSplits(path, test_ratio, num_ratings = 0):
-    '''
+    """
     
-    Generates splits for cold-start user/item evaluation similarly as described in:
+    Generates splits for cold-start user evaluation similarly as described in:
 
     Matchbox: Large Scale Bayesian Recommendations
     Addressing cold-start problem in recommendation systems
@@ -28,7 +28,7 @@ def generateColdStartUserSplits(path, test_ratio, num_ratings = 0):
     By using four splits with the default number of ratings we generate 4 training and test sets
     For training-test set one we train the model using 5 ratings for each test user and try to predict their remaining ratings, for set two we use 10...
     
-    '''
+    """
     
     #TODO - Add some checks, robustness
     #TODO - Add support for timestamps   
@@ -118,6 +118,21 @@ def generateColdStartUserSplits(path, test_ratio, num_ratings = 0):
                 
 
 def generateColdStartItemSplits(path, test_ratio, num_ratings = 0):
+    """
+    
+    Generates splits for cold-start item evaluation
+    
+    Inputs:
+    
+        path:           Path of the original rating file
+        test_ratio:     Percentage of items set aside for testing
+        num_ratings:    [List] Number of ratings used for training for the test items for each split
+    
+    E.g. When setting the test_ratio = 0.1 we create two disjoint sets and set aside 10% of the items for testing and use the remaining 90% to train the model
+    By using four splits with the default number of ratings we generate 4 training and test sets
+    For training-set 1 we train the model using 5 ratings for each test item and try to predict their remaining ratings, for set two we use 10 and so on.
+    
+    """
     
     #TODO - Add some checks, robustness
     #TODO - Add support for timestamps
@@ -209,9 +224,10 @@ def generateColdStartItemSplits(path, test_ratio, num_ratings = 0):
     
 def generateColdStartSystemSplits(path, test_ratio, train_ratios, time_stamps = False):
     """
+    
     Generate splits for cold-start system evaluation similarly as described in:
     
-    Regression-based Latent Factor Models: Deepak Agarwal, Bee-Chung Chen
+    Regression-based Latent Factor Models
     
     Inputs:
         
@@ -255,7 +271,7 @@ def generateColdStartSystemSplits(path, test_ratio, train_ratios, time_stamps = 
                 writer =  csv.writer(trainfile, delimiter='\t')
                 writer.writerows(train)
 
-            with open('./Datasets/system_test%d.txt' %(i+1), 'wb') as testfile:
+        with open('./Datasets/system_test.txt', 'wb') as testfile:
                 writer =  csv.writer(testfile, delimiter='\t')
                 writer.writerows(test)
            
@@ -282,15 +298,16 @@ def generateColdStartSystemSplits(path, test_ratio, train_ratios, time_stamps = 
                 writer =  csv.writer(trainfile, delimiter='\t')
                 writer.writerows(train)
 
-            with open('./Datasets/system_test%d.txt' %(i+1), 'wb') as testfile:
+        
+        with open('./Datasets/system_test.txt', 'wb') as testfile:
                 writer =  csv.writer(testfile, delimiter='\t')
                 writer.writerows(test)
     
         
         
             
-#generateColdStartUserSplits('./Datasets/blend.txt', 0.1, 4, [5, 10, 15, 20])
-#generateColdStartItemSplits('./Datasets/blend.txt', 0.05, 3, [5, 10, 15])
+generateColdStartUserSplits('./Datasets/blend.txt', 0.1, [5, 10, 15, 20])
+#generateColdStartItemSplits('./Datasets/blend.txt', 0.05, [5, 10, 15])
 #generateColdStartSystemSplits('./Datasets/blend.txt', 0.25, [0.35, 0.6, 0.75, 1], False)  
     
     

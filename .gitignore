@@ -13,3 +13,6 @@ rest/venv
 *.ratings
 generators/ratings
 mahout/jars/*
+*/.idea/*
+*.iml
+*/out/*

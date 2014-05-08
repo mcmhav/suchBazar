@@ -1,4 +1,5 @@
 import re
+import csv
 import json
 from collections import Counter
 import array
@@ -59,8 +60,43 @@ def averageDescriptionLength(products_json):
     
     print ('Average product description length: %d' %(totalLength / len(products_json)))
     
+'''
+ Which features to use?
+ id
+ brandName
+ title
+ description
+ newPrice
+ targetGender
+ targetAgeGroup
+ metaDescription
+ '''   
+def extractFeatures(products_json):
+    
+    products = []
+    
+    for p in products_json:
+        product = []
+        product.append(p['id'])
+        product.append(p['brandName'])
+        product.append(p['title'])
+        product.append(p['description'])
+        product.append(p['newPrice'])
+        product.append(p['targetGender'])
+        product.append(p['targetAgeGroup'])
+        product.append(p['metaDescription'])
+        products.append(product)
+        
+    writeProductsToFile(products)
+        
+def writeProductsToFile(products):
+
+    with open('./Data/product_features.txt', 'wb') as file:
+        writer =  csv.writer(file, delimiter='\t')
+        writer.writerows([unicode(s).encode('utf-8') for s in products])
         
 products_json = readProductData()
+extractFeatures(products_json)
 
 
 

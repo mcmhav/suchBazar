@@ -36,7 +36,6 @@ def generateColdStartSplits(path, type, test_ratio, rating_splits = 0):
         rating_splits = [5, 10, 15]                                                     #Initialize as default
           
     ratings = readRatingsFromFile(path)                                                 #Read ratings from file  
-    print(len(ratings))
     X = buildDictByIndex(ratings, index)                                                #Build dictionary where item id is used as key
     min_limit = rating_splits[-1] + 5                                                   #Minimum number of ratings for test users
     X_train, y_test = generateSplitFromRatingLimit(X, test_ratio, min_limit)            #Split items into training and test items
@@ -56,8 +55,6 @@ def generateColdStartSplits(path, type, test_ratio, rating_splits = 0):
                     train.append(X[y][j])                                              #Add these ratings to the training set
                 else:
                     test.append(X[y][j])                                             #Add the remaining ratings to the test set
-        print(len(train))
-        print(len(test))
         writeRatingsToFile('./train%d.txt' %(i+1), train, '\t')
         writeRatingsToFile('./test%d.txt' %(i+1), test, '\t')
                 
@@ -76,12 +73,13 @@ def generateColdStartSystemSplits(path, test_ratio, ratios, time_stamps = False)
     """   
         
     if not time_stamps:
-        ratings = readRatingsFromFile(path)                                                       #Read ratings 
+        ratings = readRatingsFromFile(path)
+        num_ratings = len(ratings)                                                                #Read ratings 
         r = random.sample(range(len(ratings)), int(test_ratio*len(ratings)))                      #Randomly select test ratings
         y_test = [ratings[i] for i in r]                                                          #Put ratings in testset
         X_pool = [i for j, i in enumerate(ratings) if j not in r]                                 #Put the remaining in the testset
         for i in range(len(ratios)):                                                              #For each training ratio supplied
-            X_train = generateDatasetSplit(X_pool, ratios[i])                                     #Generate a split of size ratios[i]
+            X_train = generateDatasetSplit(X_pool, ratios[i], num_ratings)                        #Generate a split of size ratios[i]
             writeRatingsToFile('./system_train%d.txt' %(i+1), X_train, delimiter='\t')
         writeRatingsToFile('./system_test.txt', y_test, delimiter='\t')
            
@@ -97,13 +95,13 @@ def generateColdStartSystemSplits(path, test_ratio, ratios, time_stamps = False)
         writeRatingsToFile('./system_test.txt', y_test, delimiter='\t')
        
     
-def generateDatasetSplit(ratings, ratio, rand=True):
+def generateDatasetSplit(ratings, ratio, num_ratings, rand=True):
     
     if rand:
-        r = random.sample(range(len(ratings)), int(ratio*len(ratings)))
+        r = random.sample(range(len(ratings)), int(ratio*num_ratings))
         split = [ratings[i] for i in r]
     else:
-        split = ratings[:int(ratio*len(ratings))]
+        split = ratings[:int(ratio*num_ratings)]
             
     return split
 
@@ -159,9 +157,9 @@ def writeRatingsToFile(path, data, delimiter='\t'):
         writer =  csv.writer(file, delimiter=delimiter)
         writer.writerows(data)
             
-#generateColdStartSplits('../../datasets/blend.txt', 'user', 0.1, [5, 10, 15])
-#generateColdStartSplits('./Datasets/blend.txt', 'item', 0.1, [5, 10, 15, 20])
-generateColdStartSystemSplits('../../datasets/blend.txt', 0.25, [0.35, 0.6, 0.75, 1], False)  
+#generateColdStartSplits('../../datasets/blend.txt', 'user', 0.1, [10, 15, 20])
+#generateColdStartSplits('../../datasets/blend.txt', 'item', 0.02, [5, 10, 15])
+generateColdStartSystemSplits('../../datasets/blend.txt', 0.20, [0.4, 0.6, 0.8], False)  
     
     
         

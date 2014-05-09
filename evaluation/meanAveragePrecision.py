@@ -31,7 +31,7 @@ import meanap
 parser = argparse.ArgumentParser(description='MAP for ratings. Input on the form <user, item, rating> in one file, as of now. Must have populated mongoDB with event-data, as of now.')
 parser.add_argument('-sc', type=str, default="sessions")
 parser.add_argument('-c', type=str, default="outMF.csv")
-parser.add_argument('-k', type=int, default="20")
+parser.add_argument('-k', type=int, default="50")
 parser.add_argument('-f', type=str, default="testikus.txt")
 args = parser.parse_args()
 
@@ -91,6 +91,7 @@ def main():
     sys.exit()
 
 def findTopItemsForUser(user):
+    print (user)
     gReducer = Code("""
         function (cur,result) {
             if (cur.event_id == 'product_purchase_intended'){

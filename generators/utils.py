@@ -8,7 +8,7 @@ from operator import itemgetter
 
 # Dictionary holding the number of days since the most recent event,
 # for user i.
-mr = defaultdict(lambda: sys.maxint)
+mr = defaultdict(lambda: sys.maxsize)
 ignored = 0
 
 def normalize(score,xmax=100,xmin=0,a=0,b=5):
@@ -192,15 +192,15 @@ def products_to_file(user_id, products, f, method):
 
   if method == 'scount':
     e = []
-    for product_id, events in products.iteritems():
+    for product_id, events in products.items():
       e.extend(events)
     rts = sigmoid_count(e)
 
-    for product_id, rating in rts.iteritems():
+    for product_id, rating in rts.items():
       f.write("%s\t%s\t%.3f\n" % (user_id, product_id, rating))
       ratings.append(rating)
   else:
-    for product_id, events in products.iteritems():
+    for product_id, events in products.items():
 
       # Get the rating from one of the different calculation schemes.
       rating = 1.0

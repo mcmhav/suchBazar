@@ -37,6 +37,7 @@ args = parser.parse_args()
 
 col = helpers.getCollection(args.sc)
 
+print ("Used for calculating MAP")
 print ("Collection used: ", args.sc)
 print ("K size file:     ", args.k)
 print ("Output file:     ", args.c)
@@ -46,7 +47,6 @@ total = 0
 
 def main():
     allRatings = makeRankListForUsers()
-    userItemPurchaseGroups = group()
     items = col.distinct('product_id')
     items.remove('NULL')
     totalItems = len(items)
@@ -62,20 +62,20 @@ def main():
             # get actual top items for user
             topItemsForUser = findTopItemsForUser(user)
             # add the top items to the list
-            actual.append((topItemsForUser))
-            # get the rank of the predicted items
-            userRankedRatings = addRankToRatings((allRatings[str(user)]))
-            # add the ranked list of the predicted items to the predicted list
-            predicted.append(userRankedRatings[:k])
+            if len(topItemsForUser) > 0:
+                actual.append(topItemsForUser)
+                # get the rank of the predicted items
+                userRankedRatings = addRankToRatings(allRatings[str(user)])
+                # add the ranked list of the predicted items to the predicted list
+                predicted.append(userRankedRatings[:k])
 
-            tmp = meanap.apk(topItemsForUser,userRankedRatings,k)
+                # tmp = meanap.apk(topItemsForUser,userRankedRatings,k)
 
-            if tmp > 0.0:
-                print (topItemsForUser)
-                print (userRankedRatings)
-                print (tmp)
+                # if tmp > 0.0 and tmp != 1.0:
+                #     print (topItemsForUser)
+                #     print (userRankedRatings)
+                #     print (tmp)
                 # sys.exit()
-
         count += 1
         helpers.printProgress(count,total)
 
@@ -88,46 +88,51 @@ def main():
     print ("Score: %s" % score)
     print ("")
 
+    # Score: 0.00130386455077
+
     sys.exit()
 
 def findTopItemsForUser(user):
-    print (user)
-    gReducer = Code("""
-        function (cur,result) {
-            if (cur.event_id == 'product_purchase_intended'){
-                result.value += 10;
-            } else if (cur.event_id == 'product_wanted'){
-                result.value += 5;
-            } else if (cur.event_id == 'product_detail_clicked'){
-                result.value += 1;
-            }
-        }
-    """)
+    purchasedItems = col.find({'user_id':user,'event_id':'product_purchase_intended'}).distinct('product_id')
+    # gReducer = Code("""
+    #     function (cur,result) {
+    #         if (cur.event_id == 'product_purchase_intended'){
+    #             result.value += 10;
+    #         } else if (cur.event_id == 'product_wanted'){
+    #             result.value += 5;
+    #         } else if (cur.event_id == 'product_detail_clicked'){
+    #             result.value += 1;
+    #         }
+    #     }
+    # """)
 
-    eventGoups = col.group(
-        key = {
-            'user_id':1,
-            'product_id':1
-        },
-        condition = {
-            'user_id':user,
-            'product_id':{'$ne' : "NULL"}
-        },
-        reduce = gReducer,
-        initial = {
-            'value':0
-            # 'rating':0,
-            # 'weight':0.6
-        }
-    )
+    # eventGoups = col.group(
+    #     key = {
+    #         'user_id':1,
+    #         'product_id':1
+    #     },
+    #     condition = {
+    #         'user_id':user,
+    #         'product_id':{'$ne' : "NULL"}
+    #     },
+    #     reduce = gReducer,
+    #     initial = {
+    #         'value':0
+    #         # 'rating':0,
+    #         # 'weight':0.6
+    #     }
+    # )
 
-    if len(eventGoups) > args.k:
-        sortedGroups = sorted(eventGoups, key=lambda k: k['value'],reverse=True)
-        productIds = getProductIdOnly(sortedGroups[:args.k])
-        return productIds
+    # if len(eventGoups) > args.k:
+    #     sortedGroups = sorted(eventGoups, key=lambda k: k['value'],reverse=True)
+    #     productIds = getProductIdOnly(sortedGroups[:args.k])
+    #     return productIds
 
-    productIds = getProductIdOnly(eventGoups)
-    return productIds
+    # productIds = getProductIdOnly(eventGoups)
+    # piList = []
+    # for item in purchasedItems:
+    #     piList.append(item)
+    return purchasedItems
 
 def getProductIdOnly(eventGoups):
     productIds = []
@@ -221,21 +226,6 @@ def getRatingsForUser(user):
     userRatings = {}
     tmp = sorted(mostPopularMR().find(), key=itemgetter('value'),reverse=True)
     return tmp
-
-def group():
-    gReducer = Code("""
-        function (cur,result) {
-            result.count += 1
-        }
-   """)
-
-    groups = col.group(
-       key={'user_id':1,'product_id':1},
-       condition={'event_id':'product_purchase_intended'},
-       reduce=gReducer,
-       initial={'count':0}
-   )
-    return groups
 
 def mostPopularMR():
     mapper = Code(  """

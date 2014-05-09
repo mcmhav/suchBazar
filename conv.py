@@ -50,5 +50,8 @@ def main():
         count += 1
         helpers.printProgress(count,total)
 
+def testur():
+    print ("lol")
+
 if __name__ == "__main__":
     main()

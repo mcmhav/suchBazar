@@ -22,7 +22,7 @@ from multiprocessing import Pool
 parser = argparse.ArgumentParser(description='MPR for ratings. Input on the form <user, item, rating> in one file, as of now. Must have populated mongoDB with event-data, as of now.')
 parser.add_argument('-sc', type=str, default="sessions")
 parser.add_argument('-c', type=str, default="outMF.csv")
-parser.add_argument('-f', type=str, default="mostPopular.ratings")
+parser.add_argument('-f', type=str, default="testikus.txt")
 args = parser.parse_args()
 
 col = helpers.getCollection(args.sc)
@@ -99,7 +99,7 @@ def makeRankListForUsers():
         userItemRating = line.split(',')
         user = userItemRating[0]
         item = userItemRating[1]
-        rating = int(userItemRating[2])
+        rating = float(userItemRating[2])
 
         if user in usersItemsRatings:
             usersItemsRatings[user][item] = rating
@@ -146,7 +146,7 @@ def getRankOfItemForUser(item,ratings):
         count = count + 1
 
 def purchsedItemsByUser(user):
-    items = col.find({'user_id':user}).distinct('product_id')
+    items = col.find({'user_id':user,'event_id':'product_purchase_intended'}).distinct('product_id')
     return items
 
 def makeSimpleItemsRatings():

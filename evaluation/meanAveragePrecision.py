@@ -70,10 +70,10 @@ def main():
 
             tmp = meanap.apk(topItemsForUser,userRankedRatings,k)
 
-            if tmp > 0.0:
-                print (topItemsForUser)
-                print (userRankedRatings)
-                print (tmp)
+            # if tmp > 0.0:
+            #     print (topItemsForUser)
+            #     print (userRankedRatings)
+            #     print (tmp)
                 # sys.exit()
 
         count += 1
@@ -91,43 +91,46 @@ def main():
     sys.exit()
 
 def findTopItemsForUser(user):
-    print (user)
-    gReducer = Code("""
-        function (cur,result) {
-            if (cur.event_id == 'product_purchase_intended'){
-                result.value += 10;
-            } else if (cur.event_id == 'product_wanted'){
-                result.value += 5;
-            } else if (cur.event_id == 'product_detail_clicked'){
-                result.value += 1;
-            }
-        }
-    """)
+    purchasedItems = col.find({'user_id':user,'event_id':'product_purchase_intended'}).distinct('product_id')
+    # gReducer = Code("""
+    #     function (cur,result) {
+    #         if (cur.event_id == 'product_purchase_intended'){
+    #             result.value += 10;
+    #         } else if (cur.event_id == 'product_wanted'){
+    #             result.value += 5;
+    #         } else if (cur.event_id == 'product_detail_clicked'){
+    #             result.value += 1;
+    #         }
+    #     }
+    # """)
 
-    eventGoups = col.group(
-        key = {
-            'user_id':1,
-            'product_id':1
-        },
-        condition = {
-            'user_id':user,
-            'product_id':{'$ne' : "NULL"}
-        },
-        reduce = gReducer,
-        initial = {
-            'value':0
-            # 'rating':0,
-            # 'weight':0.6
-        }
-    )
+    # eventGoups = col.group(
+    #     key = {
+    #         'user_id':1,
+    #         'product_id':1
+    #     },
+    #     condition = {
+    #         'user_id':user,
+    #         'product_id':{'$ne' : "NULL"}
+    #     },
+    #     reduce = gReducer,
+    #     initial = {
+    #         'value':0
+    #         # 'rating':0,
+    #         # 'weight':0.6
+    #     }
+    # )
 
-    if len(eventGoups) > args.k:
-        sortedGroups = sorted(eventGoups, key=lambda k: k['value'],reverse=True)
-        productIds = getProductIdOnly(sortedGroups[:args.k])
-        return productIds
+    # if len(eventGoups) > args.k:
+    #     sortedGroups = sorted(eventGoups, key=lambda k: k['value'],reverse=True)
+    #     productIds = getProductIdOnly(sortedGroups[:args.k])
+    #     return productIds
 
-    productIds = getProductIdOnly(eventGoups)
-    return productIds
+    # productIds = getProductIdOnly(eventGoups)
+    piList = []
+    for item in purchasedItems:
+        piList.append(item)
+    return piList
 
 def getProductIdOnly(eventGoups):
     productIds = []

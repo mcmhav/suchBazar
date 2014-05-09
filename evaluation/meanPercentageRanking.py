@@ -27,6 +27,7 @@ args = parser.parse_args()
 
 col = helpers.getCollection(args.sc)
 
+print ("Used for calculating MPR")
 print ("Collection used: ", args.sc)
 print ("Output file:     ", args.c)
 print ("")
@@ -36,35 +37,50 @@ total = 0
 def main():
     allRatings = makeRankListForUsers()
     userItemPurchaseGroups = group()
-    total = len(userItemPurchaseGroups)
     items = col.distinct('product_id')
     items.remove('NULL')
     totalItems = len(items)
     count = 0
 
     MPR = -1
-    tmpTop = 0
-    tmpBottom = 0
+    tmpTop = 0.0
+    tmpBottom = 0.0
 
     print ("")
     print ("Rank items")
-    for pair in userItemPurchaseGroups:
-        user = str(int(pair['user_id']))
-        userRankedRatings = addRankToRatings(allRatings[user])
+    users = col.distinct('user_id')
+    total = len(users)
+    totalList = []
+    for user in users:
+        if str(user) in allRatings:
+            # Add ranks to the ratings
+            userRankedRatings = addRankToRatings(allRatings[str(user)])
+            # Fetch items purchased by the user
+            userPurchasedItems = purchsedItemsByUser(user)
+            # userItemRankList = getRankOfItemForUser(user)
+            # randomItems = random.sample(items, 1000)
+            # userRankedRatings = getRankInRandomListOfItem(randomItems,allRatings[user],pair['product_id'])
+            # rank = getRankInRandomListOfItem(rankedItems,userRatings,pair['product_id'])
 
-        userPurchasedItems = purchsedItemsByUser(int(user))
-        randomItems = random.sample(items, 3600)
-        # userRankedRatings = getRankInRandomListOfItem(randomItems,allRatings[user],pair['product_id'])
-        # rank = getRankInRandomListOfItem(rankedItems,userRatings,pair['product_id'])
-        for item in randomItems:
-            if item in userPurchasedItems:
-                rank = userRankedRatings[str(int(item))]['rank']
-                tmpTop = tmpTop + rank
-                tmpBottom = tmpBottom + 1
+            for ratedItems in userRankedRatings:
+                # print (userRankedRatings)
+                # print (ratedItems)
+                # print (userRankedRatings[ratedItems])
+                # sys.exit()
+                if int(userRankedRatings[ratedItems]['item']) in userPurchasedItems:
+                    rank = userRankedRatings[str(int(ratedItems))]['rank']
+                    tmpTop += rank
+                    tmpBottom += 1
         count = count + 1
         helpers.printProgress(count,total)
-    MPR = tmpTop/tmpBottom
-    print ("MPR: %s" % MPR)
+    if tmpBottom > 0:
+        MPR = tmpTop/tmpBottom
+    else:
+        MPR = "BLÆ"
+    print ("")
+    print ("MPR: %s%%" % MPR)
+    print ("")
+
 
 def getRankInRandomListOfItem(randomItems,userRatings,pitem):
     if pitem not in randomItems:
@@ -134,7 +150,7 @@ def addRankToRatings(ratings):
         item = itemRating[0]
         rating = itemRating[1]
         rank = (count/total)*100
-        userRankedRatings[item] = {'rank':rank,'rating':rating}
+        userRankedRatings[str(count)] = {'rank':rank,'rating':rating,'item':int(item)}
         count = count + 1
     return userRankedRatings
 
@@ -146,7 +162,7 @@ def getRankOfItemForUser(item,ratings):
         count = count + 1
 
 def purchsedItemsByUser(user):
-    items = col.find({'user_id':user,'event_id':'product_purchase_intended'}).distinct('product_id')
+    items = col.find({'user_id':user,'event_id':{'$in':['product_purchase_intended','product_wanted']}}).distinct('product_id')
     return items
 
 def makeSimpleItemsRatings():

@@ -41,6 +41,24 @@ def getCSVWriter(cFile):
 def closeF():
     global f
     f.close()
+    
+def readRatingsFromFile(path):
+    
+    ratings = []
+    with open(path, 'r') as file:
+        dialect = csv.Sniffer().sniff(file.read(1024))
+        reader =  csv.reader(file, delimiter=dialect.delimiter)
+        for rating in reader:
+            if len(rating) >= 3:
+                if rating[0] != '' and rating[1] != '' and rating[2] != '':
+                    ratings.append([int(rating[0]), int(rating[1]), float(rating[2])]) 
+    return ratings
+
+def writeRatingsToFile(path, data, delimiter=','):
+
+    with open(path, 'wb') as file:
+        writer =  csv.writer(file, delimiter=delimiter)
+        writer.writerows(data)
 
 if __name__ == "__main__":
     main()

@@ -157,9 +157,9 @@ def writeRatingsToFile(path, data, delimiter='\t'):
         writer =  csv.writer(file, delimiter=delimiter)
         writer.writerows(data)
             
-#generateColdStartSplits('../../datasets/blend.txt', 'user', 0.1, [10, 15, 20])
+#generateColdStartSplits('../../datasets/bookcrossing.csv', 'user', 0.1, [10, 15, 20])
 #generateColdStartSplits('../../datasets/blend.txt', 'item', 0.02, [5, 10, 15])
-generateColdStartSystemSplits('../../datasets/blend.txt', 0.20, [0.4, 0.6, 0.8], False)  
+generateColdStartSystemSplits('../../datasets/bookcrossing.csv', 0.20, [0.4, 0.6, 0.8], False)  
     
     
         

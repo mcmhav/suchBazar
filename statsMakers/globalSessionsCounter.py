@@ -23,7 +23,6 @@ def main():
 def handle_appStarted():
     userCount = -1
     sessionCount = 0
-    c = helpers.getCSVWriter(args.d + '/' + 'sessionsCounts')
     prevSessionCount = 0
     preUserCount = 0
     sessionCounts = []
@@ -34,7 +33,6 @@ def handle_appStarted():
         tmp = userCount
         userCount = len(col.find({'session':{'$gt':sessionCount}}).distinct('user_id'))
         if userCount != preUserCount:
-            c.writerow([prevSessionCount, preUserCount])
             userCounts[len(userCounts)-1] = userCounts[len(userCounts)-1] - preUserCount
             userCounts.append(preUserCount)
             sessionCounts.append(prevSessionCount)
@@ -42,9 +40,8 @@ def handle_appStarted():
         prevSessionCount = sessionCount
         # print ("%s - %s" % (sessionCount, userCount), end='\r')
         sessionCount += 1
-    helpers.closeF()
-    print (userCounts)
-    print (sessionCounts)
+    # print (userCounts)
+    # print (sessionCounts)
     # userCounts.append(1000)
     # sessionCounts.append(838)
     return userCounts[2:],sessionCounts[1:]

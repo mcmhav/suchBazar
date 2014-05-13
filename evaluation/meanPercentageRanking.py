@@ -10,6 +10,8 @@
 # track of where the actual purchased item is ranked, and calculate the
 # expected percentage ranking for all users and items.
 
+
+
 import sys
 import argparse
 import helpers
@@ -19,22 +21,21 @@ from operator import itemgetter
 import mmap
 from multiprocessing import Pool
 
-parser = argparse.ArgumentParser(description='MPR for ratings. Input on the form <user, item, rating> in one file, as of now. Must have populated mongoDB with event-data, as of now.')
-parser.add_argument('-sc', type=str, default="sessions")
-parser.add_argument('-c', type=str, default="outMF.csv")
-parser.add_argument('-f', type=str, default="testikus.txt")
-args = parser.parse_args()
-
-col = helpers.getCollection(args.sc)
-
-print ("Used for calculating MPR")
-print ("Collection used: ", args.sc)
-print ("Output file:     ", args.c)
-print ("")
-
-total = 0
 
 def main():
+    mpr = MPR(123,423,1234)
+    print (mpr)
+
+def MPR(train, test, predicted):
+    MPR = 0
+
+    return MPR
+
+def getRankListForUser(user):
+    return user
+
+def oldMPR():
+    col = helpers.getCollection('sessions')
     allRatings = makeRankListForUsers()
     userItemPurchaseGroups = group()
     items = col.distinct('product_id')
@@ -81,7 +82,6 @@ def main():
     print ("MPR: %s%%" % MPR)
     print ("")
 
-
 def getRankInRandomListOfItem(randomItems,userRatings,pitem):
     if pitem not in randomItems:
         randomItems.append(int(pitem))
@@ -100,7 +100,6 @@ def getRankInRandomListOfItem(randomItems,userRatings,pitem):
             count = count + 1
             userRankedRatings[item] = {'rank':rank,'rating':rating}
     return userRankedRatings
-
 
 def makeRankListForUsers():
     e = open(args.f,'r')

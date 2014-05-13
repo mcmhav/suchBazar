@@ -1,5 +1,5 @@
 import helpers
-    
+
 def compute(train, test, predictions):
     '''
     Computes the AUC for all users in the test set
@@ -13,7 +13,10 @@ def compute(train, test, predictions):
     test_users = helpers.buildDictByIndex(test, 0)
     predictions = helpers.buildDictByIndex(predictions, 0)
     #sortDictByRatings(predictions)                                #The ratings usually comes pre sorted
-    numCandidateItems = helpers.countUniqueListEntities(train, 1)  #Number of unique items rated by the user  
+    
+    candidateItems = helpers.getUniqueItemList(train)
+    
+    numCandidateItems = len(candidateItems)                       #Number of unique items in training set  
     
     AUC = 0
     num_users = 0
@@ -23,11 +26,10 @@ def compute(train, test, predictions):
         #Number of items that are recommendable to the user (all items - those already rated)
         numCandidateItemsThisUser = numCandidateItems - len(train_users[user])
         
-        
         if user in predictions:                                   #Check if user is in the prediction set
             predictionCount = len(predictions[user])              #Length of the users prediction set
-            #TODO - Consider adding a function for randomly appending the missing items
-            #if predictionCount < numCandidateItemsThisUser:
+            if predictionCount < numCandidateItemsThisUser:
+                #TODO - Consider adding a function for randomly appending the missing items
                 #print('Warning: Not all items have been ranked!')
             numDroppedItems = numCandidateItemsThisUser - predictionCount
             AUC += auc(predictions[user], test_users[user], numDroppedItems)
@@ -63,7 +65,6 @@ def auc(predictionList, correctItems, numDroppedItems):
         if not any(x[1] == item[1] for x in correctItems):       
             numCorrectPairs += hitCount
         else:
-            print(item[1])
             hitCount += 1
 
     missingRelevantItems = len(correctItems) - numRelevantItems

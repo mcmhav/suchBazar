@@ -59,6 +59,19 @@ def writeRatingsToFile(path, data, delimiter=','):
     with open(path, 'wb') as file:
         writer =  csv.writer(file, delimiter=delimiter)
         writer.writerows(data)
+        
+def buildDictByIndex(X, index=0):
+    
+    d = dict()
+    
+    for x in X:
+        if x[index] in d:
+            d[x[index]].append(x)
+        else:
+            d[x[index]] = list()
+            d[x[index]].append(x)
+   
+    return d  
 
 if __name__ == "__main__":
     main()

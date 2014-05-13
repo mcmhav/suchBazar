@@ -38,7 +38,7 @@ def main():
         if str(event['product_id']) in items and validateEvent(event):
             cleanCol.insert(event)
         count += 1
-        helpers.printProgress(count,total)
+        # helpers.printProgress(count,total)
     #Do    handleItemAndUserMapReduce()
 
 def validateEvent(event):
@@ -48,15 +48,19 @@ def validateEvent(event):
     country = event['country_name']
 
     if not eventId in eventFilter:
+        print ("eventid false")
         return False
 
     if prodId == 'NULL' or prodId == 'null' or prodId == "N/A":
+        print ("prodid false")
         return False
 
     if any(s in prodName.split() for s in productNameFilter):
+        print ("false")
         return False
 
     if not country in countryFilter:
+        print ("country false")
         return False
 
     return True

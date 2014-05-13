@@ -4,7 +4,7 @@ import sys
 from statsMakers import helpers
 
 parser = argparse.ArgumentParser(description='Convert tab and insert to mongoDB.')
-parser.add_argument('-f', type=str, default="dbFiles/sobev.tab")
+parser.add_argument('-f', type=str, default="../data/sobazar.tab")
 parser.add_argument('-c', type=str, default="prod")
 args = parser.parse_args()
 
@@ -14,9 +14,12 @@ print ("File used: ", args.f)
 print ("Collection used: ", args.c)
 print ("")
 
-def main():
+def main(dbLocation):
+    if dbLocation != "":
+        args.f = dbLocation
     f = open(args.f)
     head = f.readline().strip().split('\t')
+    print (head)
 
     headJson = {}
     headJson["head"] = head
@@ -39,6 +42,7 @@ def main():
             else:
                 tmpJson[head[c]] = val.strip()
             c += 1
+        print (line)
         if tmpJson["event_json"]["eventData"]:
             tmpJson["event_json"]["eventData"] = json.loads(tmpJson["event_json"]["eventData"])
 
@@ -50,8 +54,5 @@ def main():
         count += 1
         helpers.printProgress(count,total)
 
-def testur():
-    print ("lol")
-
 if __name__ == "__main__":
-    main()
+    main("")

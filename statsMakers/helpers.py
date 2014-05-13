@@ -2,6 +2,7 @@ import sys
 import json
 import pymongo
 import csv
+import os
 
 f = ""
 

@@ -2,6 +2,7 @@ from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
 import helpers
 import argparse
+import os
 
 parser = argparse.ArgumentParser(description='Plot geolocations from data on map.')
 parser.add_argument('-sc', type=str, default="sessions")
@@ -14,31 +15,23 @@ print ("")
 
 def main():
     m = makeMap()
-
     plotOnMap(m)
-
-    plt.show()
+    # plt.show()
+    location = os.path.dirname(os.path.abspath(__file__)) + "/../../muchBazar/src/image/simpleGeoPlot.png"
+    plt.savefig(location)
+    print ("Simple geo plot written to: %s" + location)
 
 def plotOnMap(m):
     locations = sessCol.distinct('event_data.location')
-    e = open('userTouser' + '.csv','w')
     c = 0
     for location in locations:
         latlon = location.split(',')
         if len(latlon) == 2:
             lat = latlon[0]
             lon = latlon[1]
-            e.write(str(c) + "," + str(lat)+","+str(lon)+"\n")
             x,y = m(lon,lat)
-            m.plot(x, y, 'bo', markersize=6)
-        else:
-            e.write(str(c) + "," + "N/A\n")
+            m.plot(x, y, 'bo', markersize=4)
         c = c + 1
-
-    e.close()
-
-
-
 
 def makeMap():
     m = Basemap(width=3000000,height=2700000,projection='lcc',

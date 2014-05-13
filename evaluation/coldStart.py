@@ -59,8 +59,8 @@ def generateColdStartSplits(ratings, type, test_ratio, rating_splits = 0):
                     train.append(X[y][j])                                              #Add these ratings to the training set
                 else:
                     test.append(X[y][j])                                             #Add the remaining ratings to the test set
-        helpers.writeRatingsToFile('./%s_train%d.txt' %(prefix, i+1), train, '\t')
-        helpers.writeRatingsToFile('./%s_test%d.txt' %(prefix, i+1), test, '\t')
+        helpers.writeRatingsToFile('./coldstart/%s_train%d.txt' %(prefix, i+1), train, '\t')
+        helpers.writeRatingsToFile('./coldstart/%s_test%d.txt' %(prefix, i+1), test, '\t')
                 
   
 def generateColdStartSystemSplits(ratings, test_ratio, ratios, time_stamps = False):
@@ -80,8 +80,8 @@ def generateColdStartSystemSplits(ratings, test_ratio, ratios, time_stamps = Fal
         X_pool = [i for j, i in enumerate(ratings) if j not in r]                                 #Put the remaining in the testset
         for i in range(len(ratios)):                                                              #For each training ratio supplied
             X_train = generateDatasetSplit(X_pool, ratios[i], num_ratings)                        #Generate a split of size ratios[i]
-            helpers.writeRatingsToFile('./system_train%d.txt' %(i+1), X_train, delimiter='\t')
-        helpers.writeRatingsToFile('./system_test.txt', y_test, delimiter='\t')
+            helpers.writeRatingsToFile('./coldstart/system_train%d.txt' %(i+1), X_train, delimiter='\t')
+        helpers.writeRatingsToFile('./coldstart/system_test.txt', y_test, delimiter='\t')
            
     else: ### TODO - Testing ###                                            
         ratings = sorted(ratings, key=lambda ratings: ratings[3], reverse=True)                   #Sort ratings based on timestamps, the freshest being 'on top'
@@ -90,8 +90,8 @@ def generateColdStartSystemSplits(ratings, test_ratio, ratios, time_stamps = Fal
         X_pool = ratings[:-num_test_ratings]                                                      #Put the remainding in the training set pool
         for i in range(len(ratios)):                                                              #For each training ratio supplied
             X_train = generateDatasetSplit(X_pool, ratios[i])                                     #Generate a split of size ratios[i]
-            helpers.writeRatingsToFile('./system_train%d.txt' %(i+1), X_train, '\t')
-        helpers.writeRatingsToFile('./system_test.txt', y_test, delimiter='\t')
+            helpers.writeRatingsToFile('./coldstart/system_train%d.txt' %(i+1), X_train, '\t')
+        helpers.writeRatingsToFile('./coldstart/system_test.txt', y_test, delimiter='\t')
        
     
 def generateDatasetSplit(trainingset, ratio, num_total_ratings, rand=True):

@@ -1,6 +1,5 @@
 '''
-
-
+Evaluation functions
 
 '''
 
@@ -14,12 +13,6 @@ import auc
 import map
 import coldStart
 import edrc
-#import meanPercentageRanking
-#import coldStartDatasetGenerator
-
-    
-    
-
 
 def main():
     
@@ -30,7 +23,7 @@ def main():
 
 def evaluate(trainFile, testFile, predictionFile):
     
-    k = 10
+    k = 50
     
     train = helpers.readRatingsFromFile(trainFile)
     test = helpers.readRatingsFromFile(testFile)
@@ -43,7 +36,7 @@ def evaluate(trainFile, testFile, predictionFile):
     
     print('*** RESULTS ***')
     print('User-Space Coverage: %.4f\nItem-Space Coverage: %.4f' %(us_coverage, is_coverage))
-    print('Area Under Curve (AUC): %.4f' %(roc_auc))
+    print('AUC: %.4f' %(roc_auc))
     print('MAP%d: %.4f' %(k, map10))
     
     
@@ -60,8 +53,8 @@ def coldStartEvaluation(ratingFile):
     
 def runTestCases():
     '''
-    Function for comparing the different Rank Accuracy Metrics
-    for a set of test examples
+    Function for comparing different Rank Accuracy Metrics
+    on a set of test cases
     '''
         
     test_case_1_actual =    [1,2,3,4,5,6,7,8,9,10]

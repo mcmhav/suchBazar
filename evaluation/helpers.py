@@ -122,6 +122,22 @@ def buildDictByIndex(X, index=0):
    
     return d  
 
+def getUniqueItemList(ratings):
+    
+    uniqueItems = []
+    for rating in ratings:
+        if not rating[1] in uniqueItems:
+            uniqueItems.append(rating[1])
+    return uniqueItems
+
+'''
+def appendZeroRatings(user, predictions, candidateItems):
+    for item in candidateItems:
+        if not any(x[1] == item for x in predictions):
+            predictions.append([user,item, 0.0])
+    return predictions
+'''
+
 if __name__ == "__main__":
     main()
     

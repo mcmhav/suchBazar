@@ -41,7 +41,7 @@ def evaluate(trainFile, testFile, predictionFile):
     print('User-Space Coverage: %.4f\nItem-Space Coverage: %.4f' %(us_coverage, is_coverage))
     print('AUC: %.4f' %(roc_auc))
     print('MAP%d: %.4f' %(k, map10))
-    print('MAP%d: %.4f' %(beta, hlu))
+    print('HLU%d: %.4f' %(beta, hlu))
 
 
 def coldStartEvaluation(ratingFile):

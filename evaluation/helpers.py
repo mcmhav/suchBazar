@@ -2,6 +2,7 @@ import sys
 import json
 import pymongo
 import csv
+from operator import itemgetter
 
 f = ""
 
@@ -54,13 +55,61 @@ def readRatingsFromFile(path):
                     ratings.append([int(rating[0]), int(rating[1]), float(rating[2])]) 
     return ratings
 
+def readMyMediaLitePredictions(path):
+    '''
+    Prediction format:
+    userid    [<itemid>:rating, ...<itemid>:rating]
+    '''
+    ratings = []
+    with open(path, 'r') as file:
+        lines = file.readlines()
+        for line in lines:
+            s = line.split()
+            s[1] = s[1].replace('[', '')
+            s[1] = s[1].replace(']', '')
+            items = s[1].split(',')
+            for item in items:
+                i = item.split(':')
+                rating = [int(s[0]), int(i[0]), float(i[1])]
+                ratings.append(rating)
+                         
+    return ratings
+    
+def sortDictByRatings(predictions):
+    '''
+    Sorts a the ratings for each user (key)
+    in descending order
+    '''
+    for user in predictions:
+        predictions[user] = sorted(predictions[user], key=itemgetter(2), reverse=True)
+    return predictions  
+
 def writeRatingsToFile(path, data, delimiter=','):
 
     with open(path, 'wb') as file:
         writer =  csv.writer(file, delimiter=delimiter)
         writer.writerows(data)
         
+def countUniqueListEntities(ratings, index=0):
+    '''
+    Count the number of unique users (index=0),
+    or items (index=1) from a list of ratings
+    '''
+    
+    items = []
+    
+    for rating in ratings:
+        if rating[index] not in items:
+            items.append(rating[index])
+            
+    return len(items)        
+        
 def buildDictByIndex(X, index=0):
+    '''
+    Builds a dictionary of from ratings
+    index = 0, uses users as keys,
+    index = 1, uses items as keys
+    '''
     
     d = dict()
     
@@ -75,4 +124,4 @@ def buildDictByIndex(X, index=0):
 
 if __name__ == "__main__":
     main()
-
+    

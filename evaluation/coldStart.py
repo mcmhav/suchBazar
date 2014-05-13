@@ -2,25 +2,25 @@
 
 A collection of functions for generating cold-start evaluation dataset splits
 
+The GenerateColdStartSplits is similar to the approaches described in:
 
+    Matchbox: Large Scale Bayesian Recommendations,
+    Addressing cold-start problem in recommendation systems,
+    Getting to Know You: Learning New User Preferences in Recommender Systems
+    
+The generateColdStartSystemSplits function is similar to the approach described in:
 
+    Regression-based Latent Factor Models
 
 """
 
 import random
-import numpy as np
-import csv
 import helpers
 
 
 def generateColdStartSplits(ratings, type, test_ratio, rating_splits = 0):
     """
-    
-    Generates splits for cold-start user/item evaluation, as described in:
-   
-    Matchbox: Large Scale Bayesian Recommendations,
-    Addressing cold-start problem in recommendation systems,
-    Getting to Know You: Learning New User Preferences in Recommender Systems
+    Generates splits for cold-start user/item evaluation:
     
     path: filepath,
     type: split by "user" (0) or "item" (1),
@@ -30,8 +30,12 @@ def generateColdStartSplits(ratings, type, test_ratio, rating_splits = 0):
     """
     
     #TODO - Make more robust & Add support for timestamps    
-   
-    index = 0 if type == 'user' else 1
+    if type == 'user':
+        index = 0
+        prefix = 'user'
+    else:
+        index = 1
+        prefix = 'item'
     
     if not rating_splits:                                                               #If rating_splits are not defined
         rating_splits = [5, 10, 15]                                                     #Initialize as default
@@ -55,16 +59,13 @@ def generateColdStartSplits(ratings, type, test_ratio, rating_splits = 0):
                     train.append(X[y][j])                                              #Add these ratings to the training set
                 else:
                     test.append(X[y][j])                                             #Add the remaining ratings to the test set
-        helpers.writeRatingsToFile('./train%d.txt' %(i+1), train, '\t')
-        helpers.writeRatingsToFile('./test%d.txt' %(i+1), test, '\t')
+        helpers.writeRatingsToFile('./coldstart/%s_train%d.txt' %(prefix, i+1), train, '\t')
+        helpers.writeRatingsToFile('./coldstart/%s_test%d.txt' %(prefix, i+1), test, '\t')
                 
   
-def generateColdStartSystemSplits(path, test_ratio, ratios, time_stamps = False):
+def generateColdStartSystemSplits(ratings, test_ratio, ratios, time_stamps = False):
     """
-    
-    Generate splits for cold-start system evaluation similarly as described in:
-    
-    Regression-based Latent Factor Models
+    Generate splits for cold-start system evaluation
         
     path: filepath
     test_ratio: percentage of ratings set aside for testing
@@ -73,40 +74,52 @@ def generateColdStartSystemSplits(path, test_ratio, ratios, time_stamps = False)
     """   
         
     if not time_stamps:
-        ratings = helpers.readRatingsFromFile(path)
         num_ratings = len(ratings)                                                                #Read ratings 
         r = random.sample(range(len(ratings)), int(test_ratio*len(ratings)))                      #Randomly select test ratings
         y_test = [ratings[i] for i in r]                                                          #Put ratings in testset
         X_pool = [i for j, i in enumerate(ratings) if j not in r]                                 #Put the remaining in the testset
         for i in range(len(ratios)):                                                              #For each training ratio supplied
             X_train = generateDatasetSplit(X_pool, ratios[i], num_ratings)                        #Generate a split of size ratios[i]
-            helpers.writeRatingsToFile('./system_train%d.txt' %(i+1), X_train, delimiter='\t')
-        helpers.writeRatingsToFile('./system_test.txt', y_test, delimiter='\t')
+            helpers.writeRatingsToFile('./coldstart/system_train%d.txt' %(i+1), X_train, delimiter='\t')
+        helpers.writeRatingsToFile('./coldstart/system_test.txt', y_test, delimiter='\t')
            
-    else: ### TODO - Testing ###
-        ratings = helpers.readRatingsFromFile(path)                                               #TODO add string/timestamp as fourth column
+    else: ### TODO - Testing ###                                            
         ratings = sorted(ratings, key=lambda ratings: ratings[3], reverse=True)                   #Sort ratings based on timestamps, the freshest being 'on top'
         num_test_ratings = int(len(ratings)*test_ratio)                                           #Number of ratings to use for testing
         y_test = ratings[-num_test_ratings:]                                                      #Put freshest ratings in the testset
         X_pool = ratings[:-num_test_ratings]                                                      #Put the remainding in the training set pool
         for i in range(len(ratios)):                                                              #For each training ratio supplied
             X_train = generateDatasetSplit(X_pool, ratios[i])                                     #Generate a split of size ratios[i]
-            helpers.writeRatingsToFile('./train%d.txt' %(i+1), X_train, '\t')
-        helpers.writeRatingsToFile('./system_test.txt', y_test, delimiter='\t')
+            helpers.writeRatingsToFile('./coldstart/system_train%d.txt' %(i+1), X_train, '\t')
+        helpers.writeRatingsToFile('./coldstart/system_test.txt', y_test, delimiter='\t')
        
     
-def generateDatasetSplit(ratings, ratio, num_ratings, rand=True):
+def generateDatasetSplit(trainingset, ratio, num_total_ratings, rand=True):
+    '''
+    Function for extracting a random subset of 
+    size ratio*num_total_ratings from the training set.
+    
+    E.g. when the entire dataset has 1000 ratings and you do a 80:20 tranining-test split
+    Given a ratio of 0.5 this function will extract 1000*0.5=500 ratings from the 800
+    ratings of the training set
+    
+    '''
     
     if rand:
-        r = random.sample(range(len(ratings)), int(ratio*num_ratings))
-        split = [ratings[i] for i in r]
+        r = random.sample(range(len(trainingset)), int(ratio*num_total_ratings))
+        split = [trainingset[i] for i in r]
     else:
-        split = ratings[:int(ratio*num_ratings)]
+        split = trainingset[:int(ratio*num_total_ratings)]
             
     return split
 
  
 def generateSplitFromRatingLimit(X, ratio, limit):
+    '''
+    Function for selecting test items or users where the
+    limit specifies the minimum number of ratings required
+    for an item or user to be used for testing
+    '''
     
     train = []
     test = []

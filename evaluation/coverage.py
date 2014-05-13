@@ -1,17 +1,21 @@
 '''
-Functions for measuring the user- and item-space coverage of a method
 
-User-space coverage: Percentage of the users the method is able to generate at least one recommendation for
-Item-space coverage: Percentage of the items that are recommendable
+Functions for measuring the coverage of a recommender
 
-NB! When measuring Item-space coverage, set the number of items to recommend 'really' high
+Item-space Coverage: Percentage of all items that are
+recommended (found in the prediction set)
+User-space Coverage: Proportion of users the recommender
+can recommend items to.
+
+
 '''
-
-import csv
-import helpers
         
-def countUniqueUsersAndItems(ratings):    
-    
+def countUniqueUsersAndItems(ratings):
+    '''
+    Count unique users and items from a set
+    of ratings on the form: <userid><itemid><rating>
+    '''    
+
     users = []
     items = []
 
@@ -23,23 +27,32 @@ def countUniqueUsersAndItems(ratings):
     items = set(items)
     return len(users), len(items)   
     
-def measureCoverage(train, predictions):
+def compute(train, predictions):
+    '''
+    Computes both the user- and item-space coverage    '''
       
-    #ratings = readRatingsFromFile('../generators/ratings/naive.txt' ,'\t')
-    #predicted_ratings = readRatingsFromFile('../mahout/testikus.txt')
+    predictions = removeZeroRatings(predictions)
     
     u, i = countUniqueUsersAndItems(train)
     u_p, i_p = countUniqueUsersAndItems(predictions)
 
     userSpaceCoverage = u_p/float(u)
     itemSpaceCoverage = i_p/float(i)
-    
-    #print('User-space coverage: %.2f' %(userSpaceCoverage))
-    #print('Item-space coverage: %.2f' %(itemSpaceCoverage))
 
     return userSpaceCoverage, itemSpaceCoverage
         
+def removeZeroRatings(predictions):
+    '''
+    Removes all 0.0 ratings from the prediction set
+    TODO: Consider using a cutoff point, consider all ratings
+    below a certain threshold as 0.0 ratings.
+    '''
     
-
-
-
+    nonZeroRatings = []
+    
+    for prediction in predictions:
+        if prediction[2] != 0.0:
+            nonZeroRatings.append(prediction)
+            
+            
+    return nonZeroRatings

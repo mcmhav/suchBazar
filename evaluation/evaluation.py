@@ -13,6 +13,7 @@ import auc
 import map
 import coldStart
 import edrc
+import hlu
 
 def main():
 
@@ -24,6 +25,7 @@ def main():
 def evaluate(trainFile, testFile, predictionFile):
 
     k = 50
+    beta = 2
 
     train = helpers.readRatingsFromFile(trainFile)
     test = helpers.readRatingsFromFile(testFile)
@@ -33,11 +35,13 @@ def evaluate(trainFile, testFile, predictionFile):
     us_coverage, is_coverage = coverage.compute(train, predictions)
     roc_auc = auc.compute(train, test, predictions)
     map10 = map.mapk(test, predictions, k)
+    hlu = hlu.compute(test, predictions, beta)
 
     print('*** RESULTS ***')
     print('User-Space Coverage: %.4f\nItem-Space Coverage: %.4f' %(us_coverage, is_coverage))
     print('AUC: %.4f' %(roc_auc))
     print('MAP%d: %.4f' %(k, map10))
+    print('MAP%d: %.4f' %(beta, hlu))
 
 
 def coldStartEvaluation(ratingFile):

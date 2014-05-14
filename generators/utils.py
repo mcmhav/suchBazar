@@ -8,7 +8,7 @@ from operator import itemgetter
 
 # Dictionary holding the number of days since the most recent event,
 # for user i.
-mr = defaultdict(lambda: sys.maxsize)
+days_last_event = defaultdict(lambda: sys.maxint)
 ignored = 0
 
 def normalize(score,xmax=100,xmin=0,a=0,b=5):
@@ -48,7 +48,7 @@ def parse_eventline(row, users):
   user_id = row[16]
   if is_valid(user_id) and is_valid(product_id) and is_valid(event_id):
     users[user_id][product_id].append({'event_id': event_id, 'timestamp': timestamp, 'product_id': product_id})
-    mr[user_id] = calc_most_recent(mr[user_id], timestamp, today)
+    days_last_event[user_id] = calc_most_recent(days_last_event[user_id], timestamp, today)
 
 def parse_mongo(users):
   client = pymongo.MongoClient()
@@ -164,7 +164,7 @@ def sigmoid_count(events):
   events[:] = [d for d in events if d.get('event_id') in multipliers]
 
   # We want to sort all events by most recent to oldest.
-  events = sorted(events, key=itemgetter('timestamp'), reverse=True)
+  events = sorted(events, key=itemgetter('timestamp'), reverse=False)
 
   num_events = len(events)
 
@@ -177,10 +177,17 @@ def sigmoid_count(events):
     ratings[event['product_id']] = r
   return ratings
 
-def products_to_file(user_id, products, f, method):
+def write_ratings_to_file(user_id, ratings, f):
   """
     Writes to a file:
-       user_id, product_id, rating
+      user_id, product_id, rating
+  """
+  for product_id, rating in ratings.iteritems():
+    f.write("%s\t%s\t%.3f\n" % (user_id, product_id, rating))
+
+def get_ratings_from_user(user_id, events, f, method):
+  """
+    Generates a list of ratings for user_id, based on events in products.
 
     Input is all products than has an event, for user_id.
     Thus, this function is typically run inside a loop for all users in the system.
@@ -188,28 +195,18 @@ def products_to_file(user_id, products, f, method):
     The returned ratings array is just an array we use in order to calculate the
     final average in the end of the program.
   """
-  ratings = []
-
+  ratings = {}
   if method == 'scount':
-    e = []
-    for product_id, events in products.items():
-      e.extend(events)
-    rts = sigmoid_count(e)
-
-    for product_id, rating in rts.items():
-      f.write("%s\t%s\t%.3f\n" % (user_id, product_id, rating))
-      ratings.append(rating)
+    # This method needs to work on all events for all items that this user has
+    # interacted on, and not one and one product_id. Thus, handle all events in
+    # one array.
+    return sigmoid_count([e for product_id, evt in events.iteritems() for e in evt])
   else:
-    for product_id, events in products.items():
-
+    for product_id, evts in events.iteritems():
       # Get the rating from one of the different calculation schemes.
-      rating = 1.0
       if method == 'srecent':
-        rating = sigmoid_events(events, mr[user_id])
+        rating = sigmoid_events(evts, days_last_event[user_id])
       elif method == 'naive':
-        rating = translate_events(events)
-      ratings.append(rating)
-
-      f.write("%s\t%s\t%.2f\n" % (user_id, product_id, rating))
-    return ratings
+        rating = translate_events(evts)
+      ratings[product_id] = rating
   return ratings

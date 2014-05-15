@@ -26,7 +26,6 @@ def main():
 def handle_appStarted():
     users = sessCol.distinct('user_id')
 
-
     global total
     total = len(users)
     count = 0.0
@@ -57,7 +56,6 @@ def hadndleUser(user):
     # print (avgSession)
 
     # userRatings = findRatingAmountForUser(user)
-
 
 def findStoreCount(user):
     print ("Finding access count for the different stores")

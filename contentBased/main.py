@@ -77,8 +77,6 @@ def determineMaterial(product):
     else:
         return 0
     
-
-
 def determineStyle(product):
     
     if any(word in ['classic','klassisk'] for word in product):
@@ -126,6 +124,10 @@ def determinePriceGroup(price):
         return 0
     
 def determineColor(product):
+    '''
+    Tries to determines the color of a product
+    based on its description
+    '''
         
     if any(word in ['black', 'sort'] for word in product):
         return 1
@@ -149,6 +151,9 @@ def determineColor(product):
         return 0
     
 def determineBrand(brand):
+    '''
+    Returns an integer based on the brand(store) name.
+    '''
        
     brands = ['Bianco',
               'InWear',
@@ -200,12 +205,18 @@ def filterProducts(products_json):
     
 
 def countBrandNames(products_json):
+    '''
+    Counts the number of products from each store
+    '''
     brandCounter = Counter()
     for product in products_json:
         brandCounter[product['brandName']] += 1
     print (brandCounter)
         
 def priceRangeDistribution(products_json):
+    '''
+    Finds the price distribution of the products
+    '''
     
     ranges = [200, 400, 600, 800, 1000, 1200, 1500, 25000]
     distribution = [0] * len(ranges)
@@ -219,10 +230,16 @@ def priceRangeDistribution(products_json):
     print (distribution)               
         
 def averageDescriptionLength(products_json):
+    '''
+    Finds the average description length
+    (number of characters) for all products
+    '''
     
     totalLength = 0
     for products in products_json:
         totalLength += len(products['description'])
+        totalLength += len(products['title'])
+        totalLength += len(products['metaDescription'])
     
     print ('Average product description length: %d' %(totalLength / len(products_json)))
     
@@ -231,13 +248,7 @@ def averageDescriptionLength(products_json):
 def extractFeatures(products_json):
     '''
     Attemps to extracts the following features
-        id
-        brand
-        pricegroup
-        color
-        style
-        material
-        producttype
+    <id><priceGroup><brand><Color><Style><Material><productType>
     '''
     
     products = []
@@ -250,7 +261,6 @@ def extractFeatures(products_json):
         description = p['title'].split() + p['description'].split() + p['metaDescription'].split()
         for word in description:
             keywords.append(re.sub(r'\W+', '', word.lower()))
-        
         product.append(int(p['id']))
         product.append(determinePriceGroup(int(p['newPrice'])))
         product.append(determineBrand(p['brandName']))
@@ -258,12 +268,12 @@ def extractFeatures(products_json):
         product.append(determineStyle(keywords))
         product.append(determineMaterial(keywords))
         product.append(determineProductType(keywords))
-        
-        print(product)
-
         products.append(product)
         
+    #ratings = readSobazarRatings('../generators/ratings/srecent.txt')    
+    #countMatchingItems(ratings, products)
     writeProductsToFile(products)
+    #createMyMediaLiteAttributeFile(products)
         
 def extractTopKeywords(products, num_keywords):
     
@@ -273,7 +283,7 @@ def extractTopKeywords(products, num_keywords):
     nStemmer = NorwegianStemmer()
     eStemmer = EnglishStemmer()
         
-    for p in products_json:
+    for p in products:
         
         language = 'english'
         
@@ -320,6 +330,51 @@ def extractTopKeywords(products, num_keywords):
     #print(englishCounter)
     #print(norwegianCounter)
     
+
+def createMyMediaLiteAttributeFile(products):
+    
+    additions = [0,20,40,60,80,100,120]
+    
+    
+    with open('./Data/product_features.txt', 'wb') as file:
+        writer =  csv.writer(file, delimiter='\t')
+        for product in products:
+            for i in range(len(product)-1):
+                if product[i] != 0:
+                    writer.writerow([product[0], product[i+1]+additions[i]])
+    
+    
+    
+def countMatchingItems(ratings, products):
+    
+    count = 0
+    items = []
+
+    for rating in ratings:
+        if rating[1] not in items:
+            items.append(rating[1])
+    
+    
+    
+
+    for product in products:
+        if product[0] in items:
+            count += 1
+    
+    print('Number of matching items: %d' %count)
+    
+        
+    
+def readSobazarRatings(path):
+    ratings = []
+    with open(path, 'r') as file:
+        dialect = csv.Sniffer().sniff(file.read(1024))
+        reader =  csv.reader(file, delimiter=dialect.delimiter)
+        for rating in reader:
+            if len(rating) >= 3:
+                if rating[0] != '' and rating[1] != '' and rating[2] != '':
+                    ratings.append([int(rating[0]), int(rating[1]), float(rating[2])])
+    return ratings
             
 
 def detect_language(text):
@@ -346,14 +401,7 @@ def calculate_language_ratios(text):
         languages_ratios[language] = len(common_elements) # language "score"
 
     return languages_ratios
-            
-def createProductFeatureFile(products):
-    '''
-    <itemid><feature>...<feature>
-    '''            
-    
-    
-    
+             
         
 def writeProductsToFile(products):
 
@@ -362,18 +410,26 @@ def writeProductsToFile(products):
         writer =  csv.writer(file, delimiter='\t')
         writer.writerows(products)
         
-products_json = readProductData()
+        
+def main():     
+    products_json = readProductData()
+    extractFeatures(products_json)   
+        
+if __name__ == "__main__":
+    main()
+
+    
+    
 #extractTopKeywords(products_json, 200)
 #print(len(products_json))
-extractFeatures(products_json)
-
-#keywords = ['jacket', 'penis', 'anal']
-#stopwords = ['jacket', 'tits', 'gram']
-
-#if any(word in ['jacket', 'tits', 'gram'] for word in keywords):
-#    print('BLACK DICKS IN YOUR ASS')
-
-
+    
 #averageDescriptionLength(products_json)
 #countBrandNames(products_json)
 #priceRangeDistribution(products_json)
+#keywords = ['jacket', 'penis', 'anal']
+#stopwords = ['jacket', 'tits', 'gram']
+#if any(word in ['jacket', 'tits', 'gram'] for word in keywords):
+#    print('BLACK DICKS IN YOUR ASS')'
+
+
+

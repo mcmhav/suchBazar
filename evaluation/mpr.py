@@ -4,10 +4,11 @@
 # Rank_ui = 0% means that item i is most preffered by user u.
 # Higher ranking indicates that i is predicted to be less desirale for user u.
 
-# The way of calcualting tthe MPR:
+# The way of calcualting the MPR:
 # For each actual pair of a user and the purchased item, we randomly select
-# 1000 other items, and produce an ordered list of these items. Then, we keep
-# track of where the actual purchased item is ranked, and calculate the
+# 1000 other items, and predict ratings for these 1000 items and produce an ordered
+# list with these 1001 items based on their ranking.
+# Then, we keep track of where the actual purchased item is ranked, and calculate the
 # expected percentage ranking for all users and items.
 
 import sys
@@ -19,22 +20,53 @@ from operator import itemgetter
 import mmap
 from multiprocessing import Pool
 
-parser = argparse.ArgumentParser(description='MPR for ratings. Input on the form <user, item, rating> in one file, as of now. Must have populated mongoDB with event-data, as of now.')
-parser.add_argument('-sc', type=str, default="sessions")
-parser.add_argument('-c', type=str, default="outMF.csv")
-parser.add_argument('-f', type=str, default="testikus.txt")
-args = parser.parse_args()
-
-col = helpers.getCollection(args.sc)
-
-print ("Used for calculating MPR")
-print ("Collection used: ", args.sc)
-print ("Output file:     ", args.c)
-print ("")
-
-total = 0
 
 def main():
+    train = helpers.readRatingsFromFile('../generators/training.txt')
+    test = helpers.readRatingsFromFile('../generators/validation.txt')
+    predictions = helpers.readRatingsFromFile('../generators/testikus.txt')
+
+    mpr = compute(train, test, predictions)
+    print (mpr)
+
+def compute(train, test, predictions):
+    train_users = helpers.buildDictByIndex(train, 0)
+    test_users = helpers.buildDictByIndex(test, 0)
+    predictions = helpers.buildDictByIndex(predictions, 0)
+    #sortDictByRatings(predictions)                                #The ratings usually comes pre sorted
+
+    # candidateItems = helpers.getUniqueItemList(train)
+
+    # numCandidateItems = len(candidateItems)                       #Number of unique items in training set
+
+    MPR = 0
+    num_users = 0
+    for user in test_users:
+        print (user)
+        sys.exit()
+        #Number of items that are recommendable to the user (all items - those already rated)
+        numCandidateItemsThisUser = numCandidateItems - len(train_users[user])
+
+        if user in predictions:                                   #Check if user is in the prediction set
+            predictionCount = len(predictions[user])              #Length of the users prediction set
+            if predictionCount < numCandidateItemsThisUser:
+                #TODO - Consider adding a function for randomly appending the missing items
+                print('Warning: Not all items have been ranked!')
+            numDroppedItems = numCandidateItemsThisUser - predictionCount
+            AUC += auc(predictions[user], test_users[user], numDroppedItems)
+            num_users += 1
+    return MPR
+
+def mpr(train, test, predicted):
+    MPR = 0
+
+    return MPR
+
+def getRankListForUser(user):
+    return user
+
+def oldMPR():
+    col = helpers.getCollection('sessions')
     allRatings = makeRankListForUsers()
     userItemPurchaseGroups = group()
     items = col.distinct('product_id')
@@ -81,7 +113,6 @@ def main():
     print ("MPR: %s%%" % MPR)
     print ("")
 
-
 def getRankInRandomListOfItem(randomItems,userRatings,pitem):
     if pitem not in randomItems:
         randomItems.append(int(pitem))
@@ -100,7 +131,6 @@ def getRankInRandomListOfItem(randomItems,userRatings,pitem):
             count = count + 1
             userRankedRatings[item] = {'rank':rank,'rating':rating}
     return userRankedRatings
-
 
 def makeRankListForUsers():
     e = open(args.f,'r')

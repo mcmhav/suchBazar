@@ -13,35 +13,40 @@ import auc
 import map
 import coldStart
 import edrc
+import hlu
 
 def main():
-    
-    #evaluate('../generators/train.csv', '../generators/test.csv', '../mahout/testikus.txt')
+
+    evaluate('../generators/train.csv', '../generators/test.csv', '../mahout/testikus.txt')
+
     #evaluate('../generators/train.csv', '../generators/test.csv', '../generators/predictions.txt')
-    runTestCases()
+    #runTestCases()
     #coldStartEvaluation('../generators/train.csv')
 
 def evaluate(trainFile, testFile, predictionFile):
-    
-    k = 20
-    
+
+    k = 50
+    beta = 2
+
     train = helpers.readRatingsFromFile(trainFile)
     test = helpers.readRatingsFromFile(testFile)
-    #predictions = helpers.readRatingsFromFile(predictionFile)
-    predictions = helpers.readMyMediaLitePredictions(predictionFile)
-    
+    predictions = helpers.readRatingsFromFile(predictionFile)
+    # predictions = helpers.readMyMediaLitePredictions(predictionFile)
+
     us_coverage, is_coverage = coverage.compute(train, predictions)
     roc_auc = auc.compute(train, test, predictions)
     map10 = map.mapk(test, predictions, k)
-    
+    hluB = hlu.compute(test, predictions, beta)
+
     print('*** RESULTS ***')
     print('User-Space Coverage: %.4f\nItem-Space Coverage: %.4f' %(us_coverage, is_coverage))
     print('AUC: %.4f' %(roc_auc))
     print('MAP%d: %.4f' %(k, map10))
-    
-    
+    print('HLU%d: %.4f' %(beta, hluB))
+
+
 def coldStartEvaluation(ratingFile):
-    
+
     ratings = helpers.readRatingsFromFile(ratingFile)
     print('Generating cold-start user dataset splits...')
     coldStart.generateColdStartSplits(ratings, 'user', 0.1, [10, 15, 20])
@@ -50,12 +55,13 @@ def coldStartEvaluation(ratingFile):
     print('Generating cold-start system dataset splits...')
     coldStart.generateColdStartSystemSplits(ratings, 0.20, [0.4, 0.6, 0.8], False)
     print('Done!')
-    
+
 def runTestCases():
     '''
     Function for comparing different Rank Accuracy Metrics
     on a set of test cases
     '''
+
     test_case_actual = []
     test_case_pred = []
     

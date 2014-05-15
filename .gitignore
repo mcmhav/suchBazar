@@ -16,3 +16,4 @@ mahout/jars/*
 */.idea/*
 *.iml
 */out/*
+*.txt

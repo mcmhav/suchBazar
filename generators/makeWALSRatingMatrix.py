@@ -29,15 +29,38 @@ def main():
 #         For click:      0.3
 #         Else:           0.6
 
-
 def useScheme(scheme,No):
+    # user, item, rating, weight
+    ratings = scheme()
+    # count = 0
+    # total = len(ratings)
+    e = open("ratings/No" + '.csv','w')
+    for s in ratings:
+        if (s['product_id'] != 'NULL'):
+            ratingColumn = str(int(s['user_id']))+' '+str(int(s['product_id']))+' '+str(int(s['rating']))+' '+str(s['weight'])+'\n'
+            e.write(ratingColumn)
+        # sys.exit()
+        # count += 1
+        # print (str((count/total)*100) + '%')
+
+    # for user in users:
+    #     userStats = scheme(user)
+    #     for s in userStats:
+    #         if (s['product_id'] != 'NULL'):
+    #             ratingColumn = str(int(s['user_id']))+' '+str(int(s['product_id']))+' '+str(int(s['rating']))+' '+str(s['weight'])+'\n'
+    #             e.write(ratingColumn)
+    #     # sys.exit()
+    #     count += 1
+    #     print (str((count/total)*100) + '%')
+    e.close()
+
+def useSchemeOld(scheme,No):
     # user, item, rating, weight
     users = col.distinct('user_id')
     count = 0
     total = len(users)
     e = open("No" + '.csv','w')
     for user in users:
-        userEvents = col.find({'user_id':user})
         userStats = scheme(user)
         for s in userStats:
             if (s['product_id'] != 'NULL'):
@@ -49,7 +72,7 @@ def useScheme(scheme,No):
     e.close()
 
 
-def schemeNo1(user):
+def schemeNo1():
     gReducer = Code("""
         function (cur,result) {
             if (cur.event_id == 'product_purchase_intended'){
@@ -71,7 +94,7 @@ def schemeNo1(user):
             'product_id':1
         },
         condition = {
-            'user_id':user,
+            # 'user_id':user,
         },
         reduce = gReducer,
         initial = {

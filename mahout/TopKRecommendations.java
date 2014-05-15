@@ -66,7 +66,8 @@ public class TopKRecommendations {
 
         while (users.hasNext()) {
             long user = users.next();
-            List<RecommendedItem> topK = r.recommend(user,20);
+            List<RecommendedItem> topK = r.recommend(user,16000);
+
             topKForUsers.put(user,topK);
         }
 

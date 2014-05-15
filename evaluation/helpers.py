@@ -42,9 +42,9 @@ def getCSVWriter(cFile):
 def closeF():
     global f
     f.close()
-    
+
 def readRatingsFromFile(path):
-    
+
     ratings = []
     with open(path, 'r') as file:
         dialect = csv.Sniffer().sniff(file.read(1024))
@@ -52,7 +52,7 @@ def readRatingsFromFile(path):
         for rating in reader:
             if len(rating) >= 3:
                 if rating[0] != '' and rating[1] != '' and rating[2] != '':
-                    ratings.append([int(rating[0]), int(rating[1]), float(rating[2])]) 
+                    ratings.append([int(rating[0]), int(rating[1]), float(rating[2])])
     return ratings
 
 def readMyMediaLitePredictions(path):
@@ -72,9 +72,9 @@ def readMyMediaLitePredictions(path):
                 i = item.split(':')
                 rating = [int(s[0]), int(i[0]), float(i[1])]
                 ratings.append(rating)
-                         
+
     return ratings
-    
+
 def sortDictByRatings(predictions):
     '''
     Sorts a the ratings for each user (key)
@@ -82,48 +82,48 @@ def sortDictByRatings(predictions):
     '''
     for user in predictions:
         predictions[user] = sorted(predictions[user], key=itemgetter(2), reverse=True)
-    return predictions  
+    return predictions
 
 def writeRatingsToFile(path, data, delimiter=','):
 
     with open(path, 'wb') as file:
         writer =  csv.writer(file, delimiter=delimiter)
         writer.writerows(data)
-        
+
 def countUniqueListEntities(ratings, index=0):
     '''
     Count the number of unique users (index=0),
     or items (index=1) from a list of ratings
     '''
-    
+
     items = []
-    
+
     for rating in ratings:
         if rating[index] not in items:
             items.append(rating[index])
-            
-    return len(items)        
-        
+
+    return len(items)
+
 def buildDictByIndex(X, index=0):
     '''
     Builds a dictionary of from ratings
     index = 0, uses users as keys,
     index = 1, uses items as keys
     '''
-    
+
     d = dict()
-    
+
     for x in X:
         if x[index] in d:
             d[x[index]].append(x)
         else:
             d[x[index]] = list()
             d[x[index]].append(x)
-   
-    return d  
+
+    return d
 
 def getUniqueItemList(ratings):
-    
+
     uniqueItems = []
     for rating in ratings:
         if not rating[1] in uniqueItems:
@@ -140,4 +140,4 @@ def appendZeroRatings(user, predictions, candidateItems):
 
 if __name__ == "__main__":
     main()
-    
+

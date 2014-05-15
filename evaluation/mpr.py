@@ -4,13 +4,12 @@
 # Rank_ui = 0% means that item i is most preffered by user u.
 # Higher ranking indicates that i is predicted to be less desirale for user u.
 
-# The way of calcualting tthe MPR:
+# The way of calcualting the MPR:
 # For each actual pair of a user and the purchased item, we randomly select
-# 1000 other items, and produce an ordered list of these items. Then, we keep
-# track of where the actual purchased item is ranked, and calculate the
+# 1000 other items, and predict ratings for these 1000 items and produce an ordered
+# list with these 1001 items based on their ranking.
+# Then, we keep track of where the actual purchased item is ranked, and calculate the
 # expected percentage ranking for all users and items.
-
-
 
 import sys
 import argparse
@@ -23,10 +22,42 @@ from multiprocessing import Pool
 
 
 def main():
-    mpr = MPR(123,423,1234)
+    train = helpers.readRatingsFromFile('../generators/training.txt')
+    test = helpers.readRatingsFromFile('../generators/validation.txt')
+    predictions = helpers.readRatingsFromFile('../generators/testikus.txt')
+
+    mpr = compute(train, test, predictions)
     print (mpr)
 
-def MPR(train, test, predicted):
+def compute(train, test, predictions):
+    train_users = helpers.buildDictByIndex(train, 0)
+    test_users = helpers.buildDictByIndex(test, 0)
+    predictions = helpers.buildDictByIndex(predictions, 0)
+    #sortDictByRatings(predictions)                                #The ratings usually comes pre sorted
+
+    # candidateItems = helpers.getUniqueItemList(train)
+
+    # numCandidateItems = len(candidateItems)                       #Number of unique items in training set
+
+    MPR = 0
+    num_users = 0
+    for user in test_users:
+        print (user)
+        sys.exit()
+        #Number of items that are recommendable to the user (all items - those already rated)
+        numCandidateItemsThisUser = numCandidateItems - len(train_users[user])
+
+        if user in predictions:                                   #Check if user is in the prediction set
+            predictionCount = len(predictions[user])              #Length of the users prediction set
+            if predictionCount < numCandidateItemsThisUser:
+                #TODO - Consider adding a function for randomly appending the missing items
+                print('Warning: Not all items have been ranked!')
+            numDroppedItems = numCandidateItemsThisUser - predictionCount
+            AUC += auc(predictions[user], test_users[user], numDroppedItems)
+            num_users += 1
+    return MPR
+
+def mpr(train, test, predicted):
     MPR = 0
 
     return MPR

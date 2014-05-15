@@ -48,13 +48,13 @@ def main():
   # Then write our contents to the output file.
   ratings = []
   with open(args.outputfile, 'a') as output:
-    for user_id, products in users.iteritems():
+    for user_id, products in users.items():
       # Get rating for user_id and events connected to this user.
       r = utils.get_ratings_from_user(user_id, products, output, args.method)
       utils.write_ratings_to_file(user_id, r, output)
-      ratings.extend([rat for product_id, rat in r.iteritems()])
-  print "Success. Wrote %d ratings to %s. Average: %s, Median: %s" %\
-    (len(ratings), args.outputfile, np.mean(ratings), np.median(ratings))
+      ratings.extend([rat for product_id, rat in r.items()])
+  print ("Success. Wrote %d ratings to %s. Average: %s, Median: %s" %
+    (len(ratings), args.outputfile, np.mean(ratings), np.median(ratings)))
 
 if __name__ == '__main__':
   main()

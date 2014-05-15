@@ -18,7 +18,9 @@ import hlu
 def main():
 
     #evaluate('../generators/train.csv', '../generators/test.csv', '../mahout/testikus.txt')
-    evaluate('../generators/train.csv', '../generators/test.csv', '../generators/predictions.txt')
+    # evaluate('../generators/train.csv', '../generators/test.csv', '../generators/predictions.txt')
+    evaluate('../generators/ratings/no1.train', '../generators/ratings/no1.validate', '../generators/ratings/no1.predictions')
+
     #runTestCases()
     #coldStartEvaluation('../generators/train.csv')
 
@@ -29,19 +31,19 @@ def evaluate(trainFile, testFile, predictionFile):
 
     train = helpers.readRatingsFromFile(trainFile)
     test = helpers.readRatingsFromFile(testFile)
-    #predictions = helpers.readRatingsFromFile(predictionFile)
-    predictions = helpers.readMyMediaLitePredictions(predictionFile)
+    predictions = helpers.readRatingsFromFile(predictionFile)
+    # predictions = helpers.readMyMediaLitePredictions(predictionFile)
 
     us_coverage, is_coverage = coverage.compute(train, predictions)
     roc_auc = auc.compute(train, test, predictions)
     map10 = map.mapk(test, predictions, k)
-    hlu = hlu.compute(test, predictions, beta)
+    hluB = hlu.compute(test, predictions, beta)
 
     print('*** RESULTS ***')
     print('User-Space Coverage: %.4f\nItem-Space Coverage: %.4f' %(us_coverage, is_coverage))
     print('AUC: %.4f' %(roc_auc))
     print('MAP%d: %.4f' %(k, map10))
-    print('HLU%d: %.4f' %(beta, hlu))
+    print('HLU%d: %.4f' %(beta, hluB))
 
 
 def coldStartEvaluation(ratingFile):

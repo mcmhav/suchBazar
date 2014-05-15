@@ -1,0 +1,22 @@
+README
+
+Needs graplab and mongoDB populated with soBazar-events
+Generate One-Class ratings with weight through:
+
+`./makeWALSRatings.sh`
+
+Make a folder called `wMatrix` in your graplab folder.
+Copy/move no1.* into your newly made `wMatrix` folder
+Make a another folder called `pred` in you graplab folder
+Run:
+
+`./wals --matrix wMatrix/ --predictions pred/no1 --maxval=01 --minval=00 --D=100`
+
+Merge the wals predictions from through
+
+`cat pred/no1.1_of_2 pred/no1.2_of_2 >> no1.predictions`
+
+Exs:
+`cat pred/no1.1_of_2 pred/no1.2_of_2 >> ~/repos/suchBazar/generators/ratings/no1.predictions`
+
+Copy no1.predictions into `generators/ratings` folder and run evaluations potion to the respective files to evaluate the result. Simple as pie.

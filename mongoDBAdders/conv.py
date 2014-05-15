@@ -1,7 +1,7 @@
 import json
 import argparse
 import sys
-from statsMakers import helpers
+import helpers
 
 parser = argparse.ArgumentParser(description='Convert tab and insert to mongoDB.')
 parser.add_argument('-f', type=str, default="../data/sobazar.tab")
@@ -20,6 +20,7 @@ def main(dbLocation):
     f = open(args.f)
     head = f.readline().strip().split('\t')
     print (head)
+    print (len(head))
 
     headJson = {}
     headJson["head"] = head

@@ -8,7 +8,7 @@ from operator import itemgetter
 
 # Dictionary holding the number of days since the most recent event,
 # for user i.
-days_last_event = defaultdict(lambda: sys.maxint)
+days_last_event = defaultdict(lambda: sys.maxsize)
 ignored = 0
 
 def normalize(score,xmax=100,xmin=0,a=0,b=5):
@@ -182,7 +182,7 @@ def write_ratings_to_file(user_id, ratings, f):
     Writes to a file:
       user_id, product_id, rating
   """
-  for product_id, rating in ratings.iteritems():
+  for product_id, rating in ratings.items():
     f.write("%s\t%s\t%.3f\n" % (user_id, product_id, rating))
 
 def get_ratings_from_user(user_id, events, f, method):
@@ -200,9 +200,9 @@ def get_ratings_from_user(user_id, events, f, method):
     # This method needs to work on all events for all items that this user has
     # interacted on, and not one and one product_id. Thus, handle all events in
     # one array.
-    return sigmoid_count([e for product_id, evt in events.iteritems() for e in evt])
+    return sigmoid_count([e for product_id, evt in events.items() for e in evt])
   else:
-    for product_id, evts in events.iteritems():
+    for product_id, evts in events.items():
       # Get the rating from one of the different calculation schemes.
       if method == 'srecent':
         rating = sigmoid_events(evts, days_last_event[user_id])

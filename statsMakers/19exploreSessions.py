@@ -18,7 +18,8 @@ print ("")
 col = helpers.getCollection(args.c)
 sessCol = helpers.getCollection(args.sc,True)
 
-appStartedV = { # expected to be start of sessions
+appStartedV = {
+    # expected to be start of sessions
     # "app_first_started",
     "app_started",
     # "app_became_active", all user_id's are NULL

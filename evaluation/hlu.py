@@ -6,6 +6,13 @@ def main():
     '''
     '''
 
+    # train = helpers.readRatingsFromFile('../generators/ratings/no1.train')
+    # test = helpers.readRatingsFromFile('../generators/ratings/no1.validate')
+    # predictions = helpers.readRatingsFromFile('../generators/ratings/no1.predictions')
+    # hlu = compute(test, predictions,2)
+    # print (hlu)
+
+
 def compute(test, predictions, beta):
     '''
     Half life utility
@@ -25,9 +32,8 @@ def compute(test, predictions, beta):
     for user in test_users:
         if user in predictions:
             HLU += hluU(test_users[user], predictions[user], beta)
-            HLUMax += hluUMax()
+            HLUMax += hluUMax(test_users[user], beta)
             num_users += 1
-
     if HLUMax == 0:
         return -1
     return 100*(HLU/HLUMax)

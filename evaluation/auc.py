@@ -28,7 +28,7 @@ def compute(train, test, predictions):
         
         if user in predictions:                                   #Check if user is in the prediction set
             predictionCount = len(predictions[user])              #Length of the users prediction set
-            if predictionCount < numCandidateItemsThisUser:
+            #if predictionCount < numCandidateItemsThisUser:
                 #TODO - Consider adding a function for randomly appending the missing items
                 #print('Warning: Not all items have been ranked!')
             numDroppedItems = numCandidateItemsThisUser - predictionCount

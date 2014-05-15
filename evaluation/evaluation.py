@@ -17,13 +17,13 @@ import edrc
 def main():
     
     #evaluate('../generators/train.csv', '../generators/test.csv', '../mahout/testikus.txt')
-    evaluate('../generators/train.csv', '../generators/test.csv', '../generators/predictions.txt')
-    #runTestCases()
+    #evaluate('../generators/train.csv', '../generators/test.csv', '../generators/predictions.txt')
+    runTestCases()
     #coldStartEvaluation('../generators/train.csv')
 
 def evaluate(trainFile, testFile, predictionFile):
     
-    k = 50
+    k = 20
     
     train = helpers.readRatingsFromFile(trainFile)
     test = helpers.readRatingsFromFile(testFile)
@@ -56,57 +56,44 @@ def runTestCases():
     Function for comparing different Rank Accuracy Metrics
     on a set of test cases
     '''
+    test_case_actual = []
+    test_case_pred = []
+    
+    test_case_actual.append([1,2,3,4])
+    test_case_pred.append([0,1,0,0])
+    
+    test_case_actual.append([1,2,3,4])
+    test_case_pred.append([2,0,3,1])
+    
+    test_case_actual.append([1,2,3,4])
+    test_case_pred.append([0,1,2,3])
         
-    test_case_1_actual =    [1,2,3,4,5,6,7,8,9,10]
-    test_case_1_pred =      [1,2,3,4,5,6,7,8,9,10]
+    test_case_actual.append([1,2,3,4,5,6,7,8,9,10])
+    test_case_pred.append([1,2,3,4,5,6,7,8,9,10])
     
-    test_case_2_actual =    [1,2,3,4,5,6,7,8,9,10]
-    test_case_2_pred =      [10,9,8,7,6,5,4,3,2,1]
+    test_case_actual.append([1,2,3,4,5,6,7,8,9,10])
+    test_case_pred.append([10,9,8,7,6,5,4,3,2,1])
     
-    test_case_3_actual =    [1,2,3,4,5,6,7,8,9,10]
-    test_case_3_pred =      [1,2,11,12,16,18,44,77,55,19]
+    test_case_actual.append([1,2,3,4,5,6,7,8,9,10])
+    test_case_pred.append([10,5,4,3,1,2,8,7,6,9])
     
-    test_case_4_actual =    [1,2,3,4,5,6,7,8,9,10]
-    test_case_4_pred =      [11,12,14,15,16,18,66,52,1,2]
+    test_case_actual.append([1,2,3,4,5,6,7,8,9,10])
+    test_case_pred.append([1,12,14,3,16,18,66,52,22,11])
     
-    test_case_5_actual =    [1,2,3,4,5,6,7,8,9,10]
-    test_case_5_pred =      [12,15,44,4,17,22,8,7,6,5]
+    test_case_actual.append([1,2,3,4,5,6,7,8,9,10])
+    test_case_pred.append([4,15,44,8,19,22,23,13,14,15])
     
-    test_case_6_actual =    [1,2,3,4,5,6,7,8,9,10]
-    test_case_6_pred =      [10,9,3,4,17,22,8,7,6,5]
+    test_case_actual.append([1,2,3,4,5,6,7,8,9,10])
+    test_case_pred.append([19,17,15,14,5,22,13,12,11,10])
     
-    test_case_7_actual =    [1,2,3,4,5,6,7,8,9,10]
-    test_case_7_pred =      [10,9,3,4,17,22,8,7,6,5]
+    test_case_actual.append([1,2,3,4,5,6,7,8,9,10])
+    test_case_pred.append([33,44,11,12,17,22,13,14,9,10])
     
-    test_case_8_actual =    [1,2,3,4,5,6,7,8,9,10]
-    test_case_8_pred =      [10,9,3,4,17,22,8,7,6,5]
-    
-    test_case_9_actual =    [1,2,3,4,5,6,7,8,9,10]
-    test_case_9_pred =      [10,9,3,4,17,22,8,7,6,5]
-    
-    test_case_10_actual =   [1,2,3,4,5,6,7,8,9,10]
-    test_case_10_pred =     [10,9,3,4,17,22,8,7,6,5]   
-    
-    
-    print('MAP10 - Test case 1: %.2f' %map.apk(test_case_1_actual, test_case_1_pred, 10))
-    print('nDCG - Test case 1: %.2f' %edrc.nDCG(test_case_1_actual, test_case_1_pred, 0))
-    print('Spearman - Test case 2: %.2f' %stats.spearmanr(test_case_1_actual, test_case_1_pred)[0])
-    print('Kendall - Test case 2: %.2f' %stats.kendalltau(test_case_1_actual, test_case_1_pred)[0])
-    
-    print('MAP10 - Test case 2: %.2f' %map.apk(test_case_2_actual, test_case_2_pred, 10))
-    print('nDCG - Test case 2: %.2f' %edrc.nDCG(test_case_2_actual, test_case_2_pred, 0))
-    print('Spearman - Test case 2: %.2f' %stats.spearmanr(test_case_2_actual, test_case_2_pred)[0])
-    print('Kendall - Test case 2: %.2f' %stats.kendalltau(test_case_2_actual, test_case_2_pred)[0])
-    
-    print('MAP10 - Test case 3: %.2f' %map.apk(test_case_3_actual, test_case_3_pred, 10))
-    print('nDCG - Test case 3: %.2f' %edrc.nDCG(test_case_3_actual, test_case_3_pred, 0))
-    print('Spearman - Test case 2: %.2f' %stats.kendalltau(test_case_3_actual, test_case_3_pred)[0])
-    print('Kendall - Test case 2: %.2f' %stats.spearmanr(test_case_3_actual, test_case_3_pred)[0])
-    
-    print('MAP10 - Test case 4: %.2f' %map.apk(test_case_4_actual, test_case_4_pred, 10))
-    print('nDCG - Test case 4: %.2f' %edrc.nDCG(test_case_4_actual, test_case_4_pred, 0))
-    print('Spearman - Test case 2: %.2f' %stats.spearmanr(test_case_4_actual, test_case_4_pred)[0])
-    print('Kendall - Test case 2: %.2f' %stats.kendalltau(test_case_4_actual, test_case_4_pred)[0])
+    for actual, pred in zip(test_case_actual, test_case_pred):
+        print('MAP10 - Test case 1: %.2f' %map.apk(actual, pred, 10))
+        #print('nDCG - Test case 1: %.2f' %edrc.nDCG(actual, pred, 0))
+        #print('Spearman - Test case 2: %.2f' %stats.spearmanr(actual, pred)[0])
+        #print('Kendall - Test case 2: %.2f' %stats.kendalltau(actual, pred)[0])
 
 if __name__ == "__main__":
     main()

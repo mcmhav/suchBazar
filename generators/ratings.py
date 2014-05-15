@@ -4,27 +4,75 @@ from collections import defaultdict
 import numpy as np
 import sys
 import utils
+import os
+
+valid_methods = ['naive', 'recentness', 'count']
+valid_functions = ['sigmoid_fixed', 'sigmoid_constant', 'linear']
 
 def main():
+  config = {}
+
   parser = argparse.ArgumentParser(description = 'Generate ratings file')
   parser.add_argument('-i', dest='inputfile', default='../data/sobazar.tab', help="Defaulting to data/proddata.tab")
-  parser.add_argument('-o', type=str, dest='outputfile', default='ratings.txt', help="Defaulting to '<method-name>.txt'")
+  parser.add_argument('-o', dest='outputfile', help="Defaulting to '<method-name>.txt'")
   parser.add_argument('-d', dest='outputfolder', default='ratings', help="Defaulting to 'ratings'")
-  parser.add_argument('-m', dest='method', default='srecent', help="Choose between 'naive', 'scount' and 'srecent'")
   parser.add_argument('--debug', dest='debug', action='store_true', default=False)
+
+  # Method and curve options.
+  parser.add_argument('-m', dest='method', help="Choose which method to use")
+  parser.add_argument('-fx', dest='fx', help="Choose which function type to use")
+
+  # Linear options
+  parser.add_argument('-lg', dest='lg', help="Choose growth of linear function")
+
+  # Sigmoid options
+  parser.add_argument('-sr', dest='sigmoid_ratio', help="Choose ratio between steepness and increase, for sigmoid")
+  parser.add_argument('-sc', dest='sigmoid_constant', help="Choose X for steepest point in sigmoid")
   args = parser.parse_args()
 
-  if args.method not in ['scount', 'srecent', 'naive']:
-    print ("Wrong method '%s', please choose between 'scount', 'srecent' and 'naive'") % (args.method)
+  # Set method.
+  if args.method:
+    if args.method in valid_methods: config["method"] = args.method
+  if not config.get("method", None):
+    print ("Wrong method '%s', please choose between %s with '-m' flag") % (args.method, valid_methods)
     sys.exit(1)
 
-  if args.outputfile == '':
-    args.outputfile = args.method + '.txt'
-  args.outputfile = args.outputfolder + '/' + args.outputfile
+  # Define how the curve will look.
+  if args.fx:
+    if args.fx in valid_functions: config["fx"] = args.fx
+  if not config.get("fx", None):
+    print "Wrong function type '%s', please choose between %s with '-fx' flag" % (args.fx, valid_functions)
+    sys.exit(1)
 
-  # print (get_data("data/proddata.tab"))
-  print ("Using method %s in order to generate rankings to %s" % (args.method, args.outputfile))
+  # Set the sigmoid options, if the method is in use.
+  if 'sigmoid' in args.fx:
+    if args.sigmoid_ratio: config["sigmoid_ratio"] = float(args.sigmoid_ratio)
+    if args.sigmoid_constant: config["sigmoid_constant"] = float(args.sigmoid_constant)
+    if "fixed" in config["fx"] and not config.get("sigmoid_ratio", None):
+        print "[WARN] Sigmoid ratio not set. Defaulting to 4. Set with -sr"
+        config["sigmoid_ratio"] = 4
+    if "constant" in config["fx"] and not config.get("sigmoid_constant", None):
+        print "[WARN] Sigmoid constant not set. Defaulting to 30. Set with -sc"
+        config["sigmoid_constant"] = 30
 
+  # Guess filename if not provided.
+  if not args.outputfile:
+    args.outputfile = config["method"] + "_" + config["fx"] + '.txt'
+  config["outfile"] = args.outputfolder + '/' + args.outputfile
+
+  # Check that the input file exists.
+  if os.path.isfile(args.inputfile):
+    config["infile"] = args.inputfile
+  if not config.get("infile", None):
+    print "Could not find file: %s. Ensure you have provided correct file with -i option" % args.inputfile
+    sys.exit(1)
+
+  # Give some useful info to the user.
+  print "----------------------------------------------------------------------"
+  print "Using following config to generate rankings to %s" % (args.outputfile)
+  for k, i in config.iteritems():
+    print "%s => %s" % (k,i)
+  print "----------------------------------------------------------------------"
 
   # print (get_data(proddata.tab))
   if args.debug:
@@ -37,20 +85,21 @@ def main():
       ['','product_purchased','','2014-02-22T14:00:02.00001Z','','','','','','','','','12','','','','1338'],
     ]
 
+    # Clean up the above input.
     for l in f:
       utils.parse_eventline(l, users)
   else:
-    users = utils.create_usermatrix(args.inputfile)
+    users = utils.create_usermatrix(config["infile"])
 
   # Reset the file for output
-  open(args.outputfile, 'w').close()
+  open(config["outfile"], 'w').close()
 
   # Then write our contents to the output file.
   ratings = []
-  with open(args.outputfile, 'a') as output:
-    for user_id, products in users.items():
+  with open(config["outfile"], 'a') as output:
+    for user_id, products in users.iteritems():
       # Get rating for user_id and events connected to this user.
-      r = utils.get_ratings_from_user(user_id, products, output, args.method)
+      r = utils.get_ratings_from_user(user_id, products, output, config)
       utils.write_ratings_to_file(user_id, r, output)
       ratings.extend([rat for product_id, rat in r.items()])
   print ("Success. Wrote %d ratings to %s. Average: %s, Median: %s" %

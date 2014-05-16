@@ -4,7 +4,7 @@ import argparse
 from collections import defaultdict
 import numpy as np
 
-def read_config(fname):
+def read_config(fname, rfolder):
   config = { 'files' : []}
   f = open(fname)
 
@@ -16,11 +16,17 @@ def read_config(fname):
     sys.exit(1)
   f.seek(0)
 
+  # Check if ratios are defined or if we should add them automatically.
+  auto = False
+  if len(lines[0].split()) == 1:
+    auto = True
+  num_files = len(lines)
+
   # Read the config and open the file handlers
-  for l in lines:
+  for i, l in enumerate(lines):
     args = l.split()
-    fh = open(args[0])
-    ratio = float(args[1])
+    fh = open("%s/%s" % (rfolder, args[0]))
+    ratio = float(args[1]) if not auto else 1/float(num_files)
     config['files'].append({ 'fh': fh, 'ratio': ratio })
   f.seek(0)
 
@@ -68,13 +74,14 @@ if __name__ == '__main__':
   parser = argparse.ArgumentParser(description = 'Blend ratings')
   parser.add_argument('-c', dest='conf', default="files.conf", help="Config file for how to linearly weight the different ratings")
   parser.add_argument('-d', dest='dest', default="ratings", help="Where should the blended file be put? Default to: 'ratings'")
+  parser.add_argument('-i', dest='rfolder', default="ratings", help="Where to find all files defined in conf file")
   parser.add_argument('-o', dest='filename', default='blend.txt', help="Filename for the blended result. Default to: 'blend.txt'")
   args = parser.parse_args()
 
   # Add the directory + filename
   args.dest = args.dest + '/' + args.filename
 
-  conf = read_config(args.conf)
+  conf = read_config(args.conf, args.rfolder)
 
   # Data structure holding all information about all ratings for a user.
   users = defaultdict(lambda: defaultdict(int))

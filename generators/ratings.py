@@ -63,10 +63,10 @@ def main():
   if not args.outputfile:
     params = ""
     if config.get("sigmoid_constant", None) or config.get("sigmoid_ratio", None):
-      params = "sc-" + str(config["sigmoid_constant"]) if config.get("sigmoid_constant", None) else "sr-" + str(config["sigmoid_ratio"])
+      params = "_sc-" + str(config["sigmoid_constant"]) if config.get("sigmoid_constant", None) else "_sr-" + str(config["sigmoid_ratio"])
 
     if args.fx:
-      args.outputfile = config["method"] + "_" + config["fx"] + "_" + params + '.txt'
+      args.outputfile = config["method"] + "_" + config["fx"] + params + '.txt'
     else:
       args.outputfile = config["method"] + '.txt'
   config["outfile"] = args.outputfolder + '/' + args.outputfile

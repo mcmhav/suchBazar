@@ -37,13 +37,14 @@ for f in rfiles:
     i += 1
 
   # Number of bars, should be pretty high to show granularity.
-  num_bins = 200
+  num_bins = 150
 
   # the histogram of the data
-  n, bins, patches = plt.hist(x, num_bins, range=(1.0, 5.0), facecolor='green', alpha=0.5)
+  n, bins, patches = plt.hist(x, num_bins, range=(1.0, 5.0), normed=False, facecolor='green', alpha=0.5)
 
   plt.xlabel('Rating')
   plt.ylabel('Number of ratings')
   plt.title(f["fname"])
 
   plt.savefig("%s/%s/%s.png" % (BASEPATH, OUTFOLDER, f["fname"]))
+  plt.clf()

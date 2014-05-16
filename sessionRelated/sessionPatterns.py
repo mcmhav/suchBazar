@@ -178,22 +178,53 @@ def drawCirclesAndStuff(uniqueSessions):
                 fromTo = 'A' + node
             else:
                 fromTo = prevNode + node
-            addEdgeToEdges(fromTo,edges)
+            addEdgeToEdges(fromTo,edges,session['count'])
             prevNode = nodeMapper(event)
 
-    edges_sorted = sorted(edges.items(), key=operator.itemgetter(1))
-    print (edges_sorted)
+    edges_sorted = sorted(edges.items(), key=operator.itemgetter(1),reverse=True)
+
     for edge in edges_sorted:
-        dot.edge(edge[0], edge[1], constraint='true', label=str(edges[edge]))
+        print (edge)
+    i = 0
+    for edge in edges:
+        nodeFrom = edge[0]
+        color = coloMapper(nodeFrom)
+        dot.edge(
+            nodeFrom,
+            edge[1],
+            constraint='true',
+            label=str(edges[edge]),
+            color=color,
+            # penwidth=5,
+        )
+        i += 1
 
     # print(dot.source)
     dot.render('test-output/round-table.gv', view=False)
 
-def addEdgeToEdges(fromTo,edges):
+def addEdgeToEdges(fromTo,edges,count):
     if fromTo in edges:
-        edges[fromTo] += 1
+        edges[fromTo] += 1*count
     else:
-        edges[fromTo] = 1
+        edges[fromTo] = 1*count
+
+def coloMapper(node):
+    return {
+        'A': 'blue',
+        'B': 'red',
+        'C': 'green',
+        'D': 'black',
+        'E': 'yellow',
+        'F': 'brown',
+        'G': 'purple',
+        'H': 'pink',
+        'I': 'orange',
+        'J': 'gold',
+        'K': 'cyan',
+        'L': 'gray',
+        'M': 'indigo',
+        'N': 'violet',
+    }[node]
 
 def nodeMapper(event):
     return {

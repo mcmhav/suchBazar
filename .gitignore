@@ -18,3 +18,5 @@ mahout/jars/*
 *.iml
 */out/*
 *.txt
+*.gv
+*.pdf

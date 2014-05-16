@@ -46,9 +46,9 @@ for f in rfiles:
 
   plt.xlabel('Rating')
   plt.ylabel('Number of ratings')
-  plt.title(f["fname"])
+  plt.title(f["fname"][:-4])
 
-  plt.savefig("%s/%s/%s.png" % (BASEPATH, OUTFOLDER, f["fname"]))
+  plt.savefig("%s/%s/%s.png" % (BASEPATH, OUTFOLDER, f["fname"][:-4]))
   plt.clf()
 
 print "Success. Plotted %d files into %s/%s" % (len(rfiles), BASEPATH, OUTFOLDER)

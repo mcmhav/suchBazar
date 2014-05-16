@@ -1,21 +1,25 @@
 #!/bin/bash
 
-usage() { echo "Usage: $0 [-c (clean)] [-p (plot)] [-h (help)]"; exit 1; }
+usage() { echo "Usage: $0 [-c (clean)] [-p (plot)] [-b (blend)] [-h (help)]"; exit 1; }
 
 # Check for ctrl+c
 trap 'echo interrupted; exit' INT
 
 CLEAN=0
 PLOT=0
+BLEND=0
 
 # Check options (basically if we want to clean and/or plot)
-while getopts ":cp" o; do
+while getopts ":cpb" o; do
   case "${o}" in
     c)
       CLEAN=1
       ;;
     p)
       PLOT=1
+      ;;
+    b)
+      BLEND=1
       ;;
     *)
       usage
@@ -49,6 +53,12 @@ python ratings.py -i $INFILE -m recentness -fx linear
 python ratings.py -i $INFILE -m count -fx linear
 python ratings.py -i $INFILE -m count -fx sigmoid_fixed -sr 4.5
 python ratings.py -i $INFILE -m count -fx sigmoid_constant -sc 30
+
+# If blend we do that as well.
+if [ $BLEND -eq 1 ]; then
+  ls ratings > files.conf
+  python blend.py -c files.conf
+fi
 
 # If plot then we run the plotting tool
 if [ $PLOT -eq 1 ]; then

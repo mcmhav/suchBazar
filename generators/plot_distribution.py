@@ -8,6 +8,8 @@ BASEPATH = os.path.dirname(os.path.realpath(__file__))
 INFOLDER = "ratings"
 OUTFOLDER = "dists"
 
+print "Starting plotting from folder %s/%s" % (BASEPATH, INFOLDER)
+
 # Create output folder if not exists.
 if not os.path.exists(OUTFOLDER):
   os.makedirs(OUTFOLDER)
@@ -48,3 +50,5 @@ for f in rfiles:
 
   plt.savefig("%s/%s/%s.png" % (BASEPATH, OUTFOLDER, f["fname"]))
   plt.clf()
+
+print "Success. Plotted %d files into %s/%s" % (len(rfiles), BASEPATH, OUTFOLDER)

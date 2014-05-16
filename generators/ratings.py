@@ -60,7 +60,10 @@ def main():
 
   # Guess filename if not provided.
   if not args.outputfile:
-    args.outputfile = config["method"] + "_" + config["fx"] + '.txt'
+    params = ""
+    if config.get("sigmoid_constant", None) or config.get("sigmoid_ratio", None):
+      params = "sc-" + str(config["sigmoid_constant"]) if config.get("sigmoid_constant", None) else "sr-" + str(config["sigmoid_ratio"])
+    args.outputfile = config["method"] + "_" + config["fx"] + "_" + params + '.txt'
   config["outfile"] = args.outputfolder + '/' + args.outputfile
 
   # Check that the input file exists.
@@ -85,7 +88,11 @@ def main():
       ['','product_purchased','','2014-02-22T14:00:00.00001Z','','','','','','','','','1','','','','1337'],
       ['','product_detail_clicked','','2014-02-22T14:00:01.00001Z','','','','','','','','','2','','','','1337'],
       ['','product_purchased','','2014-02-23T14:00:00.00001Z','','','','','','','','','3','','','','1337'],
+
       ['','product_purchased','','2014-02-22T14:00:02.00001Z','','','','','','','','','12','','','','1338'],
+      ['','product_purchased','','2014-02-22T14:00:03.00001Z','','','','','','','','','13','','','','1338'],
+
+      ['','product_purchased','','2014-02-22T14:00:03.00001Z','','','','','','','','','12','','','','1339'],
     ]
 
     # Clean up the above input.
@@ -105,8 +112,8 @@ def main():
       r = utils.get_ratings_from_user(user_id, products, output, config)
       utils.write_ratings_to_file(user_id, r, output)
       ratings.extend([rat for product_id, rat in r.items()])
-  print ("Success. Wrote %d ratings to %s. Average: %s, Median: %s" %
-    (len(ratings), args.outputfile, np.mean(ratings), np.median(ratings)))
+  print ("Success. Wrote %d ratings to %s. Average: %s, Median: %s, Min: %.2f, Max: %.2f" %
+    (len(ratings), args.outputfile, np.mean(ratings), np.median(ratings), np.min(ratings), np.max(ratings)))
 
 if __name__ == '__main__':
   main()

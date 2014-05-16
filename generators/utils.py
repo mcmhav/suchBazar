@@ -121,12 +121,21 @@ def write_ratings_to_file(user_id, ratings, f):
     f.write("%s\t%s\t%.3f\n" % (user_id, product_id, rating))
 
 def get_penalization(n, num, config):
-  if config["fx"] == "sigmoid_fixed":
-    return sigmoid(n, ratio=config["sigmoid_ratio"], c=num)
-  elif config["fx"] == "sigmoid_constant":
-    return sigmoid(n, constant=config["sigmoid_constant"])
-  else:
-    return n/float(num)
+  p = 0
+
+  # Get penalization from various function schemes
+  if config["fx"] == "sigmoid_fixed" and num > 1:
+    p = sigmoid(n, ratio=config["sigmoid_ratio"], c=num)
+  elif config["fx"] == "sigmoid_constant" and num > 1:
+    p = sigmoid(n, constant=config["sigmoid_constant"])
+  elif config["fx"] == "linear" and num > 1:
+    p = n/float(num)
+
+  # Round down to zero if the penalization is really small
+  THRESHOLD = 0.05
+  if (p - int(p)) < THRESHOLD and num < 8:
+    p = int(p)
+  return p
 
 def get_multipliers():
   return {
@@ -162,7 +171,7 @@ def fx_recentness(events, oldest_event, config, rating=0):
     # Calculate the diff between the scores, and multiply with penalization.
     score = scores[1] - ((scores[1] - scores[0]) * penalization)
 
-    rating = max(rating, normalize(score=score, a=1, b=5.0))
+    rating = max(rating, normalize(score=score, a=1, b=5.0, xmin=10))
   return rating
 
 def fx_count(events, config):
@@ -188,7 +197,7 @@ def fx_count(events, config):
     product_penalization = get_penalization(i, num_events, config)
     scores = multipliers.get(event['event_id'])
     score = scores[1] - ((scores[1] - scores[0]) * product_penalization)
-    r = max(ratings.get(event['product_id'], 0.0), normalize(score=score, a=0, b=5.0))
+    r = max(ratings.get(event['product_id'], 0.0), normalize(score=score, a=1, b=5.0, xmin=10))
     ratings[event['product_id']] = r
   return ratings
 

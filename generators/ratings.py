@@ -40,6 +40,9 @@ def main():
   # Define how the curve will look.
   if args.fx:
     if args.fx in valid_functions: config["fx"] = args.fx
+  if args.fx and 'naive' in args.method:
+    print "It does not make sense to define fx when using naive methods."
+    sys.exit(1)
   if not config.get("fx", None):
     print "Wrong function type '%s', please choose between %s with '-fx' flag" % (args.fx, valid_functions)
     sys.exit(1)

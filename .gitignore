@@ -12,6 +12,7 @@ rest/venv
 *.class
 *.ratings
 generators/ratings
+generators/dists
 mahout/jars/*
 */.idea/*
 *.iml

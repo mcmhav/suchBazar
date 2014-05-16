@@ -17,6 +17,7 @@ def main():
   parser.add_argument('-o', dest='outputfile', help="Defaulting to '<method-name>.txt'")
   parser.add_argument('-d', dest='outputfolder', default='ratings', help="Defaulting to 'ratings'")
   parser.add_argument('--debug', dest='debug', action='store_true', default=False)
+  parser.add_argument('--skip-header', dest='skipheader', action='store_true', default=False)
 
   # Method and curve options.
   parser.add_argument('-m', dest='method', help="Choose which method to use")
@@ -73,6 +74,10 @@ def main():
     print "Could not find file: %s. Ensure you have provided correct file with -i option" % args.inputfile
     sys.exit(1)
 
+  # Check if we want to skip first line in csv
+  if args.skipheader:
+    config["skipheader"] = args.skipheader
+
   # Give some useful info to the user.
   print "----------------------------------------------------------------------"
   print "Using following config to generate rankings to %s" % (args.outputfile)
@@ -99,7 +104,7 @@ def main():
     for l in f:
       utils.parse_eventline(l, users)
   else:
-    users = utils.create_usermatrix(config["infile"])
+    users = utils.create_usermatrix(config)
 
   # Reset the file for output
   open(config["outfile"], 'w').close()

@@ -64,16 +64,17 @@ def parse_mongo(users):
     parse_eventline(row,users)
 
 
-def create_usermatrix(filename):
+def create_usermatrix(config):
   # The dictionary containing all events for one user
   users = defaultdict(lambda: defaultdict(list))
   # Use data from mongo?
-  if filename == "mongo":
+  if config["infile"] == "mongo":
     parse_mongo(users)
   else:
     # Read the input .tab file.
-    with open(filename) as f:
-      next(f, None)  # skip the headers
+    with open(config["infile"]) as f:
+      if config.get("skipheader", None):
+        next(f, None)  # skip the headers
       for row in csv.reader(f, delimiter='\t'):
         parse_eventline(row, users)
 

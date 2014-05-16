@@ -44,12 +44,12 @@ def main():
   if args.fx and 'naive' in args.method:
     print "It does not make sense to define fx when using naive methods."
     sys.exit(1)
-  if not config.get("fx", None):
+  if not config.get("fx", None) and args.method != "naive":
     print "Wrong function type '%s', please choose between %s with '-fx' flag" % (args.fx, valid_functions)
     sys.exit(1)
 
   # Set the sigmoid options, if the method is in use.
-  if 'sigmoid' in args.fx:
+  if args.fx and 'sigmoid' in args.fx:
     if args.sigmoid_ratio: config["sigmoid_ratio"] = float(args.sigmoid_ratio)
     if args.sigmoid_constant: config["sigmoid_constant"] = float(args.sigmoid_constant)
     if "fixed" in config["fx"] and not config.get("sigmoid_ratio", None):
@@ -64,7 +64,11 @@ def main():
     params = ""
     if config.get("sigmoid_constant", None) or config.get("sigmoid_ratio", None):
       params = "sc-" + str(config["sigmoid_constant"]) if config.get("sigmoid_constant", None) else "sr-" + str(config["sigmoid_ratio"])
-    args.outputfile = config["method"] + "_" + config["fx"] + "_" + params + '.txt'
+
+    if args.fx:
+      args.outputfile = config["method"] + "_" + config["fx"] + "_" + params + '.txt'
+    else:
+      args.outputfile = config["method"] + '.txt'
   config["outfile"] = args.outputfolder + '/' + args.outputfile
 
   # Check that the input file exists.

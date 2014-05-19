@@ -30,11 +30,11 @@ done
 # If cleaning, then we delete everything in ratings/ and dists/
 if [ $CLEAN -eq 1 ]; then
   if [ -d ratings ]; then
-    rm -f ratings/*
+    rm -f ratings/*.txt
   fi
 
   if [ -d dists ]; then
-    rm -f dists/*
+    rm -f dists/*.png
   fi
 fi
 

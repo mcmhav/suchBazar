@@ -5,6 +5,7 @@ import pymongo
 from datetime import datetime
 from collections import defaultdict
 from operator import itemgetter
+import numpy as np
 
 # Dictionary holding the number of days since the most recent event,
 # for user i.
@@ -14,6 +15,22 @@ ignored = 0
 def normalize(score,xmax=100,xmin=0,a=0,b=5):
   # From http://en.wikipedia.org/wiki/Normalization_(statistics)#Examples
   return a + (((score-xmin)*(b-a))/(xmax-xmin))
+
+def z_score(x, avg, standard_dev):
+  return (x-avg)/standard_dev
+
+def norm_dist(x, avg, standard_dev):
+  # Get z-score
+  z = z_score(x, avg, standard_dev)
+
+  # We treat negative and positive values equally
+  z = math.fabs(z)
+
+  # Cap outliers
+  z = min(z, standard_dev)
+
+  # Return relative z-score
+  return z/standard_dev
 
 def sigmoid(k, **kwargs):
   if "ratio" in kwargs and "c" in kwargs:
@@ -121,15 +138,20 @@ def write_ratings_to_file(user_id, ratings, f):
   for product_id, rating in ratings.items():
     f.write("%s\t%s\t%.3f\n" % (user_id, product_id, rating))
 
-def get_penalization(n, num, config):
+def get_penalization(n, num, config, average=0.0):
   p = 0
 
+  if num < 2:
+    return 0
+
   # Get penalization from various function schemes
-  if config["fx"] == "sigmoid_fixed" and num > 1:
+  if config["fx"] == "sigmoid_fixed":
     p = sigmoid(n, ratio=config["sigmoid_ratio"], c=num/2)
-  elif config["fx"] == "sigmoid_constant" and num > 1:
+  elif config["fx"] == "sigmoid_constant":
     p = sigmoid(n, constant=config["sigmoid_constant"])
-  elif config["fx"] == "linear" and num > 1:
+  elif config["fx"] == "norm_dist":
+    p = norm_dist(n, average, config["norm_standard_dev"])
+  elif config["fx"] == "linear":
     p = n/float(num)
 
   # Round down to zero if the penalization is really small
@@ -157,6 +179,16 @@ def fx_recentness(events, oldest_event, config, rating=0):
   # Remove events which we dont care about.
   events[:] = [d for d in events if d.get('event_id') in multipliers]
 
+  # Special case if we use normal distribution, as we need the average
+  avg = 0.0
+  if config["fx"] == "norm_dist":
+    c = 0
+    for event in events:
+      t = parse_timestamp(event['timestamp'])
+      diff = today - t
+      c += (diff.days - oldest_event)
+    avg = c / len(events)
+
   for event in events:
     t = parse_timestamp(event['timestamp'])
     diff = today - t
@@ -164,7 +196,7 @@ def fx_recentness(events, oldest_event, config, rating=0):
     # The number of days this event is from the latest event for this user.
     relative_diff = diff.days - oldest_event
 
-    penalization = get_penalization(relative_diff, oldest_event, config)
+    penalization = get_penalization(relative_diff, oldest_event, config, average=avg)
 
     # Get the scores for this event type.
     scores = multipliers.get(event['event_id'])
@@ -175,7 +207,7 @@ def fx_recentness(events, oldest_event, config, rating=0):
     rating = max(rating, normalize(score=score, a=1, b=5.0, xmin=10))
   return rating
 
-def fx_count(events, config):
+def fx_count(events, config, avg_num_events):
   """
     We want to create ratings based on a counting scheme. That it we look at
     all events for all items for one user. Based on function (fx) we return all
@@ -195,7 +227,7 @@ def fx_count(events, config):
   ratings = {}
   for i, event in enumerate(events):
     # Calc penalization based on fx
-    product_penalization = get_penalization(i, num_events, config)
+    product_penalization = get_penalization(i, num_events, config, average=avg_num_events)
     scores = multipliers.get(event['event_id'])
     score = scores[1] - ((scores[1] - scores[0]) * product_penalization)
     r = max(ratings.get(event['product_id'], 0.0), normalize(score=score, a=1, b=5.0, xmin=10))
@@ -217,7 +249,8 @@ def get_ratings_from_user(user_id, events, f, config):
     # This method needs to work on all events for all items that this user has
     # interacted on, and not one and one product_id. Thus, handle all events in
     # one array.
-    return fx_count([e for product_id, evt in events.iteritems() for e in evt], config)
+    avg = np.mean([len(e) for e in events.iteritems()])
+    return fx_count([e for product_id, evt in events.iteritems() for e in evt], config, avg)
   else:
     for product_id, evts in events.items():
       # Get the rating from one of the different calculation schemes.

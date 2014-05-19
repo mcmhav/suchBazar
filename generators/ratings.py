@@ -7,7 +7,7 @@ import utils
 import os
 
 valid_methods = ['naive', 'recentness', 'count']
-valid_functions = ['sigmoid_fixed', 'sigmoid_constant', 'linear']
+valid_functions = ['sigmoid_fixed', 'sigmoid_constant', 'linear', 'norm_dist']
 
 def main():
   config = {}
@@ -25,6 +25,9 @@ def main():
 
   # Linear options
   parser.add_argument('-lg', dest='lg', help="Choose growth of linear function")
+
+  # Normal dist options
+  parser.add_argument('-sd', dest='sd', help="Standard deviation for using normal distribution")
 
   # Sigmoid options
   parser.add_argument('-sr', dest='sigmoid_ratio', help="Choose ratio between steepness and increase, for sigmoid")
@@ -59,11 +62,20 @@ def main():
         print "[WARN] Sigmoid constant not set. Defaulting to 30. Set with -sc"
         config["sigmoid_constant"] = 30
 
+  # Standard deviation options in normal distribution
+  if args.fx and 'norm_dist' in args.fx:
+    if args.sd: config["norm_standard_dev"] = float(args.sd)
+    else:
+      print "[WARN] Standard deviation not set. Defaulting to 5.0"
+      config["norm_standard_dev"] = 5
+
   # Guess filename if not provided.
   if not args.outputfile:
     params = ""
     if config.get("sigmoid_constant", None) or config.get("sigmoid_ratio", None):
       params = "_sc-" + str(config["sigmoid_constant"]) if config.get("sigmoid_constant", None) else "_sr-" + str(config["sigmoid_ratio"])
+    if config.get("norm_standard_dev", None):
+      params = "_sd-" + args.sd
 
     if args.fx:
       args.outputfile = config["method"] + "_" + config["fx"] + params + '.txt'

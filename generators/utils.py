@@ -23,8 +23,8 @@ def sigmoid(k, **kwargs):
 
 def sigmoid_c(k, ratio, c):
   # http://fooplot.com/#W3sidHlwZSI6MCwiZXEiOiIxLygxK2VeKCgtKDIqNCkvMSkqKHgtKDEvMikpKSkiLCJjb2xvciI6IiMwMDAwMDAifSx7InR5cGUiOjEwMDAsIndpbmRvdyI6WyIwIiwiMSIsIjAiLCIxIl19XQ--
-  steep = -((2*ratio)/c)
-  shift = k - (c/2.0)
+  steep = -(ratio/c)
+  shift = (k - c)
   return 1 / (1 + math.exp(steep*shift))
 
 def parse_timestamp(timestamp):
@@ -126,7 +126,7 @@ def get_penalization(n, num, config):
 
   # Get penalization from various function schemes
   if config["fx"] == "sigmoid_fixed" and num > 1:
-    p = sigmoid(n, ratio=config["sigmoid_ratio"], c=num)
+    p = sigmoid(n, ratio=config["sigmoid_ratio"], c=num/2)
   elif config["fx"] == "sigmoid_constant" and num > 1:
     p = sigmoid(n, constant=config["sigmoid_constant"])
   elif config["fx"] == "linear" and num > 1:

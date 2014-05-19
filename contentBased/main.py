@@ -272,8 +272,8 @@ def extractFeatures(products_json):
         
     #ratings = readSobazarRatings('../generators/ratings/srecent.txt')    
     #countMatchingItems(ratings, products)
-    writeProductsToFile(products)
-    #createMyMediaLiteAttributeFile(products)
+    #writeProductsToFile(products)
+    createMyMediaLiteAttributeFile(products)
         
 def extractTopKeywords(products, num_keywords):
     
@@ -336,7 +336,7 @@ def createMyMediaLiteAttributeFile(products):
     additions = [0,20,40,60,80,100,120]
     
     
-    with open('./Data/product_features.txt', 'wb') as file:
+    with open('./Data/mymedialite_features.txt', 'wb') as file:
         writer =  csv.writer(file, delimiter='\t')
         for product in products:
             for i in range(len(product)-1):

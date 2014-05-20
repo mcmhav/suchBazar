@@ -1,28 +1,27 @@
 """
-
 A collection of functions for generating cold-start evaluation dataset splits
 
 The GenerateColdStartSplits is similar to the approaches described in:
-
-    Matchbox: Large Scale Bayesian Recommendations,
-    Addressing cold-start problem in recommendation systems,
-    Getting to Know You: Learning New User Preferences in Recommender Systems
+    -    Matchbox: Large Scale Bayesian Recommendations,
+    -    Addressing cold-start problem in recommendation systems,
+    -    Getting to Know You: Learning New User Preferences in Recommender Systems
     
 The generateColdStartSystemSplits function is similar to the approach described in:
-
-    Regression-based Latent Factor Models
+    -    Regression-based Latent Factor Models
 
 """
 
 import random
 import helpers
+from operator import itemgetter
 
+#Ratings are written to the following folder
+folder = '../data'
 
-def generateColdStartSplits(ratings, type, test_ratio, rating_splits = 0):
+def generateColdStartSplits(ratings, type, test_ratio, rating_splits = [5, 10, 15], time_stamps=False):
     """
     Generates splits for cold-start user/item evaluation:
-    
-    path: filepath,
+    ratings: list of ratings,
     type: split by "user" (0) or "item" (1),
     test_ratio: percentage of items used for testing,
     rating_splits: number test item ratings used for training for each split
@@ -36,9 +35,10 @@ def generateColdStartSplits(ratings, type, test_ratio, rating_splits = 0):
     else:
         index = 1
         prefix = 'item'
-    
-    if not rating_splits:                                                               #If rating_splits are not defined
-        rating_splits = [5, 10, 15]                                                     #Initialize as default
+        
+    if time_stamps == True:
+        if(len(ratings[0]) < 4):
+            print('Warning: No timestamps found')
           
     X = helpers.buildDictByIndex(ratings, index)                                        #Build dictionary where item id is used as key
     min_limit = rating_splits[-1] + 5                                                   #Minimum number of ratings for test users
@@ -53,14 +53,17 @@ def generateColdStartSplits(ratings, type, test_ratio, rating_splits = 0):
     for i in range(len(rating_splits)):
         test = []                                                                       #Add all ratings given by training users to training set       
         for y in y_test:                                                                #For each test item
-            r = random.sample(range(len(X[y])), rating_splits[i])                       #Select a random subset of the ratings for the current user
+            if time_stamps:
+                r = selectRatingsByTimeStamp(X[y], rating_splits[i])
+            else:
+                r = random.sample(range(len(X[y])), rating_splits[i])                  #Select a random subset of the ratings for the current user
             for j in range(len(X[y])):
                 if j in r:
                     train.append(X[y][j])                                              #Add these ratings to the training set
                 else:
                     test.append(X[y][j])                                             #Add the remaining ratings to the test set
-        helpers.writeRatingsToFile('./coldstart/%s_train%d.txt' %(prefix, i+1), train, '\t')
-        helpers.writeRatingsToFile('./coldstart/%s_test%d.txt' %(prefix, i+1), test, '\t')
+        helpers.writeRatingsToFile('%s/%s_train%d.txt' %(folder, prefix, i+1), train, '\t')
+        helpers.writeRatingsToFile('%s/%s_test%d.txt' %(folder, prefix, i+1), test, '\t')
                 
   
 def generateColdStartSystemSplits(ratings, test_ratio, ratios, time_stamps = False):
@@ -71,7 +74,10 @@ def generateColdStartSystemSplits(ratings, test_ratio, ratios, time_stamps = Fal
     test_ratio: percentage of ratings set aside for testing
     train_ratios: Percentage of training data used for each split
     
-    """   
+    """
+    if time_stamps == True:
+        if(len(ratings[0]) < 4):
+            print('Warning: No timestamps found')
         
     if not time_stamps:
         num_ratings = len(ratings)                                                                #Read ratings 
@@ -80,18 +86,18 @@ def generateColdStartSystemSplits(ratings, test_ratio, ratios, time_stamps = Fal
         X_pool = [i for j, i in enumerate(ratings) if j not in r]                                 #Put the remaining in the testset
         for i in range(len(ratios)):                                                              #For each training ratio supplied
             X_train = generateDatasetSplit(X_pool, ratios[i], num_ratings)                        #Generate a split of size ratios[i]
-            helpers.writeRatingsToFile('./coldstart/system_train%d.txt' %(i+1), X_train, delimiter='\t')
-        helpers.writeRatingsToFile('./coldstart/system_test.txt', y_test, delimiter='\t')
+            helpers.writeRatingsToFile('%s/system_train%d.txt' %(folder, i+1), X_train, delimiter='\t')
+        helpers.writeRatingsToFile('%s/system_test.txt' %folder, y_test, delimiter='\t')
            
     else: ### TODO - Testing ###                                            
-        ratings = sorted(ratings, key=lambda ratings: ratings[3], reverse=True)                   #Sort ratings based on timestamps, the freshest being 'on top'
+        ratings = sorted(ratings, key=itemgetter(3), reverse=True)                   #Sort ratings based on timestamps, the freshest being 'on top'
         num_test_ratings = int(len(ratings)*test_ratio)                                           #Number of ratings to use for testing
         y_test = ratings[-num_test_ratings:]                                                      #Put freshest ratings in the testset
         X_pool = ratings[:-num_test_ratings]                                                      #Put the remainding in the training set pool
         for i in range(len(ratios)):                                                              #For each training ratio supplied
             X_train = generateDatasetSplit(X_pool, ratios[i])                                     #Generate a split of size ratios[i]
-            helpers.writeRatingsToFile('./coldstart/system_train%d.txt' %(i+1), X_train, '\t')
-        helpers.writeRatingsToFile('./coldstart/system_test.txt', y_test, delimiter='\t')
+            helpers.writeRatingsToFile('%s/system_train%d.txt' %(folder, i+1), X_train, '\t')
+        helpers.writeRatingsToFile('%s/system_test.txt' %folder, y_test, delimiter='\t')
        
     
 def generateDatasetSplit(trainingset, ratio, num_total_ratings, rand=True):
@@ -105,6 +111,7 @@ def generateDatasetSplit(trainingset, ratio, num_total_ratings, rand=True):
     
     '''
     
+    #TODO - Really slow, Use random.shuffle?
     if rand:
         r = random.sample(range(len(trainingset)), int(ratio*num_total_ratings))
         split = [trainingset[i] for i in r]
@@ -141,6 +148,24 @@ def generateSplitFromRatingLimit(X, ratio, limit):
         del test[r]
     
     return train, test
+
+def selectRatingsByTimeStamp(ratings, num_ratings):
+    
+    selected = []
+    r = []
+    
+    for i in range(len(ratings)):
+        selected.append([i, ratings[i][3]])
+            
+    #TODO - Some fancy datetime stuff for sort to work
+    selected = sorted(selected, key=itemgetter(1), reverse=False)
+    
+    for i in range(num_ratings):
+        r.append(selected[i][0])
+        
+    #print(r)
+    return r
+    
             
 #generateColdStartSplits('./datasets/blend.txt', 'user', 0.1, [10, 15, 20])
 #generateColdStartSplits('../../datasets/blend.txt', 'item', 0.02, [5, 10, 15])

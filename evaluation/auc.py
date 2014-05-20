@@ -1,4 +1,24 @@
 import helpers
+import random
+
+
+def appendZeroRatings(predictions, itemIds):
+    '''
+    Complete the prediction lists in order
+    to successfully compute the AUC
+    '''
+    print('Appending missing items...')
+    #Randomize the order missing items are added
+    random.shuffle(itemIds)
+    count = 0
+
+    for user in predictions:
+        for item in itemIds:
+            if not any(x[1] == item for x in predictions[user]):
+                count += 1
+                predictions[user].append([user, item, 0.0])
+    print('Done appending %d missing items' %count)
+    return predictions
 
 def compute(train, test, predictions):
     '''
@@ -14,6 +34,10 @@ def compute(train, test, predictions):
     predictions = helpers.buildDictByIndex(predictions, 0)
     #sortDictByRatings(predictions)                                #The ratings usually comes pre sorted
 
+    #itemIds = helpers.getUniqueItemList(train)
+    #predictions = appendZeroRatings(predictions, itemIds)
+
+    
     candidateItems = helpers.getUniqueItemList(train)
 
     numCandidateItems = len(candidateItems)                       #Number of unique items in training set
@@ -30,9 +54,9 @@ def compute(train, test, predictions):
 
         if user in predictions:                                   #Check if user is in the prediction set
             predictionCount = len(predictions[user])              #Length of the users prediction set
-            #if predictionCount < numCandidateItemsThisUser:
+            if predictionCount < numCandidateItemsThisUser:
                 #TODO - Consider adding a function for randomly appending the missing items
-                # print('Warning: Not all items have been ranked!')
+                print('Warning: Not all items have been ranked!')
             numDroppedItems = numCandidateItemsThisUser - predictionCount
             AUC += auc(predictions[user], test_users[user], numDroppedItems)
             num_users += 1

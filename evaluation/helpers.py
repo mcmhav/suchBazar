@@ -2,6 +2,8 @@ import sys
 import json
 import pymongo
 import csv
+from datetime import datetime
+import time
 from operator import itemgetter
 
 f = ""
@@ -53,16 +55,35 @@ def closeF():
     global f
     f.close()
 
-def readRatingsFromFile(path):
+def readRatingsFromFile(path, convert=False):
 
     ratings = []
     with open(path, 'r') as file:
+        
         dialect = csv.Sniffer().sniff(file.read(1024))
         reader =  csv.reader(file, delimiter=dialect.delimiter)
         for rating in reader:
-            if len(rating) >= 3:
+            if len(rating) == 3:
                 if rating[0] != '' and rating[1] != '' and rating[2] != '':
                     ratings.append([int(rating[0]), int(rating[1]), float(rating[2])])
+            if len(rating) > 3:
+                if rating[0] != '' and rating[1] != '' and rating[2] != '' and rating[3] != '':
+                    if convert:
+                        t = datetime.strptime(rating[3],"%Y-%m-%d %H:%M:%S")
+                        ratings.append([int(rating[0]), int(rating[1]), float(rating[2]), int(time.mktime(t.timetuple()))])
+                    else:
+                        ratings.append([int(rating[0]), int(rating[1]), float(rating[2]), int(rating[3])])           
+    return ratings
+
+def readRatings(path, timestamps):
+    
+    ratings = []
+    with open(path, 'r') as file:
+        
+        lines = file.readlines()
+        for line in lines:
+            s = line.split('\t')
+            ratings.append([int(s[0]), int(s[1]), float(s[2]), int(s[3])])
     return ratings
 
 def readMyMediaLitePredictions(path):

@@ -66,7 +66,12 @@ def parse_eventline(row, users):
   if is_valid(user_id) and is_valid(product_id) and is_valid(event_id):
     users[user_id][product_id].append({'event_id': event_id, 'timestamp': timestamp, 'product_id': product_id})
     t = parse_timestamp(timestamp)
-    last_event[user_id] = t if t > last_event[user_id] else last_event[user_id]
+
+    # Most recent event on this item.
+    k = "%s-%s" % (user_id, product_id)
+    last_event[k] = t if t > last_event[k] else last_event[k]
+
+    # Save the oldest event for this user as well.
     oldest_event[user_id] = t if t < last_event[user_id] else oldest_event[user_id]
 
 def parse_mongo(users):
@@ -140,7 +145,7 @@ def write_ratings_to_file(user_id, ratings, f, config):
   for product_id, rating in ratings.items():
     base = "%s\t%s\t%.3f" % (user_id, product_id, rating)
     if config["timestamps"]:
-      f.write("%s\t%s\n" % (base, last_event[user_id].strftime("%Y-%m-%d %H:%M:%S")))
+      f.write("%s\t%s\n" % (base, last_event["%s-%s" % (user_id, product_id)].strftime("%Y-%m-%d %H:%M:%S")))
       continue
     f.write("%s\n" % base)
 

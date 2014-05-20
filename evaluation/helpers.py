@@ -39,6 +39,16 @@ def getCSVWriter(cFile):
         f = open(cFile + '.csv', "wb")
     return csv.writer(f)
 
+def readPredictionsFromFile(path):
+    predictions = []
+    f = open(path, 'r+')
+    lines = f.readlines()
+    for line in lines:
+        tmp = line.split(',')
+        predictions.append([int(tmp[0]), int(tmp[1]), float(tmp[2])])
+    f.close()
+    return predictions
+
 def closeF():
     global f
     f.close()

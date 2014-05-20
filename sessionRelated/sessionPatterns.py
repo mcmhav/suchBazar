@@ -76,8 +76,11 @@ def main():
 
     uniqueSessions = []
     groupSessions(uniqueSessions)
-    drawCirclesAndStuff(uniqueSessions)
+    drawCirclesAndStuff(uniqueSessions,True)
     # pydottestur(uniqueSessions)
+    allInOneWithFlow(uniqueSessions)
+    drawTopSessions(uniqueSessions)
+
 
 def groupSessions(uniqueSessions):
     sessions = groupSessionsForUsers()
@@ -85,87 +88,121 @@ def groupSessions(uniqueSessions):
         sorted_events = sortEventsOnTimeStamp(session['events'])
         checkIfSessionMatchWithSessions([x[1] for x in sorted_events],uniqueSessions)
 
+def drawTopSessions(uniqueSessions):
+    uniqueSessions_sorted = sorted(uniqueSessions, key=lambda k: k['count'], reverse=True)
+    tmp = uniqueSessions_sorted[2:102]
 
-# def pydottestur(uniqueSessions):
-#     graph = pydot.Dot(graph_type='digraph')
-#     start_node = pydot.Node("Start", style="filled", fillcolor="red")
+    for session in tmp:
+        drawSeparateSession(session['session'],session['count'])
 
-#     app_started_node = pydot.Node('app_started')
-#     user_logged_in_node = pydot.Node('user_logged_in')
+def allInOneWithFlow(uniqueSessions):
+    topSessions = []
+    # print (uniqueSessions)
+    # sorted_events = sorted(uniqueSessions.items(),reverse=False)
+    # for session in uniqueSessions:
+    #     print (session)
+    uniqueSessions_sorted = sorted(uniqueSessions, key=lambda k: k['count'], reverse=True)
+    # print (uniqueSessions_sorted[:20])
+    tmp = uniqueSessions_sorted[2:32]
+    dot = Digraph(comment='Session-pattern')
 
-#     product_wanted_node = pydot.Node('product_wanted')
-#     product_detail_clicked_node = pydot.Node('product_detail_clicked')
-#     storefront_clicked_node = pydot.Node('storefront_clicked')
-#     activity_clicked_node = pydot.Node('activity_clicked')
-#     around_me_clicked_node = pydot.Node('around_me_clicked')
-#     featured_storefront_clicked_node = pydot.Node('featured_storefront_clicked')
-#     friend_invited_node = pydot.Node('friend_invited')
-#     stores_map_clicked_node = pydot.Node('stores_map_clicked')
-#     product_purchase_intended_node = pydot.Node('product_purchase_intended')
-#     store_clicked_node = pydot.Node('store_clicked')
-#     featured_collection_clicked_node = pydot.Node('featured_collection_clicked')
-
-
-#     graph.add_node(app_started_node)
-#     graph.add_node(user_logged_in_node)
-#     graph.add_node(product_wanted_node)
-#     graph.add_node(product_detail_clicked_node)
-#     graph.add_node(storefront_clicked_node)
-#     graph.add_node(activity_clicked_node)
-#     graph.add_node(around_me_clicked_node)
-#     graph.add_node(featured_storefront_clicked_node)
-#     graph.add_node(friend_invited_node)
-#     graph.add_node(stores_map_clicked_node)
-#     graph.add_node(product_purchase_intended_node)
-#     graph.add_node(store_clicked_node)
-#     graph.add_node(featured_collection_clicked_node)
-
-#     for session in uniqueSessions:
-#         prevEvent = ''
-#         for event in session:
-#             edge = pydot.Edge(node_d, node_a)
-#             edge.set_label("and back we go again")
-#             edge.set_labelfontcolor("#009933")
-#             edge.set_fontsize("10.0")
-#             edge.set_color("blue")
-#             print (edge.get_label())
-#             sys.exit()
-#             if prevEvent == '':
-#                 # dot.node('B', event)
-#                 edges.append('A')
-#             prevEvent = event
-#             print ()
-
-#     # and finally we create the edges
-#     # to keep it short, I'll be adding the edge automatically to the graph instead
-#     # of keeping a reference to it in a variable
-#     graph.add_edge(pydot.Edge(node_a, node_b))
-#     graph.add_edge(pydot.Edge(node_b, node_c))
-#     graph.add_edge(pydot.Edge(node_c, node_d))
-#     # but, let's make this last edge special, yes?
-#     graph.add_edge(pydot.Edge(node_d, node_a, label="and back we go again", labelfontcolor="#009933", fontsize="10.0", color="blue"))
-
-# # and we are done
-# graph.write_png('example2_graph.png')
+    count = 0
+    # dot.node('1', 'Start')
+    # dot.node('2', 'app_started/user_logged_in')
 
 
-def drawCirclesAndStuff(uniqueSessions):
+    states = []
+    states.append('Start')
+    states.append('app_started/user_logged_in')
+    diagram = {}
+    for session in tmp:
+        prevNode = 'Start'
+        for event in session['session']:
+            thisNode = event
+            if thisNode == 'app_started' or thisNode == 'user_logged_in':
+                thisNode = "app_started/user_logged_in"
+
+            if event not in states:
+                states.append(event)
+                # dot.node(str(count), event)
+                count += 1
+
+
+            edge = prevNode + '->' + thisNode
+            if edge not in diagram:
+                diagram[edge] = session['count']
+            else:
+                diagram[edge] += session['count']
+
+            prevNode = thisNode
+
+    # for state in diagram:
+
+    for edge in diagram:
+        nodes = edge.split('->')
+
+        dot.edge(
+            nodes[0],
+            nodes[1],
+            constraint='true',
+            label=str(diagram[edge]),
+            # color=color,
+        )
+    dot.render('sessionFigures/testur.gv', view=False)
+
+
+    # for session in uniqueSessions_sorted[:20]:
+    #     print (uniqueSessions_sorted)
+        # count += 1
+        # if count > 12:
+        #     sys.exit()
+
+def drawSeparateSession(session,sid):
+    dot = Digraph(comment='Session' + str(sid))
+    dot.node('1', 'Start')
+    count = 2
+    prevNode = '1'
+    for event in session:
+        thisNode = str(count)
+        dot.node(thisNode, event)
+        dot.edge(
+            prevNode,
+            thisNode,
+            constraint='true',
+            # label=str(edges[edge]),
+            # color=color,
+            # weight=str(ed/ges[edge]),
+        )
+        count += 1
+        prevNode = thisNode
+    dot.render('sessionFigures/session-' + str(sid) + ".gv", view=False)
+
+def drawCirclesAndStuff(uniqueSessions,reduced):
     dot = Digraph(comment='Session-pattern')
     dot.node('A', 'Start')
     dot.node('B', 'app_started')
     dot.node('C', 'user_logged_in')
 
-    dot.node('D', 'storefront_clicked')
+    if reduced:
+        dot.node('S', 'store_accessed')
+    else:
+        dot.node('D', 'storefront_clicked')
+        dot.node('M', 'store_clicked')
+        dot.node('I', 'featured_storefront_clicked')
+        dot.node('N', 'featured_collection_clicked')
+
     dot.node('E', 'product_detail_clicked')
-    dot.node('F', 'product_wanted')
-    dot.node('G', 'activity_clicked')
-    dot.node('H', 'around_me_clicked')
-    dot.node('I', 'featured_storefront_clicked')
-    dot.node('J', 'friend_invited')
-    dot.node('K', 'stores_map_clicked')
     dot.node('L', 'product_purchase_intended')
-    dot.node('M', 'store_clicked')
-    dot.node('N', 'featured_collection_clicked')
+    dot.node('F', 'product_wanted')
+
+    if reduced:
+        dot.node('O', 'others')
+    else:
+        dot.node('G', 'activity_clicked')
+        dot.node('H', 'around_me_clicked')
+        dot.node('J', 'friend_invited')
+        dot.node('K', 'stores_map_clicked')
+
 
     edges = {}
     # {form:node, to:node, count:count}
@@ -173,6 +210,8 @@ def drawCirclesAndStuff(uniqueSessions):
         prevNode = ''
         for event in session['session']:
             node = nodeMapper(event)
+            if reduced:
+                node = reduceMapper(node)
             fromTo = ''
             if prevNode == '':
                 fromTo = 'A' + node
@@ -180,33 +219,53 @@ def drawCirclesAndStuff(uniqueSessions):
                 fromTo = prevNode + node
             addEdgeToEdges(fromTo,edges,session['count'])
             prevNode = nodeMapper(event)
+            if reduced:
+                prevNode = reduceMapper(prevNode)
 
     edges_sorted = sorted(edges.items(), key=operator.itemgetter(1),reverse=True)
 
-    for edge in edges_sorted:
-        print (edge)
+    # for edge in edges_sorted:
+    #     print (edge)
     i = 0
+
+    # skipNodes = {'J', 'H', 'G', 'K'}
     for edge in edges:
         nodeFrom = edge[0]
         color = coloMapper(nodeFrom)
+
+        # if (nodeFrom in skipNodes) or (edge[1] in skipNodes):
+        #     continue
         dot.edge(
             nodeFrom,
             edge[1],
             constraint='true',
             label=str(edges[edge]),
             color=color,
-            # penwidth=5,
+            weight=str(edges[edge]),
         )
         i += 1
 
-    # print(dot.source)
-    dot.render('test-output/round-table.gv', view=False)
+    print(dot.source)
+    dot.render('sessionFigures/round-table.gv', view=False)
 
 def addEdgeToEdges(fromTo,edges,count):
     if fromTo in edges:
         edges[fromTo] += 1*count
     else:
         edges[fromTo] = 1*count
+
+def reduceMapper(event):
+    return {
+        'D': 'S',
+        'M': 'S',
+        'I': 'S',
+        'N': 'S',
+
+        'G': 'O',
+        'H': 'O',
+        'J': 'O',
+        'K': 'O',
+    }.get(event, event)
 
 def coloMapper(node):
     return {
@@ -224,7 +283,9 @@ def coloMapper(node):
         'L': 'gray',
         'M': 'indigo',
         'N': 'violet',
-    }[node]
+        'S': 'orchid',
+        'O': 'purple',
+    }.get(node, 'gold')
 
 def nodeMapper(event):
     return {

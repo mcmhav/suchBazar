@@ -20,3 +20,4 @@ mahout/jars/*
 *.txt
 *.gv
 *.pdf
+*.predictions

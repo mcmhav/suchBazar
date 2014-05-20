@@ -7,8 +7,6 @@ import helpers
 
 def itemAverage(train, test):
     
-    
-    
     start = time.time()
     print('Generating item-average predictions...')
     

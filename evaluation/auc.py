@@ -6,6 +6,7 @@ def appendZeroRatings(predictions, itemIds):
     '''
     Complete the prediction lists in order
     to successfully compute the AUC
+    TODO - Do not include item ids in the users training set
     '''
     print('Appending missing items...')
     #Randomize the order missing items are added

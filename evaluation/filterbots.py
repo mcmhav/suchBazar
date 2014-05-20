@@ -217,7 +217,6 @@ def readItemAttributes(path):
             
     return itemAttributes
         
-
 def createSplit(ratings, item_attributes, test_ratio, split=True):
     
     #If the supplied ratings are to be splitted in a test and tranining set
@@ -240,13 +239,30 @@ def createSplit(ratings, item_attributes, test_ratio, split=True):
     
     writeRatingsToFile('./Data/ftrain.txt', train, '\t')
     
+def addFBRatings(train, brand=0, average=0, popularity=0, critic=0, conformity=0):
     
-   
+    item_attributes = readItemAttributes('../data/product_features.txt')
+    
+    if brand:
+        train.extend(brandBot(train, item_attributes))
+    if average:
+        train.extend(averageBot(train))
+    if popularity:
+        train.extend(popularityBot(train, 5))
+    if critic:
+        train.extend(criticBot(train))
+    if conformity:
+        train.extend(conformityBot(train))
+    
+    return train    
+
+
+### TESTING ###   
 #ratings = readRatings('../../datasets/blend.txt')
-ratings = readRatings('Data/user_train3.txt')
-item_attributes = readItemAttributes('./Data/product_features.txt')
+#ratings = readRatings('Data/user_train3.txt')
+#item_attributes = readItemAttributes('./Data/product_features.txt')
 #createSplit(ratings, item_attributes, 0.1)
-createSplit(ratings, item_attributes, 0.1, False)
+#createSplit(ratings, item_attributes, 0.1, False)
 #brandBot(ratings, item_attributes)
 #averageItemBot(ratings)
 #VTBot(ratings, 5)

@@ -16,6 +16,7 @@ def main():
   parser.add_argument('-i', dest='inputfile', default='../data/sobazar.tab', help="Defaulting to data/proddata.tab")
   parser.add_argument('-o', dest='outputfile', help="Defaulting to '<method-name>.txt'")
   parser.add_argument('-d', dest='outputfolder', default='ratings', help="Defaulting to 'ratings'")
+  parser.add_argument('-t', dest='timestamps', action='store_true', default=False, help="Include timestamps in output")
   parser.add_argument('--debug', dest='debug', action='store_true', default=False)
   parser.add_argument('--skip-header', dest='skipheader', action='store_true', default=False)
 
@@ -83,6 +84,9 @@ def main():
       args.outputfile = config["method"] + '.txt'
   config["outfile"] = args.outputfolder + '/' + args.outputfile
 
+  # Check if we want timestamps in output
+  config["timestamps"] = args.timestamps
+
   # Check that the input file exists.
   if os.path.isfile(args.inputfile):
     config["infile"] = args.inputfile
@@ -131,7 +135,7 @@ def main():
     for user_id, products in users.iteritems():
       # Get rating for user_id and events connected to this user.
       r = utils.get_ratings_from_user(user_id, products, output, config)
-      utils.write_ratings_to_file(user_id, r, output)
+      utils.write_ratings_to_file(user_id, r, output, config)
       ratings.extend([rat for product_id, rat in r.items()])
   print ("Success. Wrote %d ratings to %s. Average: %s, Median: %s, Min: %.2f, Max: %.2f" %
     (len(ratings), args.outputfile, np.mean(ratings), np.median(ratings), np.min(ratings), np.max(ratings)))

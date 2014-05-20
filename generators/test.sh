@@ -8,9 +8,10 @@ trap 'echo interrupted; exit' INT
 CLEAN=0
 PLOT=0
 BLEND=0
+TIMESTAMP=""
 
 # Check options (basically if we want to clean and/or plot)
-while getopts ":cpb" o; do
+while getopts ":cpbt" o; do
   case "${o}" in
     c)
       CLEAN=1
@@ -20,6 +21,9 @@ while getopts ":cpb" o; do
       ;;
     b)
       BLEND=1
+      ;;
+    t)
+      TIMESTAMP="-t"
       ;;
     *)
       usage
@@ -44,15 +48,15 @@ INFILE=../../datasets/v2/sobazar.tab.prod
 ##
 # Our various methods to test
 ##
-python ratings.py -i $INFILE -m naive
+python ratings.py -i $INFILE $TIMESTAMP -m naive
 
-python ratings.py -i $INFILE -m recentness -fx sigmoid_fixed -sr 4.5
-python ratings.py -i $INFILE -m recentness -fx sigmoid_constant -sc 30
-python ratings.py -i $INFILE -m recentness -fx linear
+python ratings.py -i $INFILE $TIMESTAMP -m recentness -fx sigmoid_fixed -sr 4.5
+python ratings.py -i $INFILE $TIMESTAMP -m recentness -fx sigmoid_constant -sc 30
+python ratings.py -i $INFILE $TIMESTAMP -m recentness -fx linear
 
-python ratings.py -i $INFILE -m count -fx linear
-python ratings.py -i $INFILE -m count -fx sigmoid_fixed -sr 4.5
-python ratings.py -i $INFILE -m count -fx sigmoid_constant -sc 30
+python ratings.py -i $INFILE $TIMESTAMP -m count -fx linear
+python ratings.py -i $INFILE $TIMESTAMP -m count -fx sigmoid_fixed -sr 4.5
+python ratings.py -i $INFILE $TIMESTAMP -m count -fx sigmoid_constant -sc 30
 
 # If blend we do that as well.
 if [ $BLEND -eq 1 ]; then

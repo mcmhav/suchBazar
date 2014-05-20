@@ -90,6 +90,8 @@ def main():
   # Check that the input file exists.
   if os.path.isfile(args.inputfile):
     config["infile"] = args.inputfile
+  elif args.inputfile == 'mongo':
+    config["infile"] = args.inputfile
   if not config.get("infile", None):
     print "Could not find file: %s. Ensure you have provided correct file with -i option" % args.inputfile
     sys.exit(1)

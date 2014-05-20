@@ -46,7 +46,7 @@ def findTimeFor(action):
                 tmp = event
                 if viewTime < 6000:
                     # consider event negative
-                    tmp['event_id'] = 'Negative_event'
+                    tmp['event_id'] = 'negative_event'
                 colWithNeg.insert(tmp)
                 viewTimeStart = -1
                 viewedItemSession = -1

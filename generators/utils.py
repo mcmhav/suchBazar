@@ -77,7 +77,7 @@ def parse_eventline(row, users):
 def parse_mongo(users):
   client = pymongo.MongoClient()
   db = client.mydb
-  col = db['cleanedItems']
+  col = db['negValues']
   mongoDB = col.find()
   for instance in mongoDB:
     row = [''] * 17
@@ -172,6 +172,16 @@ def get_penalization(n, num, config, average=0.0):
   return p
 
 def get_multipliers():
+  return {
+    'negative_event': [0,20],
+    'featured_product_clicked': [20,60],
+    'product_detail_clicked': [20,60],
+    'product_wanted': [60,80],
+    'product_purchase_intended': [80,100],
+    'product_purchased': [80,100]
+  }
+
+def get_without_neg_multipliers():
   return {
     'featured_product_clicked': [10,60],
     'product_detail_clicked': [10,60],

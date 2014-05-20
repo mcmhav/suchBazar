@@ -33,8 +33,8 @@ def compute(actual, predicted, beta,k=100):
         tmpActual = actual[:k]
         tmpPredicted = predicted[:k]
 
-        HLU += nDCG(tmpActual, tmpPredicted, beta)
-        HLUMax += nDCG(tmpActual, beta)
+        HLU += hluU(tmpActual, tmpPredicted, beta)
+        HLUMax += hluUMax(tmpActual, beta)
 
         num_users += 1
 

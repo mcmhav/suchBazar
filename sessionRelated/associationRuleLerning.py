@@ -6,7 +6,7 @@ col = helpers.getCollection('sessions')
 def main():
     sessions = groupSessionsForUsers()
 
-    for session in sessions:
+    # for session in sessions:
 
     print ('lol')
 

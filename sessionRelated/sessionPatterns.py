@@ -15,6 +15,7 @@ parser.add_argument('-sc', type=str, default="sessions")
 args = parser.parse_args()
 
 col = helpers.getCollection(args.sc)
+savePath = "../../muchBazar/src/image/"
 
 print ("Collection used: ", args.sc)
 print ("")
@@ -77,9 +78,10 @@ def main():
     uniqueSessions = []
     groupSessions(uniqueSessions)
     drawCirclesAndStuff(uniqueSessions,True)
+    drawCirclesAndStuff(uniqueSessions,False)
     # pydottestur(uniqueSessions)
-    allInOneWithFlow(uniqueSessions)
-    drawTopSessions(uniqueSessions)
+    # allInOneWithFlow(uniqueSessions)
+    # drawTopSessions(uniqueSessions)
 
 
 def groupSessions(uniqueSessions):
@@ -148,7 +150,8 @@ def allInOneWithFlow(uniqueSessions):
             label=str(diagram[edge]),
             # color=color,
         )
-    dot.render('sessionFigures/testur.gv', view=False)
+
+    renderDot(dot, "allInOneFlow")
 
 
     # for session in uniqueSessions_sorted[:20]:
@@ -156,6 +159,9 @@ def allInOneWithFlow(uniqueSessions):
         # count += 1
         # if count > 12:
         #     sys.exit()
+
+def renderDot(dotSource, name):
+    dotSource.render(savePath + name + '-gvfile', view=False)
 
 def drawSeparateSession(session,sid):
     dot = Digraph(comment='Session' + str(sid))
@@ -175,7 +181,7 @@ def drawSeparateSession(session,sid):
         )
         count += 1
         prevNode = thisNode
-    dot.render('sessionFigures/session-' + str(sid) + ".gv", view=False)
+    renderDot(dot, 'session-' + str(sid))
 
 def drawCirclesAndStuff(uniqueSessions,reduced):
     dot = Digraph(comment='Session-pattern')
@@ -245,8 +251,7 @@ def drawCirclesAndStuff(uniqueSessions,reduced):
         )
         i += 1
 
-    print(dot.source)
-    dot.render('sessionFigures/round-table.gv', view=False)
+    renderDot(dot, "statesInteraction" + str(reduced))
 
 def addEdgeToEdges(fromTo,edges,count):
     if fromTo in edges:

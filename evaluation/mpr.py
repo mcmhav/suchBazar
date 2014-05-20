@@ -23,6 +23,9 @@ from py4j.java_gateway import JavaGateway
 import subprocess
 import os
 
+dataPath = '../generators/ratings/'
+predictionFile = 'tmp.preditcions'
+
 def main():
     # train = helpers.readRatingsFromFile('../generators/training.txt')
     # test = helpers.readRatingsFromFile('../generators/validation.txt')
@@ -31,8 +34,12 @@ def main():
     # mpr = compute(train, test, predictions)
     # print (mpr)
 
+
+
+def compute(recommenderSystem):
     purchases = getPurchases('mongo')
     ratingFile = "recentness_sigmoid_fixed_sr-4.txt"
+
 
     totalRank = 0
     count = 0
@@ -41,8 +48,13 @@ def main():
         product = event['product_id']
         print ("User: {} Product: {}".format(str(user), str(product)))
         makeRatingsFile(user,product)
-        subprocess.call(['java', 'GetRecommendationsForUser', ratingFile, 'itembased', str(user)])
-        percentileRank = findRankOfProduct(product)
+
+        # generatePredictionsMahout(ratingFile,user)
+        generatePredictionsMyMediaLite(ratingFile,user)
+
+
+        # percentileRank = findRankOfProductMahout(product)
+        percentileRank = findRankOfProductMyMediLite(user,product)
         # if user == 1342189870:
         #     sys.exit()
         if percentileRank >= 0:
@@ -53,11 +65,44 @@ def main():
     mpr = totalRank/count
     print (mpr)
     return mpr
+def generatePredictionsMahout(ratingFile,user):
+    subprocess.call(['java', 'GetRecommendationsForUser', ratingFile, 'itembased', str(user)])
 
-def findRankOfProduct(product):
-    predLocation = '../generators/ratings/tmp.predictions'
-    predictions = helpers.readPredictionsFromFile(predLocation)
+def generatePredictionsMyMediaLite(ratingFile,user):
+    subprocess.call([
+        'item_recommendation',
+        '--training-file=' + dataPath + 'no1.train',
+        '--recommender=MostPopular',
+        '--prediction-file=' + dataPath + predictionFile
+    ])
+
+def findRankOfProductMyMediLite(user,product):
+    predLocation = dataPath + predictionFile
+    predictions = helpers.readMyMediaLitePredictions(predLocation)
     total = len(predictions)
+    sys.exit()
+
+    if total == 0:
+        return -1
+    count = 0
+    rank = -1
+    for prediction in predictions:
+        # print (prediction[1])
+        if str(product) == str(prediction[1]):
+            rank = count
+            sys.exit()
+        count += 1
+    # print (product)
+    # sys.exit()
+    percentileRank = (rank/total)*100
+    return percentileRank
+
+def findRankOfProductMahout(user,product):
+    predLocation = dataPath + predictionFile
+    predictions = helpers.readMyMediaLitePredictions(predLocation)
+    total = len(predictions)
+    sys.exit()
+
     if total == 0:
         return -1
     count = 0
@@ -95,7 +140,7 @@ def getPurchases(collection):
         purchases = col.find({'event_id':'product_purchase_intended'})
     return purchases
 
-def compute(train, test, predictions):
+def computeOld(train, test, predictions):
     train_users = helpers.buildDictByIndex(train, 0)
     test_users = helpers.buildDictByIndex(test, 0)
     predictions = helpers.buildDictByIndex(predictions, 0)

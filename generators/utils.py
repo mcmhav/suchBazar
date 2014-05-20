@@ -9,7 +9,8 @@ import numpy as np
 
 # Dictionary holding the number of days since the most recent event,
 # for user i.
-days_last_event = defaultdict(lambda: sys.maxsize)
+last_event = defaultdict(lambda: datetime.min)
+oldest_event = defaultdict(lambda: datetime.max)
 ignored = 0
 
 def normalize(score,xmax=100,xmin=0,a=0,b=5):
@@ -47,10 +48,10 @@ def sigmoid_c(k, ratio, c):
 def parse_timestamp(timestamp):
   return datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
 
-def calc_most_recent(curr, timestamp, today):
+def calc_most_recent(curr, timestamp):
   t = parse_timestamp(timestamp)
-  diff = today - t
-  return min(curr, diff.days)
+  #diff = today - t
+  return min(curr, t)
 
 def is_valid(indata):
   if indata and indata not in ('N/A', '-1', 'NULL', 'null', 'testimplementation'):
@@ -58,14 +59,15 @@ def is_valid(indata):
   return False
 
 def parse_eventline(row, users):
-  today = datetime.now()
   event_id = row[1]
   timestamp = row[3]
   product_id = row[12]
   user_id = row[16]
   if is_valid(user_id) and is_valid(product_id) and is_valid(event_id):
     users[user_id][product_id].append({'event_id': event_id, 'timestamp': timestamp, 'product_id': product_id})
-    days_last_event[user_id] = calc_most_recent(days_last_event[user_id], timestamp, today)
+    t = parse_timestamp(timestamp)
+    last_event[user_id] = t if t > last_event[user_id] else last_event[user_id]
+    oldest_event[user_id] = t if t < last_event[user_id] else oldest_event[user_id]
 
 def parse_mongo(users):
   client = pymongo.MongoClient()
@@ -130,13 +132,17 @@ def fx_naive(events):
     count[event['event_id']] += 1
   return rating
 
-def write_ratings_to_file(user_id, ratings, f):
+def write_ratings_to_file(user_id, ratings, f, config):
   """
     Writes to a file:
       user_id, product_id, rating
   """
   for product_id, rating in ratings.items():
-    f.write("%s\t%s\t%.3f\n" % (user_id, product_id, rating))
+    base = "%s\t%s\t%.3f" % (user_id, product_id, rating)
+    if config["timestamps"]:
+      f.write("%s\t%s\n" % (base, last_event[user_id].strftime("%Y-%m-%d %H:%M:%S")))
+      continue
+    f.write("%s\n" % base)
 
 def get_penalization(n, num, config, average=0.0):
   p = 0
@@ -185,18 +191,19 @@ def fx_recentness(events, oldest_event, config, rating=0):
     c = 0
     for event in events:
       t = parse_timestamp(event['timestamp'])
-      diff = today - t
-      c += (diff.days - oldest_event)
+      diff_today = today - t
+      diff_event = today - oldest_event
+      c += (diff_today.days - diff_event.days)
     avg = c / len(events)
 
   for event in events:
     t = parse_timestamp(event['timestamp'])
-    diff = today - t
 
     # The number of days this event is from the latest event for this user.
-    relative_diff = diff.days - oldest_event
+    diff_event = (today - t).days
+    diff_oldest = (today - oldest_event).days
 
-    penalization = get_penalization(relative_diff, oldest_event, config, average=avg)
+    penalization = get_penalization(diff_event, diff_oldest, config, average=avg)
 
     # Get the scores for this event type.
     scores = multipliers.get(event['event_id'])
@@ -255,7 +262,7 @@ def get_ratings_from_user(user_id, events, f, config):
     for product_id, evts in events.items():
       # Get the rating from one of the different calculation schemes.
       if config["method"] == 'recentness':
-        rating = fx_recentness(evts, days_last_event[user_id], config)
+        rating = fx_recentness(evts, last_event[user_id], config)
       elif config["method"] == 'naive':
         rating = fx_naive(evts)
       ratings[product_id] = rating

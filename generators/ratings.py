@@ -7,7 +7,7 @@ import utils
 import os
 
 valid_methods = ['naive', 'recentness', 'count']
-valid_functions = ['sigmoid_fixed', 'sigmoid_constant', 'linear']
+valid_functions = ['sigmoid_fixed', 'sigmoid_constant', 'linear', 'norm_dist']
 
 def main():
   config = {}
@@ -17,6 +17,7 @@ def main():
   parser.add_argument('-o', dest='outputfile', help="Defaulting to '<method-name>.txt'")
   parser.add_argument('-d', dest='outputfolder', default='ratings', help="Defaulting to 'ratings'")
   parser.add_argument('--debug', dest='debug', action='store_true', default=False)
+  parser.add_argument('--skip-header', dest='skipheader', action='store_true', default=False)
 
   # Method and curve options.
   parser.add_argument('-m', dest='method', help="Choose which method to use")
@@ -24,6 +25,9 @@ def main():
 
   # Linear options
   parser.add_argument('-lg', dest='lg', help="Choose growth of linear function")
+
+  # Normal dist options
+  parser.add_argument('-sd', dest='sd', help="Standard deviation for using normal distribution")
 
   # Sigmoid options
   parser.add_argument('-sr', dest='sigmoid_ratio', help="Choose ratio between steepness and increase, for sigmoid")
@@ -40,12 +44,15 @@ def main():
   # Define how the curve will look.
   if args.fx:
     if args.fx in valid_functions: config["fx"] = args.fx
-  if not config.get("fx", None):
+  if args.fx and 'naive' in args.method:
+    print "It does not make sense to define fx when using naive methods."
+    sys.exit(1)
+  if not config.get("fx", None) and args.method != "naive":
     print "Wrong function type '%s', please choose between %s with '-fx' flag" % (args.fx, valid_functions)
     sys.exit(1)
 
   # Set the sigmoid options, if the method is in use.
-  if 'sigmoid' in args.fx:
+  if args.fx and 'sigmoid' in args.fx:
     if args.sigmoid_ratio: config["sigmoid_ratio"] = float(args.sigmoid_ratio)
     if args.sigmoid_constant: config["sigmoid_constant"] = float(args.sigmoid_constant)
     if "fixed" in config["fx"] and not config.get("sigmoid_ratio", None):
@@ -55,9 +62,25 @@ def main():
         print "[WARN] Sigmoid constant not set. Defaulting to 30. Set with -sc"
         config["sigmoid_constant"] = 30
 
+  # Standard deviation options in normal distribution
+  if args.fx and 'norm_dist' in args.fx:
+    if args.sd: config["norm_standard_dev"] = float(args.sd)
+    else:
+      print "[WARN] Standard deviation not set. Defaulting to 5.0"
+      config["norm_standard_dev"] = 5
+
   # Guess filename if not provided.
   if not args.outputfile:
-    args.outputfile = config["method"] + "_" + config["fx"] + '.txt'
+    params = ""
+    if config.get("sigmoid_constant", None) or config.get("sigmoid_ratio", None):
+      params = "_sc-" + str(config["sigmoid_constant"]) if config.get("sigmoid_constant", None) else "_sr-" + str(config["sigmoid_ratio"])
+    if config.get("norm_standard_dev", None):
+      params = "_sd-" + args.sd
+
+    if args.fx:
+      args.outputfile = config["method"] + "_" + config["fx"] + params + '.txt'
+    else:
+      args.outputfile = config["method"] + '.txt'
   config["outfile"] = args.outputfolder + '/' + args.outputfile
 
   # Check that the input file exists.
@@ -66,6 +89,10 @@ def main():
   if not config.get("infile", None):
     print "Could not find file: %s. Ensure you have provided correct file with -i option" % args.inputfile
     sys.exit(1)
+
+  # Check if we want to skip first line in csv
+  if args.skipheader:
+    config["skipheader"] = args.skipheader
 
   # Give some useful info to the user.
   print "----------------------------------------------------------------------"
@@ -82,14 +109,18 @@ def main():
       ['','product_purchased','','2014-02-22T14:00:00.00001Z','','','','','','','','','1','','','','1337'],
       ['','product_detail_clicked','','2014-02-22T14:00:01.00001Z','','','','','','','','','2','','','','1337'],
       ['','product_purchased','','2014-02-23T14:00:00.00001Z','','','','','','','','','3','','','','1337'],
+
       ['','product_purchased','','2014-02-22T14:00:02.00001Z','','','','','','','','','12','','','','1338'],
+      ['','product_purchased','','2014-02-22T14:00:03.00001Z','','','','','','','','','13','','','','1338'],
+
+      ['','product_purchased','','2014-02-22T14:00:03.00001Z','','','','','','','','','12','','','','1339'],
     ]
 
     # Clean up the above input.
     for l in f:
       utils.parse_eventline(l, users)
   else:
-    users = utils.create_usermatrix(config["infile"])
+    users = utils.create_usermatrix(config)
 
   # Reset the file for output
   open(config["outfile"], 'w').close()
@@ -102,8 +133,8 @@ def main():
       r = utils.get_ratings_from_user(user_id, products, output, config)
       utils.write_ratings_to_file(user_id, r, output)
       ratings.extend([rat for product_id, rat in r.items()])
-  print ("Success. Wrote %d ratings to %s. Average: %s, Median: %s" %
-    (len(ratings), args.outputfile, np.mean(ratings), np.median(ratings)))
+  print ("Success. Wrote %d ratings to %s. Average: %s, Median: %s, Min: %.2f, Max: %.2f" %
+    (len(ratings), args.outputfile, np.mean(ratings), np.median(ratings), np.min(ratings), np.max(ratings)))
 
 if __name__ == '__main__':
   main()

@@ -57,8 +57,8 @@ def useScheme(scheme,No):
 def useSchemeOld(scheme,No):
     # user, item, rating, weight
     users = col.distinct('user_id')
-    count = 0
-    total = len(users)
+    # count = 0
+    # total = len(users)
     e = open("No" + '.csv','w')
     for user in users:
         userStats = scheme(user)
@@ -67,8 +67,8 @@ def useSchemeOld(scheme,No):
                 ratingColumn = str(int(s['user_id']))+' '+str(int(s['product_id']))+' '+str(int(s['rating']))+' '+str(s['weight'])+'\n'
                 e.write(ratingColumn)
         # sys.exit()
-        count += 1
-        print (str((count/total)*100) + '%')
+        # count += 1
+        # print (str((count/total)*100) + '%')
     e.close()
 
 
@@ -78,7 +78,8 @@ def schemeNo1():
             if (cur.event_id == 'product_purchase_intended'){
                 result.rating = 1;
                 result.weight = 1;
-            } else if (cur.event_id == 'product_wanted'){
+            }
+             else if (cur.event_id == 'product_wanted'){
                 result.rating = 1;
                 result.weight = 0.8;
             } else if (cur.event_id == 'product_detail_clicked'){
@@ -94,7 +95,7 @@ def schemeNo1():
             'product_id':1
         },
         condition = {
-            # 'user_id':user,
+            'event_id':'product_purchase_intended',
         },
         reduce = gReducer,
         initial = {

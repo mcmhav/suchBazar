@@ -19,17 +19,135 @@ from bson import Binary, Code
 from operator import itemgetter
 import mmap
 from multiprocessing import Pool
+from py4j.java_gateway import JavaGateway
+import subprocess
+import os
+import operator
 
+dataPath = '../generators/ratings/'
+trainFile = 'tmp.train'
+predictionFile = 'tmp.predictions'
 
 def main():
-    train = helpers.readRatingsFromFile('../generators/training.txt')
-    test = helpers.readRatingsFromFile('../generators/validation.txt')
-    predictions = helpers.readRatingsFromFile('../generators/testikus.txt')
+    # train = helpers.readRatingsFromFile('../generators/training.txt')
+    # test = helpers.readRatingsFromFile('../generators/validation.txt')
+    # predictions = helpers.readRatingsFromFile('../generators/testikus.txt')
 
-    mpr = compute(train, test, predictions)
+    # mpr = compute(train, test, predictions)
+    # print (mpr)
+    compute('mymedialite')
+
+
+def compute(recommenderSystem):
+    purchases = getPurchases('mongo')
+    ratingFile = "recentness_sigmoid_fixed_sr-4.txt"
+
+
+    totalRank = 0
+    count = 0
+    for event in purchases:
+        user = event['user_id']
+        product = event['product_id']
+        print ("User: {} Product: {}".format(str(user), str(product)))
+        makeRatingsFile(user,product)
+
+        if recommenderSystem == 'mymedialite':
+            # Use MyMediaLite
+            generatePredictionsMyMediaLite(ratingFile,user)
+            percentileRank = findRankOfProductMyMediLite(int(user),int(product))
+        elif recommenderSystem == 'mahout':
+            # use mahout
+            generatePredictionsMahout(ratingFile,user)
+            percentileRank = findRankOfProductMahout(product)
+
+        if percentileRank >= 0:
+            totalRank += percentileRank
+            count += 1
+        # print (totalRank)
+        # sys.exit()
+    mpr = totalRank/count
     print (mpr)
+    return mpr
 
-def compute(train, test, predictions):
+def generatePredictionsMahout(ratingFile,user):
+    subprocess.call(['java', 'GetRecommendationsForUser', ratingFile, 'itembased', str(user)])
+
+def generatePredictionsMyMediaLite(ratingFile,user):
+    subprocess.call([
+        'item_recommendation',
+        '--training-file=' + dataPath + trainFile,
+        '--recommender=MostPopular',
+        '--prediction-file=' + dataPath + predictionFile
+    ])
+
+def findRankOfProductMyMediLite(user,product):
+    predLocation = dataPath + predictionFile
+    predictions = helpers.readMyMediaLitePredictionsForMPR(predLocation)
+
+    if user not in predictions:
+        return -1
+
+    userPredictions = predictions[user]
+    userPredictions_sorted = sorted(userPredictions.items(), key=operator.itemgetter(1), reverse=True)
+    total = len(userPredictions_sorted)
+
+    count = 0
+    rank = -1
+    for prediction in userPredictions_sorted:
+        if product == prediction[0]:
+            rank = count
+        count += 1
+    percentileRank = (rank/total)*100
+    # print (rank)
+    # print (total)
+    # print (percentileRank)
+    # sys.exit()
+    return percentileRank
+
+def findRankOfProductMahout(user,product):
+    predLocation = dataPath + predictionFile
+    predictions = helpers.readMyMediaLitePredictions(predLocation)
+    total = len(predictions)
+    sys.exit()
+
+    if total == 0:
+        return -1
+    count = 0
+    rank = -1
+    for prediction in predictions:
+        # print (prediction[1])
+        if str(product) == str(prediction[1]):
+            rank = count
+            sys.exit()
+        count += 1
+    # print (product)
+    # sys.exit()
+    percentileRank = (rank/total)*100
+    return percentileRank
+
+def makeRatingsFile(user,product):
+    # clone = helpers.getCollection('tmp',True)
+    # col = helpers.getCollection('sessions')
+    train = helpers.readRatingsFromFile('../generators/ratings/recentness_sigmoid_fixed_sr-4.txt')
+    e = open(dataPath + trainFile,'w')
+    for item in train:
+        if item[0] == user and item[1] == product:
+            continue
+        e.write(str(item[0]) + "\t" + str(item[1]) + "\t" + str(item[2]) + "\n")
+    e.close()
+    # for item in train:
+    #     print (train)
+    # print (user)
+    # print (product)
+    # sys.exit()
+
+def getPurchases(collection):
+    if collection == 'mongo':
+        col = helpers.getCollection('sessions')
+        purchases = col.find({'event_id':'product_purchase_intended'})
+    return purchases
+
+def computeOld(train, test, predictions):
     train_users = helpers.buildDictByIndex(train, 0)
     test_users = helpers.buildDictByIndex(test, 0)
     predictions = helpers.buildDictByIndex(predictions, 0)

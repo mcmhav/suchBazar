@@ -56,7 +56,8 @@ def generateColdStartSplits(ratings, type, test_ratio, rating_splits = [5, 10, 1
             if time_stamps:
                 r = selectRatingsByTimeStamp(X[y], rating_splits[i])
             else:
-                r = random.sample(range(len(X[y])), rating_splits[i])                  #Select a random subset of the ratings for the current user
+                #r = random.sample(range(len(X[y])), rating_splits[i])                  #Select a random subset of the ratings for the current user
+                r = selectTopRatings(X[y], rating_splits[i])
             for j in range(len(X[y])):
                 if j in r:
                     train.append(X[y][j])                                              #Add these ratings to the training set
@@ -78,9 +79,10 @@ def generateColdStartSystemSplits(ratings, test_ratio, ratios, time_stamps = Fal
     if time_stamps == True:
         if(len(ratings[0]) < 4):
             print('Warning: No timestamps found')
+            
+    num_ratings = len(ratings) 
         
-    if not time_stamps:
-        num_ratings = len(ratings)                                                                #Read ratings 
+    if not time_stamps:                                                                           #Read ratings 
         r = random.sample(range(len(ratings)), int(test_ratio*len(ratings)))                      #Randomly select test ratings
         y_test = [ratings[i] for i in r]                                                          #Put ratings in testset
         X_pool = [i for j, i in enumerate(ratings) if j not in r]                                 #Put the remaining in the testset
@@ -89,13 +91,13 @@ def generateColdStartSystemSplits(ratings, test_ratio, ratios, time_stamps = Fal
             helpers.writeRatingsToFile('%s/system_train%d.txt' %(folder, i+1), X_train, delimiter='\t')
         helpers.writeRatingsToFile('%s/system_test.txt' %folder, y_test, delimiter='\t')
            
-    else: ### TODO - Testing ###                                            
-        ratings = sorted(ratings, key=itemgetter(3), reverse=True)                   #Sort ratings based on timestamps, the freshest being 'on top'
+    else:                                            
+        ratings = sorted(ratings, key=itemgetter(3), reverse=True)                                #Sort ratings based on timestamps, the freshest being 'on top'
         num_test_ratings = int(len(ratings)*test_ratio)                                           #Number of ratings to use for testing
         y_test = ratings[-num_test_ratings:]                                                      #Put freshest ratings in the testset
         X_pool = ratings[:-num_test_ratings]                                                      #Put the remainding in the training set pool
         for i in range(len(ratios)):                                                              #For each training ratio supplied
-            X_train = generateDatasetSplit(X_pool, ratios[i])                                     #Generate a split of size ratios[i]
+            X_train = generateDatasetSplit(X_pool, ratios[i], num_ratings)                               #Generate a split of size ratios[i]
             helpers.writeRatingsToFile('%s/system_train%d.txt' %(folder, i+1), X_train, '\t')
         helpers.writeRatingsToFile('%s/system_test.txt' %folder, y_test, delimiter='\t')
        
@@ -110,11 +112,14 @@ def generateDatasetSplit(trainingset, ratio, num_total_ratings, rand=True):
     ratings of the training set
     
     '''
-    
-    #TODO - Really slow, Use random.shuffle?
+   
     if rand:
-        r = random.sample(range(len(trainingset)), int(ratio*num_total_ratings))
-        split = [trainingset[i] for i in r]
+        #Alt 1:
+        random.shuffle(trainingset)
+        split = trainingset[:int(ratio*num_total_ratings)]
+        #Alt 2 (Slow):
+        #r = random.sample(range(len(trainingset)), int(ratio*num_total_ratings))
+        #split = [trainingset[i] for i in r]
     else:
         split = trainingset[:int(ratio*num_total_ratings)]
             
@@ -150,6 +155,10 @@ def generateSplitFromRatingLimit(X, ratio, limit):
     return train, test
 
 def selectRatingsByTimeStamp(ratings, num_ratings):
+    '''
+    Select the num_ratings oldest ratings
+    Returns the index(s) in the users rating list
+    '''
     
     selected = []
     r = []
@@ -157,14 +166,34 @@ def selectRatingsByTimeStamp(ratings, num_ratings):
     for i in range(len(ratings)):
         selected.append([i, ratings[i][3]])
             
-    #TODO - Some fancy datetime stuff for sort to work
     selected = sorted(selected, key=itemgetter(1), reverse=False)
     
     for i in range(num_ratings):
         r.append(selected[i][0])
         
-    #print(r)
     return r
+
+def selectTopRatings(ratings, num_ratings):
+    '''
+    Select the num_ratings highest ratings
+    Returns the index(s) in the users rating list
+    '''
+    
+    selected = []
+    r = []
+    
+    for i in range(len(ratings)):
+        selected.append([i, ratings[i][2]])
+            
+    selected = sorted(selected, key=itemgetter(1), reverse=True)
+    
+    for i in range(num_ratings):
+        r.append(selected[i][0])
+        
+    return r
+    
+    
+    
     
             
 #generateColdStartSplits('./datasets/blend.txt', 'user', 0.1, [10, 15, 20])

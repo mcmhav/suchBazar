@@ -41,6 +41,16 @@ def getCSVWriter(cFile):
         f = open(cFile + '.csv', "wb")
     return csv.writer(f)
 
+def readPredictionsFromFile(path):
+    predictions = []
+    f = open(path, 'r+')
+    lines = f.readlines()
+    for line in lines:
+        tmp = line.split(',')
+        predictions.append([int(tmp[0]), int(tmp[1]), float(tmp[2])])
+    f.close()
+    return predictions
+
 def closeF():
     global f
     f.close()
@@ -49,7 +59,7 @@ def readRatingsFromFile(path, convert=False):
 
     ratings = []
     with open(path, 'r') as file:
-        
+
         dialect = csv.Sniffer().sniff(file.read(1024))
         reader =  csv.reader(file, delimiter=dialect.delimiter)
         for rating in reader:
@@ -62,14 +72,14 @@ def readRatingsFromFile(path, convert=False):
                         t = datetime.strptime(rating[3],"%Y-%m-%d %H:%M:%S")
                         ratings.append([int(rating[0]), int(rating[1]), float(rating[2]), int(time.mktime(t.timetuple()))])
                     else:
-                        ratings.append([int(rating[0]), int(rating[1]), float(rating[2]), int(rating[3])])           
+                        ratings.append([int(rating[0]), int(rating[1]), float(rating[2]), int(rating[3])])
     return ratings
 
 def readRatings(path, timestamps):
-    
+
     ratings = []
     with open(path, 'r') as file:
-        
+
         lines = file.readlines()
         for line in lines:
             s = line.split('\t')
@@ -93,6 +103,29 @@ def readMyMediaLitePredictions(path):
                 i = item.split(':')
                 rating = [int(s[0]), int(i[0]), float(i[1])]
                 ratings.append(rating)
+
+    return ratings
+
+def readMyMediaLitePredictionsForMPR(path):
+    '''
+    Prediction format:
+    userid    [<itemid>:rating, ...<itemid>:rating]
+    Store in that format
+    '''
+    ratings = {}
+
+    with open(path, 'r') as file:
+        lines = file.readlines()
+        for line in lines:
+            s = line.split()
+            s[1] = s[1].replace('[', '')
+            s[1] = s[1].replace(']', '')
+            items = s[1].split(',')
+            userRatings = {}
+            for item in items:
+                i = item.split(':')
+                userRatings[int(i[0])] = float(i[1])
+            ratings[int(s[0])] = userRatings
 
     return ratings
 

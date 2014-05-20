@@ -25,7 +25,7 @@ def itemAverage(train, test):
    
     predictions = []
     testUsers = helpers.buildDictByIndex(test, 0)
-    print(itemRatings)
+
     
     for user in testUsers:
         for item in itemRatings:

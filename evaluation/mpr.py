@@ -84,12 +84,13 @@ def findRankOfProductMyMediLite(user,product):
     predLocation = dataPath + predictionFile
     predictions = helpers.readMyMediaLitePredictionsForMPR(predLocation)
 
+    if user not in predictions:
+        return -1
+
     userPredictions = predictions[user]
     userPredictions_sorted = sorted(userPredictions.items(), key=operator.itemgetter(1), reverse=True)
     total = len(userPredictions_sorted)
 
-    if total == 0:
-        return -1
     count = 0
     rank = -1
     for prediction in userPredictions_sorted:

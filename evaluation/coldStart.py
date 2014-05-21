@@ -19,7 +19,7 @@ from operator import itemgetter
 #Ratings are written to the following folder
 folder = '../data'
 
-def generateColdStartSplits(ratings, type, test_ratio, rating_limit, rating_splits = [0.10, 0.40, 0.75], time_stamps=False, fbots=False):
+def generateColdStartSplits(filename, ratings, type, test_ratio, rating_limit, rating_splits = [0.10, 0.40, 0.75], time_stamps=False, fbots=False):
     """
     Generates splits for cold-start user/item evaluation:
     ratings: list of ratings,
@@ -66,11 +66,11 @@ def generateColdStartSplits(ratings, type, test_ratio, rating_limit, rating_spli
         if fbots:
             X_train = fb.addFilterBotRatings(train, fbots)
             
-        helpers.writeRatingsToFile('%s/%s_train%d.txt' %(folder, prefix, i+1), X_train, '\t')
-        helpers.writeRatingsToFile('%s/%s_test%d.txt' %(folder, prefix, i+1), test, '\t')
+        helpers.writeRatingsToFile('%s/%s_%strain%d.txt' %(folder, filename,  prefix, i+1), X_train, '\t')
+        helpers.writeRatingsToFile('%s/%s_%stest%d.txt' %(folder,filename, prefix, i+1), test, '\t')
                 
   
-def generateColdStartSystemSplits(ratings, test_ratio, ratios, time_stamps = False, fbots=False):
+def generateColdStartSystemSplits(filename, ratings, test_ratio, ratios, time_stamps = False, fbots=False):
     """
     Generate splits for cold-start system evaluation
         
@@ -93,8 +93,8 @@ def generateColdStartSystemSplits(ratings, test_ratio, ratios, time_stamps = Fal
             X_train = generateDatasetSplit(X_pool, ratios[i], num_ratings)                        #Generate a split of size ratios[i]
             if fbots:
                 X_train = fb.addFilterBotRatings(X_train, fbots)
-            helpers.writeRatingsToFile('%s/system_train%d.txt' %(folder, i+1), X_train, delimiter='\t')
-        helpers.writeRatingsToFile('%s/system_test.txt' %folder, y_test, delimiter='\t')
+            helpers.writeRatingsToFile('%s/%s_systemtrain%d.txt' %(folder, filename, i+1), X_train, delimiter='\t')
+        helpers.writeRatingsToFile('%s/%s_systemtest.txt' %(folder, filename), y_test, delimiter='\t')
            
     else:                                            
         ratings = sorted(ratings, key=itemgetter(3), reverse=True)                                #Sort ratings based on timestamps, the freshest being 'on top'
@@ -105,8 +105,8 @@ def generateColdStartSystemSplits(ratings, test_ratio, ratios, time_stamps = Fal
             X_train = generateDatasetSplit(X_pool, ratios[i], num_ratings)                               #Generate a split of size ratios[i]
             if fbots:
                 X_train = fb.addFilterBotRatings(X_train, fbots)
-            helpers.writeRatingsToFile('%s/system_train%d.txt' %(folder, i+1), X_train, '\t')
-        helpers.writeRatingsToFile('%s/system_test.txt' %folder, y_test, delimiter='\t')
+            helpers.writeRatingsToFile('%s/%s_systemtrain%d.txt' %(folder, filename, i+1), X_train, delimiter='\t')
+        helpers.writeRatingsToFile('%s/%s_systemtest.txt' %(folder, filename), y_test, delimiter='\t')
        
     
 def generateDatasetSplit(trainingset, ratio, num_total_ratings, rand=True, fbots=False):
@@ -200,6 +200,9 @@ def selectTopRatings(ratings, num_ratings):
         selected.append([i, ratings[i][2]])
             
     selected = sorted(selected, key=itemgetter(1), reverse=True)
+    
+    if num_ratings < 1:
+        num_ratings = int(len(ratings)*num_ratings)
     
     for i in range(num_ratings):
         r.append(selected[i][0])

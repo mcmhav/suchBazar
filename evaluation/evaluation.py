@@ -106,12 +106,14 @@ def evaluate(trainFile, testFile, predictionFile, k, beta):
 def createColdStartSplits(ratingFile, timestamps, fbConfig):
 
     ratings = helpers.readRatingsFromFile(ratingFile, True)
+    filename = ratingFile.split('/')[-1].split('.')[0]
+    
     print('Generating cold-start user dataset splits...')
-    coldStart.generateColdStartSplits(ratings, 'user', 0.1, 20, [0.10, 0.40, 0.75], timestamps, fbConfig)
+    coldStart.generateColdStartSplits(filename, ratings, 'user', 0.1, 20, [0.10, 0.40, 0.75], timestamps, fbConfig)
     print('Generating cold-start item dataset splits...')
-    coldStart.generateColdStartSplits(ratings, 'item', 0.05, 15, [0.10, 0.40, 0.75], timestamps, fbConfig)
+    coldStart.generateColdStartSplits(filename, ratings, 'item', 0.05, 15, [0.10, 0.40, 0.75], timestamps, fbConfig)
     print('Generating cold-start system dataset splits...')
-    coldStart.generateColdStartSystemSplits(ratings, 0.20, [0.4, 0.6, 0.8], timestamps, fbConfig)
+    coldStart.generateColdStartSystemSplits(filename, ratings, 0.20, [0.4, 0.6, 0.8], timestamps, fbConfig)
     print('Done!')
 
 def runTestCases():

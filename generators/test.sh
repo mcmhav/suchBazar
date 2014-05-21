@@ -11,10 +11,10 @@ BLEND=0
 TIMESTAMP=""
 MIN_DATE=""
 MAX_DATE=""
-INFILE="-i ../../datasets/v3/sobazar_events_prod_cleaned.tab"
+INFILE="-i ../../datasets/v3/sobazar_events_prod_cleaned_formatted.tab"
 
 # Check options (basically if we want to clean and/or plot)
-while getopts "imx:cpbt" o; do
+while getopts "i:m:x:cpbt" o; do
   case "${o}" in
     c)
       CLEAN=1

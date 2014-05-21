@@ -135,7 +135,7 @@ def main():
 
     # Clean up the above input.
     for l in f:
-      utils.parse_eventline(l, users)
+      utils.parse_eventline(l, users, config)
   else:
     users = utils.create_usermatrix(config)
 

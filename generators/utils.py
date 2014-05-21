@@ -142,8 +142,8 @@ def write_ratings_to_file(user_id, ratings, f, config):
     Writes to a file:
       user_id, product_id, rating
   """
-  for product_id, rating in ratings.items():
-    base = "%s\t%s\t%.3f" % (user_id, product_id, rating)
+  for product_id in sorted(ratings):#.iteritems():
+    base = "%s\t%s\t%.3f" % (user_id, product_id, ratings[product_id])#rating)
     if config["timestamps"]:
       f.write("%s\t%s\n" % (base, last_event["%s-%s" % (user_id, product_id)].strftime("%Y-%m-%d %H:%M:%S")))
       continue
@@ -182,13 +182,15 @@ def get_multipliers():
 
 def fx_recentness(events, oldest_event, config, rating=0):
   today = datetime.now()
-  num_events = len(events)
-
   # Get multipliers and valid events
   multipliers = get_multipliers()
 
   # Remove events which we dont care about.
   events[:] = [d for d in events if d.get('event_id') in multipliers]
+
+  # No valid events? Then we dont return anything.
+  if not events:
+    return None
 
   # Special case if we use normal distribution, as we need the average
   avg = 0.0
@@ -202,6 +204,8 @@ def fx_recentness(events, oldest_event, config, rating=0):
     avg = c / len(events)
 
   for event in events:
+    #if event["user_id"] == "1342189870" and event["product_id"] == "13538001":
+    #  print event
     t = parse_timestamp(event['timestamp'])
 
     # The number of days this event is from the latest event for this user.
@@ -230,11 +234,10 @@ def fx_count(events, config, avg_num_events):
 
   # Remove events which we dont care about.
   events[:] = [d for d in events if d.get('event_id') in multipliers]
+  num_events = len(events)
 
   # We want to sort all events by most recent to oldest.
   events = sorted(events, key=itemgetter('timestamp'), reverse=False)
-
-  num_events = len(events)
 
   ratings = {}
   for i, event in enumerate(events):
@@ -264,11 +267,13 @@ def get_ratings_from_user(user_id, events, f, config):
     avg = np.mean([len(e) for e in events.iteritems()])
     return fx_count([e for product_id, evt in events.iteritems() for e in evt], config, avg)
   else:
-    for product_id, evts in events.items():
+    for product_id, evts in events.iteritems():
+      rating = None
       # Get the rating from one of the different calculation schemes.
       if config["method"] == 'recentness':
         rating = fx_recentness(evts, last_event[user_id], config)
       elif config["method"] == 'naive':
         rating = fx_naive(evts)
-      ratings[product_id] = rating
+      if rating:
+        ratings[product_id] = rating
   return ratings

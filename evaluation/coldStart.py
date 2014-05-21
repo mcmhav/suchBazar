@@ -19,7 +19,7 @@ from operator import itemgetter
 #Ratings are written to the following folder
 folder = '../data'
 
-def generateColdStartSplits(ratings, type, test_ratio, rating_splits = [5, 10, 15], time_stamps=False, fbots=False):
+def generateColdStartSplits(ratings, type, test_ratio, rating_limit, rating_splits = [0.10, 0.40, 0.75], time_stamps=False, fbots=False):
     """
     Generates splits for cold-start user/item evaluation:
     ratings: list of ratings,
@@ -41,9 +41,8 @@ def generateColdStartSplits(ratings, type, test_ratio, rating_splits = [5, 10, 1
         if(len(ratings[0]) < 4):
             print('Warning: No timestamps found')
           
-    X = helpers.buildDictByIndex(ratings, index)                                        #Build dictionary where item id is used as key
-    min_limit = rating_splits[-1] + 5                                                   #Minimum number of ratings for test users
-    X_train, y_test = generateSplitFromRatingLimit(X, test_ratio, min_limit)            #Split items into training and test items
+    X = helpers.buildDictByIndex(ratings, index)                                        #Build dictionary where item id is used as key                                                  #Minimum number of ratings for test users
+    X_train, y_test = generateSplitFromRatingLimit(X, test_ratio, rating_limit)         #Split items into training and test items
     
     #TODO: How to make this shorter?
     train = []
@@ -176,8 +175,15 @@ def selectRatingsByTimeStamp(ratings, num_ratings):
             
     selected = sorted(selected, key=itemgetter(1), reverse=False)
     
-    for i in range(num_ratings):
-        r.append(selected[i][0])
+    #If percentage of ratings used
+    if num_ratings < 1.0:
+        num_ratings = int((1-num_ratings)*len(ratings))
+        for i in range(num_ratings):
+            r.append(selected[i][0])
+    #If hard limits are used
+    else:
+        for i in range(num_ratings):
+            r.append(selected[i][0])
         
     return r
 

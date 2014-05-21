@@ -11,6 +11,9 @@ def main():
     # predictions = helpers.readRatingsFromFile('../generators/ratings/no1.predictions')
     # hlu = compute(test, predictions,2)
     # print (hlu)
+    #test = [[[1, 5], [2, 3.8], [3, 3.55], [4, 2.78], [11, 1.98]], [[13, 5], [15, 3.8], [18, 3.55], [19, 2.78], [22, 1.98]]]
+    #pred = [[[1, 5], [2, 3.8], [3, 3.55], [4, 2.78], [11, 1.98]], [[13, 5], [15, 3.8], [122, 3.55], [19, 2.78], [212, 1.98]]]
+    #print(compute(test, pred, 1, 20))
 
 
 def compute(actual, predicted, beta,k=100):

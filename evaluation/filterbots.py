@@ -217,8 +217,10 @@ def readItemAttributes(path):
             
     return itemAttributes
         
-
 def createSplit(ratings, item_attributes, test_ratio, split=True):
+    '''
+    TODO: Do not extend an extended list...
+    '''
     
     #If the supplied ratings are to be splitted in a test and tranining set
     if split:
@@ -240,13 +242,31 @@ def createSplit(ratings, item_attributes, test_ratio, split=True):
     
     writeRatingsToFile('./Data/ftrain.txt', train, '\t')
     
+def addFilterBotRatings(train, fbots=[0,0,0,0,0]):
     
-   
+    item_attributes = readItemAttributes('../data/product_features.txt')
+    fbRatings = []
+    
+    if fbots[0]:
+        fbRatings.extend(brandBot(train, item_attributes))
+    if fbots[1]:
+        fbRatings.extend(averageBot(train))
+    if fbots[2]:
+        fbRatings.extend(popularityBot(train, 5))
+    if fbots[3]:
+        fbRatings.extend(criticBot(train))
+    if fbots[4]:
+        fbRatings.extend(conformityBot(train))
+    
+    return train + fbRatings 
+
+
+### TESTING ###   
 #ratings = readRatings('../../datasets/blend.txt')
-ratings = readRatings('Data/user_train3.txt')
-item_attributes = readItemAttributes('./Data/product_features.txt')
+#ratings = readRatings('Data/user_train3.txt')
+#item_attributes = readItemAttributes('./Data/product_features.txt')
 #createSplit(ratings, item_attributes, 0.1)
-createSplit(ratings, item_attributes, 0.1, False)
+#createSplit(ratings, item_attributes, 0.1, False)
 #brandBot(ratings, item_attributes)
 #averageItemBot(ratings)
 #VTBot(ratings, 5)

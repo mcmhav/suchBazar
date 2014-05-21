@@ -21,6 +21,7 @@ def main():
   parser.add_argument('--debug', dest='debug', action='store_true', default=False)
   parser.add_argument('--skip-header', dest='skipheader', action='store_true', default=False)
   parser.add_argument('--min-date', dest='min_date', default=None)
+  parser.add_argument('--max-date', dest='max_date', default=None)
 
   # Method and curve options.
   parser.add_argument('-m', dest='method', help="Choose which method to use")
@@ -93,6 +94,10 @@ def main():
   if args.min_date:
     t = datetime.strptime(args.min_date, "%Y-%m-%d")
     config["min_date"] = t
+
+  if args.max_date:
+    t = datetime.strptime(args.max_date, "%Y-%m-%d")
+    config["max_date"] = t
 
   # Check that the input file exists.
   if os.path.isfile(args.inputfile):

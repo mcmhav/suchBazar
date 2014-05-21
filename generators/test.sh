@@ -10,10 +10,11 @@ PLOT=0
 BLEND=0
 TIMESTAMP=""
 MIN_DATE=""
+MAX_DATE=""
 INFILE="-i ../../datasets/v3/sobazar_events_prod_cleaned.tab"
 
 # Check options (basically if we want to clean and/or plot)
-while getopts "id:cpbt" o; do
+while getopts "imx:cpbt" o; do
   case "${o}" in
     c)
       CLEAN=1
@@ -30,15 +31,18 @@ while getopts "id:cpbt" o; do
     i)
       INFILE="-i ${OPTARG}"
       ;;
-    d)
+    m)
       MIN_DATE="--min-date=${OPTARG}"
+      ;;
+    x)
+      MAX_DATE="--max-date=${OPTARG}"
       ;;
     *)
       usage
       ;;
   esac
 done
-OPTS="$INFILE $TIMESTAMP $MIN_DATE"
+OPTS="$INFILE $TIMESTAMP $MIN_DATE $MAX_DATE"
 
 # If cleaning, then we delete everything in ratings/ and dists/
 if [ $CLEAN -eq 1 ]; then
@@ -54,7 +58,7 @@ fi
 ##
 # Our various methods to test
 ##
-python ratings.py $OPTS -m naive
+echo "python ratings.py $OPTS -m naive"
 
 python ratings.py $OPTS -m recentness -fx sigmoid_fixed -sr 4.5
 python ratings.py $OPTS -m recentness -fx sigmoid_constant -sc 30

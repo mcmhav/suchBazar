@@ -58,14 +58,21 @@ def is_valid(indata):
     return True
   return False
 
-def parse_eventline(row, users):
+def parse_eventline(row, users, config):
   event_id = row[1]
   timestamp = row[3]
   product_id = row[12]
   user_id = row[16]
   if is_valid(user_id) and is_valid(product_id) and is_valid(event_id):
-    users[user_id][product_id].append({'event_id': event_id, 'timestamp': timestamp, 'product_id': product_id})
+    # Parse timestamp
     t = parse_timestamp(timestamp)
+
+    # Check if the event is too old
+    if config.get("min_date", None):
+      if t < config["min_date"]:
+        return
+
+    users[user_id][product_id].append({'event_id': event_id, 'timestamp': timestamp, 'product_id': product_id})
 
     # Most recent event on this item.
     k = "%s-%s" % (user_id, product_id)
@@ -74,7 +81,7 @@ def parse_eventline(row, users):
     # Save the oldest event for this user as well.
     oldest_event[user_id] = t if t < last_event[user_id] else oldest_event[user_id]
 
-def parse_mongo(users):
+def parse_mongo(users, config):
   client = pymongo.MongoClient()
   db = client.mydb
   col = db['negValues']
@@ -85,7 +92,7 @@ def parse_mongo(users):
     row[3] = instance['server_time_stamp']
     row[12] = instance['product_id']
     row[16] = instance['user_id'] # 2014-02-03T18:59+0100
-    parse_eventline(row,users)
+    parse_eventline(row, users, config)
 
 
 def create_usermatrix(config):
@@ -93,14 +100,14 @@ def create_usermatrix(config):
   users = defaultdict(lambda: defaultdict(list))
   # Use data from mongo?
   if config["infile"] == "mongo":
-    parse_mongo(users)
+    parse_mongo(users, config)
   else:
     # Read the input .tab file.
     with open(config["infile"]) as f:
       if config.get("skipheader", None):
         next(f, None)  # skip the headers
       for row in csv.reader(f, delimiter='\t'):
-        parse_eventline(row, users)
+        parse_eventline(row, users, config)
 
   return users
 

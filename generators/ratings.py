@@ -5,6 +5,7 @@ import numpy as np
 import sys
 import utils
 import os
+from datetime import datetime
 
 valid_methods = ['naive', 'recentness', 'count']
 valid_functions = ['sigmoid_fixed', 'sigmoid_constant', 'linear', 'norm_dist']
@@ -19,6 +20,7 @@ def main():
   parser.add_argument('-t', dest='timestamps', action='store_true', default=False, help="Include timestamps in output")
   parser.add_argument('--debug', dest='debug', action='store_true', default=False)
   parser.add_argument('--skip-header', dest='skipheader', action='store_true', default=False)
+  parser.add_argument('--min-date', dest='min_date', default=None)
 
   # Method and curve options.
   parser.add_argument('-m', dest='method', help="Choose which method to use")
@@ -87,6 +89,11 @@ def main():
   # Check if we want timestamps in output
   config["timestamps"] = args.timestamps
 
+  # Check if we want a minimum date
+  if args.min_date:
+    t = datetime.strptime(args.min_date, "%Y-%m-%d")
+    config["min_date"] = t
+
   # Check that the input file exists.
   if os.path.isfile(args.inputfile):
     config["infile"] = args.inputfile
@@ -107,7 +114,6 @@ def main():
     print "%s => %s" % (k,i)
   print "----------------------------------------------------------------------"
 
-  # print (get_data(proddata.tab))
   if args.debug:
     # event_id, timestamp, product_id, user_id
     users = defaultdict(lambda: defaultdict(list))

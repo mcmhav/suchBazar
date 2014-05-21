@@ -37,5 +37,5 @@ if [ $RAND -eq 1 ]; then
   split $TMPFILE $INFILE;
   rm $TMPFILE
 else
-  split $INFILE, $INFILE
+  split $INFILE $INFILE
 fi

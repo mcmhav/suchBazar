@@ -1,7 +1,8 @@
 # Generate ratings
-cd generators && python ratings.py;
+cd generators;
+python2.7 ratings.py -m recentness -fx sigmoid_constant -i mongo;
 # Split ratings
-./split.sh ratings/ratings.txt;
+./split.sh -i ratings/recentness_sigmoid_constant_sc-30.txt;
 # Get top K recommendations
 cd ../mahout && rm -f *.class && javac TopKRecommendations.java && java TopKRecommendations;
 # Evaluate the top K recommendations

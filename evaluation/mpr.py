@@ -42,10 +42,12 @@ def compute(recommenderSystem):
     purchases = getPurchases('mongo')
     ratingFile = "recentness_sigmoid_fixed_sr-4.txt"
 
+    total = purchases.count()
+    count = 0
 
     totalRank = 0
-    count = 0
-    for event in purchases:
+    rankCount = 0
+    for event in purchases.batch_size(15):
         user = event['user_id']
         product = event['product_id']
         print ("User: {} Product: {}".format(str(user), str(product)))
@@ -62,10 +64,14 @@ def compute(recommenderSystem):
 
         if percentileRank >= 0:
             totalRank += percentileRank
-            count += 1
+            rankCount += 1
         # print (totalRank)
         # sys.exit()
-    mpr = totalRank/count
+        count += 1
+        print ((count/total)*100)
+        # helpers.printProgress(count,total)
+
+    mpr = totalRank/rankCount
     print (mpr)
     return mpr
 
@@ -73,12 +79,15 @@ def generatePredictionsMahout(ratingFile,user):
     subprocess.call(['java', 'GetRecommendationsForUser', ratingFile, 'itembased', str(user)])
 
 def generatePredictionsMyMediaLite(ratingFile,user):
+    FNULL = open(os.devnull, 'w')
     subprocess.call([
         'item_recommendation',
         '--training-file=' + dataPath + trainFile,
         '--recommender=MostPopular',
-        '--prediction-file=' + dataPath + predictionFile
-    ])
+        '--prediction-file=' + dataPath + predictionFile,
+    ],
+    stdout=FNULL,
+    stderr=subprocess.STDOUT)
 
 def findRankOfProductMyMediLite(user,product):
     predLocation = dataPath + predictionFile

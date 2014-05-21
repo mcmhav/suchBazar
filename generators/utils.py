@@ -58,14 +58,25 @@ def is_valid(indata):
     return True
   return False
 
-def parse_eventline(row, users):
+def parse_eventline(row, users, config):
   event_id = row[1]
   timestamp = row[3]
   product_id = row[12]
   user_id = row[16]
   if is_valid(user_id) and is_valid(product_id) and is_valid(event_id):
-    users[user_id][product_id].append({'event_id': event_id, 'timestamp': timestamp, 'product_id': product_id})
+    # Parse timestamp
     t = parse_timestamp(timestamp)
+
+    # Check if the event is too old
+    if config.get("min_date", None):
+      if t < config["min_date"]:
+        return
+    # Check if it is too recent
+    if config.get("max_date", None):
+      if t > config["max_date"]:
+        return
+
+    users[user_id][product_id].append({'event_id': event_id, 'timestamp': timestamp, 'product_id': product_id})
 
     # Most recent event on this item.
     k = "%s-%s" % (user_id, product_id)
@@ -74,10 +85,10 @@ def parse_eventline(row, users):
     # Save the oldest event for this user as well.
     oldest_event[user_id] = t if t < last_event[user_id] else oldest_event[user_id]
 
-def parse_mongo(users):
+def parse_mongo(users, config):
   client = pymongo.MongoClient()
   db = client.mydb
-  col = db['cleanedItems']
+  col = db['negValues']
   mongoDB = col.find()
   for instance in mongoDB:
     row = [''] * 17
@@ -85,7 +96,7 @@ def parse_mongo(users):
     row[3] = instance['server_time_stamp']
     row[12] = instance['product_id']
     row[16] = instance['user_id'] # 2014-02-03T18:59+0100
-    parse_eventline(row,users)
+    parse_eventline(row, users, config)
 
 
 def create_usermatrix(config):
@@ -93,14 +104,14 @@ def create_usermatrix(config):
   users = defaultdict(lambda: defaultdict(list))
   # Use data from mongo?
   if config["infile"] == "mongo":
-    parse_mongo(users)
+    parse_mongo(users, config)
   else:
     # Read the input .tab file.
     with open(config["infile"]) as f:
       if config.get("skipheader", None):
         next(f, None)  # skip the headers
       for row in csv.reader(f, delimiter='\t'):
-        parse_eventline(row, users)
+        parse_eventline(row, users, config)
 
   return users
 
@@ -142,8 +153,8 @@ def write_ratings_to_file(user_id, ratings, f, config):
     Writes to a file:
       user_id, product_id, rating
   """
-  for product_id, rating in ratings.items():
-    base = "%s\t%s\t%.3f" % (user_id, product_id, rating)
+  for product_id in sorted(ratings):#.iteritems():
+    base = "%s\t%s\t%.3f" % (user_id, product_id, ratings[product_id])#rating)
     if config["timestamps"]:
       f.write("%s\t%s\n" % (base, last_event["%s-%s" % (user_id, product_id)].strftime("%Y-%m-%d %H:%M:%S")))
       continue
@@ -173,6 +184,16 @@ def get_penalization(n, num, config, average=0.0):
 
 def get_multipliers():
   return {
+    'negative_event': [0,20],
+    'featured_product_clicked': [20,60],
+    'product_detail_clicked': [20,60],
+    'product_wanted': [60,80],
+    'product_purchase_intended': [80,100],
+    'product_purchased': [80,100]
+  }
+
+def get_without_neg_multipliers():
+  return {
     'featured_product_clicked': [10,60],
     'product_detail_clicked': [10,60],
     'product_wanted': [60,80],
@@ -182,13 +203,15 @@ def get_multipliers():
 
 def fx_recentness(events, oldest_event, config, rating=0):
   today = datetime.now()
-  num_events = len(events)
-
   # Get multipliers and valid events
   multipliers = get_multipliers()
 
   # Remove events which we dont care about.
   events[:] = [d for d in events if d.get('event_id') in multipliers]
+
+  # No valid events? Then we dont return anything.
+  if not events:
+    return None
 
   # Special case if we use normal distribution, as we need the average
   avg = 0.0
@@ -230,11 +253,10 @@ def fx_count(events, config, avg_num_events):
 
   # Remove events which we dont care about.
   events[:] = [d for d in events if d.get('event_id') in multipliers]
+  num_events = len(events)
 
   # We want to sort all events by most recent to oldest.
   events = sorted(events, key=itemgetter('timestamp'), reverse=False)
-
-  num_events = len(events)
 
   ratings = {}
   for i, event in enumerate(events):
@@ -264,11 +286,13 @@ def get_ratings_from_user(user_id, events, f, config):
     avg = np.mean([len(e) for e in events.iteritems()])
     return fx_count([e for product_id, evt in events.iteritems() for e in evt], config, avg)
   else:
-    for product_id, evts in events.items():
+    for product_id, evts in events.iteritems():
+      rating = None
       # Get the rating from one of the different calculation schemes.
       if config["method"] == 'recentness':
         rating = fx_recentness(evts, last_event[user_id], config)
       elif config["method"] == 'naive':
         rating = fx_naive(evts)
-      ratings[product_id] = rating
+      if rating:
+        ratings[product_id] = rating
   return ratings

@@ -11,4 +11,4 @@ Data handlers atm
 
 ### Create valid JSON
 
-`sed -e 's/"{,{/g;s/\}"/\}/g;s/\\"/"/g' sobazar_events_reff_external.tab > valid.tab`
+`sed -e 's/"{/{/g;s/\}"/\}/g;s/\\"/"/g' sobazar_events_reff_external.tab > valid.tab`

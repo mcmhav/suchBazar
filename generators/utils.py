@@ -88,7 +88,7 @@ def parse_eventline(row, users, config):
 def parse_mongo(users, config):
   client = pymongo.MongoClient()
   db = client.mydb
-  col = db['negValues']
+  col = db['prodR']
   mongoDB = col.find()
   for instance in mongoDB:
     row = [''] * 17

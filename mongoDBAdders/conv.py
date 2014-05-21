@@ -23,7 +23,7 @@ def main(dbLocation):
 
     headJson = {}
     headJson["head"] = head
-    col.insert(headJson)
+    # col.insert(headJson)
 
     lines = f.readlines()
     f.close()

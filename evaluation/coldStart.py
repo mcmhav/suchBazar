@@ -13,12 +13,13 @@ The generateColdStartSystemSplits function is similar to the approach described 
 
 import random
 import helpers
+import filterbots as fb
 from operator import itemgetter
 
 #Ratings are written to the following folder
 folder = '../data'
 
-def generateColdStartSplits(ratings, type, test_ratio, rating_splits = [5, 10, 15], time_stamps=False):
+def generateColdStartSplits(ratings, type, test_ratio, rating_splits = [5, 10, 15], time_stamps=False, fbots=False):
     """
     Generates splits for cold-start user/item evaluation:
     ratings: list of ratings,
@@ -63,11 +64,14 @@ def generateColdStartSplits(ratings, type, test_ratio, rating_splits = [5, 10, 1
                     train.append(X[y][j])                                              #Add these ratings to the training set
                 else:
                     test.append(X[y][j])                                             #Add the remaining ratings to the test set
-        helpers.writeRatingsToFile('%s/%s_train%d.txt' %(folder, prefix, i+1), train, '\t')
+        if fbots:
+            X_train = fb.addFilterBotRatings(train, fbots)
+            
+        helpers.writeRatingsToFile('%s/%s_train%d.txt' %(folder, prefix, i+1), X_train, '\t')
         helpers.writeRatingsToFile('%s/%s_test%d.txt' %(folder, prefix, i+1), test, '\t')
                 
   
-def generateColdStartSystemSplits(ratings, test_ratio, ratios, time_stamps = False):
+def generateColdStartSystemSplits(ratings, test_ratio, ratios, time_stamps = False, fbots=False):
     """
     Generate splits for cold-start system evaluation
         
@@ -88,6 +92,8 @@ def generateColdStartSystemSplits(ratings, test_ratio, ratios, time_stamps = Fal
         X_pool = [i for j, i in enumerate(ratings) if j not in r]                                 #Put the remaining in the testset
         for i in range(len(ratios)):                                                              #For each training ratio supplied
             X_train = generateDatasetSplit(X_pool, ratios[i], num_ratings)                        #Generate a split of size ratios[i]
+            if fbots:
+                X_train = fb.addFilterBotRatings(X_train, fbots)
             helpers.writeRatingsToFile('%s/system_train%d.txt' %(folder, i+1), X_train, delimiter='\t')
         helpers.writeRatingsToFile('%s/system_test.txt' %folder, y_test, delimiter='\t')
            
@@ -98,11 +104,13 @@ def generateColdStartSystemSplits(ratings, test_ratio, ratios, time_stamps = Fal
         X_pool = ratings[:-num_test_ratings]                                                      #Put the remainding in the training set pool
         for i in range(len(ratios)):                                                              #For each training ratio supplied
             X_train = generateDatasetSplit(X_pool, ratios[i], num_ratings)                               #Generate a split of size ratios[i]
+            if fbots:
+                X_train = fb.addFilterBotRatings(X_train, fbots)
             helpers.writeRatingsToFile('%s/system_train%d.txt' %(folder, i+1), X_train, '\t')
         helpers.writeRatingsToFile('%s/system_test.txt' %folder, y_test, delimiter='\t')
        
     
-def generateDatasetSplit(trainingset, ratio, num_total_ratings, rand=True):
+def generateDatasetSplit(trainingset, ratio, num_total_ratings, rand=True, fbots=False):
     '''
     Function for extracting a random subset of 
     size ratio*num_total_ratings from the training set.

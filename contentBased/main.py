@@ -2,10 +2,15 @@ import csv
 import json
 from collections import Counter
 import re
+import pymongo
 from nltk.stem.snowball import NorwegianStemmer
 from nltk.stem.snowball import EnglishStemmer
 from nltk import wordpunct_tokenize
 from nltk.corpus import stopwords
+
+client = pymongo.MongoClient()
+db = client.mydb
+col = db["items"]
 
 stop = stopwords.words('english') + stopwords.words('norwegian')
 
@@ -186,6 +191,12 @@ def readProductData():
     return filterProducts(products_json)
 
 
+def getProductsMongoDb():
+    
+   
+    return col.find()
+
+
 def filterProducts(products_json):
     '''
     Filter out 404 responses from the product list
@@ -242,6 +253,11 @@ def extractFeatures(products_json):
     Attemps to extracts the following features
     <id><priceGroup><brand><Color><Style><Material><productType>
     '''
+    print('Extracting product features from product database')
+    
+    ratings = readSobazarRatings('../generators/ratings/count_linear.txt')  
+    print(products_json)
+    products_json = countMatchingItems(ratings, products_json)
     
     products = []
     
@@ -250,23 +266,28 @@ def extractFeatures(products_json):
         product = []
         keywords = []
         
-        description = p['title'].split() + p['description'].split() + p['metaDescription'].split()
+        description = p['title'].split() + p['description'].split()
+        if 'metaDescription' in p:
+            description += p['metaDescription'].split()
         for word in description:
             keywords.append(re.sub(r'\W+', '', word.lower()))
         product.append(int(p['id']))
         product.append(determinePriceGroup(int(p['newPrice'])))
-        product.append(determineBrand(p['brandName']))
+        if 'brandName' in p:
+            product.append(determineBrand(p['brandName']))
+        else:
+            product.append(0)
         product.append(determineColor(keywords))
         product.append(determineStyle(keywords))
         product.append(determineMaterial(keywords))
         product.append(determineProductType(keywords))
         products.append(product)
         
-    ratings = readSobazarRatings('../generators/ratings/srecent.txt')    
-    countMatchingItems(ratings, products)
-    countNonZeroAttributes(products)
-    #writeProductsToFile(products)
-    createMyMediaLiteAttributeFile(products)
+      
+    
+    #countNonZeroAttributes(products)
+    writeProductsToFile(products)
+    #createMyMediaLiteAttributeFile(products)
         
 def extractTopKeywords(products, num_keywords):
     
@@ -361,17 +382,24 @@ def countNonZeroAttributes(attributes):
     
 def countMatchingItems(ratings, products):
     
+    print('Counting matching, dropping the "dead" ones')
+    
     count = 0
     items = []
+    prod_cleaned = []
 
     for rating in ratings:
         if rating[1] not in items:
             items.append(rating[1])
     for product in products:
-        if product[0] in items:
+        if int(product['id']) in items:
             count += 1
+            prod_cleaned.append(product)
+        else:
+            col.remove({'id': product['id']})
     
     print('Number of matching items: %d' %count)
+    return prod_cleaned
     
         
     
@@ -421,8 +449,10 @@ def writeProductsToFile(products):
         writer.writerows(products)
         
         
-def main():     
-    products_json = readProductData()
+def main():   
+    products_json = getProductsMongoDb()  
+    #products_json = readProductData()
+    #print(products_json[0])
     extractFeatures(products_json)   
     #extractTopKeywords(products_json, 200)  
 if __name__ == "__main__":

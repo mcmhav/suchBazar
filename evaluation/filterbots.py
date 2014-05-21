@@ -218,6 +218,9 @@ def readItemAttributes(path):
     return itemAttributes
         
 def createSplit(ratings, item_attributes, test_ratio, split=True):
+    '''
+    TODO: Do not extend an extended list...
+    '''
     
     #If the supplied ratings are to be splitted in a test and tranining set
     if split:
@@ -239,22 +242,23 @@ def createSplit(ratings, item_attributes, test_ratio, split=True):
     
     writeRatingsToFile('./Data/ftrain.txt', train, '\t')
     
-def addFBRatings(train, brand=0, average=0, popularity=0, critic=0, conformity=0):
+def addFilterBotRatings(train, fbots=[0,0,0,0,0]):
     
     item_attributes = readItemAttributes('../data/product_features.txt')
+    fbRatings = []
     
-    if brand:
-        train.extend(brandBot(train, item_attributes))
-    if average:
-        train.extend(averageBot(train))
-    if popularity:
-        train.extend(popularityBot(train, 5))
-    if critic:
-        train.extend(criticBot(train))
-    if conformity:
-        train.extend(conformityBot(train))
+    if fbots[0]:
+        fbRatings.extend(brandBot(train, item_attributes))
+    if fbots[1]:
+        fbRatings.extend(averageBot(train))
+    if fbots[2]:
+        fbRatings.extend(popularityBot(train, 5))
+    if fbots[3]:
+        fbRatings.extend(criticBot(train))
+    if fbots[4]:
+        fbRatings.extend(conformityBot(train))
     
-    return train    
+    return train + fbRatings 
 
 
 ### TESTING ###   

@@ -83,7 +83,10 @@ def readRatings(path, timestamps):
         lines = file.readlines()
         for line in lines:
             s = line.split('\t')
-            ratings.append([int(s[0]), int(s[1]), float(s[2]), int(s[3])])
+            if len(s) > 3:
+                ratings.append([int(s[0]), int(s[1]), float(s[2]), int(s[3])])
+            else:
+                ratings.append([int(s[0]), int(s[1]), float(s[2])])
     return ratings
 
 def readMyMediaLitePredictions(path):
@@ -191,6 +194,56 @@ def appendZeroRatings(user, predictions, candidateItems):
             predictions.append([user,item, 0.0])
     return predictions
 '''
+
+def preprocessMAP(actual, predictions, k):
+    '''
+    Preprocessing nMAP calculations
+    
+    Extracts the top k list of item-ids from each user
+    
+    '''
+    
+    a = buildDictByIndex(actual, 0)
+    p = buildDictByIndex(predictions, 0)
+    pred = []
+    test = []
+    for user in a:
+        utest = []
+        for i in range(len(a[user])):
+            utest.append(a[user][i][1])
+        test.append(utest)
+        if user in p:
+            upred = []
+            p[user] = sorted(p[user], key=itemgetter(2), reverse=True)
+            for j in range(k):
+                upred.append(p[user][j][1])
+            pred.append(upred)
+    return test, pred
+
+def preprocessDCG(actual, predictions, k):
+    '''
+    Preprocessing nDCG calculations
+    
+    Extracts the top k list of item-ids from each user
+    
+    '''
+    
+    a = buildDictByIndex(actual, 0)
+    p = buildDictByIndex(predictions, 0)
+    pred = []
+    test = []
+    for user in a:
+        utest = []
+        for i in range(len(a[user])):
+            utest.append([a[user][i][1], a[user][i][2]])
+        test.append(utest)
+        if user in p:
+            upred = []
+            p[user] = sorted(p[user], key=itemgetter(2), reverse=False)
+            for j in range(k):
+                upred.append([p[user][j][1], p[user][j][2]])
+            pred.append(upred)
+    return test, pred 
 
 if __name__ == "__main__":
     main()

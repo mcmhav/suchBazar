@@ -204,8 +204,6 @@ def fx_recentness(events, oldest_event, config, rating=0):
     avg = c / len(events)
 
   for event in events:
-    #if event["user_id"] == "1342189870" and event["product_id"] == "13538001":
-    #  print event
     t = parse_timestamp(event['timestamp'])
 
     # The number of days this event is from the latest event for this user.

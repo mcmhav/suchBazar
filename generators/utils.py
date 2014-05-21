@@ -71,6 +71,10 @@ def parse_eventline(row, users, config):
     if config.get("min_date", None):
       if t < config["min_date"]:
         return
+    # Check if it is too recent
+    if config.get("max_date", None):
+      if t > config["max_date"]:
+        return
 
     users[user_id][product_id].append({'event_id': event_id, 'timestamp': timestamp, 'product_id': product_id})
 

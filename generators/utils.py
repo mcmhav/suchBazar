@@ -4,7 +4,7 @@ import math
 import pymongo
 from datetime import datetime
 from collections import defaultdict
-from operator import itemgetter
+import operator
 import numpy as np
 
 # Dictionary holding the number of days since the most recent event,
@@ -76,14 +76,14 @@ def parse_eventline(row, users, config):
       if t > config["max_date"]:
         return
 
-    users[user_id][product_id].append({'event_id': event_id, 'timestamp': timestamp, 'product_id': product_id})
+    users[user_id][product_id].append({'event_id': event_id, 'timestamp': t, 'product_id': product_id, 'user_id': user_id})
 
     # Most recent event on this item.
     k = "%s-%s" % (user_id, product_id)
     last_event[k] = t if t > last_event[k] else last_event[k]
 
     # Save the oldest event for this user as well.
-    oldest_event[user_id] = t if t < last_event[user_id] else oldest_event[user_id]
+    oldest_event[user_id] = t if t < oldest_event[user_id] else oldest_event[user_id]
 
 def parse_mongo(users, config):
   client = pymongo.MongoClient()
@@ -204,7 +204,7 @@ def get_without_neg_multipliers():
 def fx_recentness(events, oldest_event, config, rating=0):
   today = datetime.now()
   # Get multipliers and valid events
-  multipliers = get_multipliers()
+  multipliers = get_without_neg_multipliers()
 
   # Remove events which we dont care about.
   events[:] = [d for d in events if d.get('event_id') in multipliers]
@@ -225,7 +225,7 @@ def fx_recentness(events, oldest_event, config, rating=0):
     avg = c / len(events)
 
   for event in events:
-    t = parse_timestamp(event['timestamp'])
+    t = event['timestamp']
 
     # The number of days this event is from the latest event for this user.
     diff_event = (today - t).days
@@ -248,23 +248,31 @@ def fx_count(events, config, avg_num_events):
     all events for all items for one user. Based on function (fx) we return all
     ratings.
   """
+  today = datetime.now()
   # Get multipliers and valid events
-  multipliers = get_multipliers()
+  multipliers = get_without_neg_multipliers()
 
   # Remove events which we dont care about.
   events[:] = [d for d in events if d.get('event_id') in multipliers]
   num_events = len(events)
 
   # We want to sort all events by most recent to oldest.
-  events = sorted(events, key=itemgetter('timestamp'), reverse=False)
+  events.sort(key=operator.itemgetter('timestamp'), reverse=True)
 
   ratings = {}
   for i, event in enumerate(events):
     # Calc penalization based on fx
     product_penalization = get_penalization(i, num_events, config, average=avg_num_events)
+
+    if product_penalization < 0.01:
+      days_since_event = (today - event["timestamp"]).days
+      days_since_oldest = (today - oldest_event[event["user_id"]]).days
+      product_penalization = (float(days_since_event) / float(days_since_oldest)) * 0.3
+
     scores = multipliers.get(event['event_id'])
     score = scores[1] - ((scores[1] - scores[0]) * product_penalization)
-    r = max(ratings.get(event['product_id'], 0.0), normalize(score=score, a=1, b=5.0, xmin=10))
+    norm_score = normalize(score, a=1, b=5.0, xmin=10)
+    r = max(ratings.get(event['product_id'], 0.0), norm_score)
     ratings[event['product_id']] = r
   return ratings
 
@@ -290,7 +298,7 @@ def get_ratings_from_user(user_id, events, f, config):
       rating = None
       # Get the rating from one of the different calculation schemes.
       if config["method"] == 'recentness':
-        rating = fx_recentness(evts, last_event[user_id], config)
+        rating = fx_recentness(evts, oldest_event[user_id], config)
       elif config["method"] == 'naive':
         rating = fx_naive(evts)
       if rating:

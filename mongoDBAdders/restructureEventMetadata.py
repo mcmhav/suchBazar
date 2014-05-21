@@ -3,19 +3,26 @@ import argparse
 import sys
 import helpers
 
-def main():
-    col = helpers.getCollection('prod')
-    restructCol = helpers.getCollection('prodR',True)
-    print ("")
+def main(prodDB='prod',prodRDB='prodR'):
+    col = helpers.getCollection(prodDB)
+    restructCol = helpers.getCollection(prodRDB,True)
+    print ("Restructuring metadata in events")
 
-    for event in col.find():
+    events = col.find()
+
+    total = events.count()
+    count = 0
+
+    for event in events:
         tmp = event
         if 'event_id' in tmp:
             tmp['event_id'] = event_idMapper(tmp['event_id'])
             restructCol.insert(tmp)
+            count += 1
+            helpers.printProgress(count,total)
 
-
-    print ("Done lol")
+    print ()
+    print ("Done restructuring")
 
 
 def event_idMapper(event_id):

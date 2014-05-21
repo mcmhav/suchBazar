@@ -58,7 +58,7 @@ fi
 ##
 # Our various methods to test
 ##
-echo "python ratings.py $OPTS -m naive"
+python ratings.py $OPTS -m naive
 
 python ratings.py $OPTS -m recentness -fx sigmoid_fixed -sr 4.5
 python ratings.py $OPTS -m recentness -fx sigmoid_constant -sc 30

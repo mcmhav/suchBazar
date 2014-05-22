@@ -63,8 +63,8 @@ def blend(users, f, ratio):
     product_id = args[1].strip()
     rating = float(args[2].strip())
 
-    timestamp = None
-    if len(args) > 2:
+    timestamp = ""
+    if len(args) > 3:
       timestamp = args[3].strip()
 
     # A linear blend, so we calculate the part for this rating.
@@ -106,7 +106,7 @@ if __name__ == '__main__':
   for user_id, product in users.items():
     for product_id, u_p_obj in product.items():
       rating = u_p_obj["rating"]
-      timestamp = u_p_obj.get("timestamp", None)
+      timestamp = u_p_obj.get("timestamp", "")
 
       # Create the output string
       s = "%s\t%s\t%s" % (user_id, product_id, rating)

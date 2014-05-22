@@ -86,7 +86,8 @@ def main():
       args.outputfile = config["method"] + "_" + config["fx"] + params + '.txt'
     else:
       args.outputfile = config["method"] + '.txt'
-  config["outfile"] = args.outputfolder + '/' + args.outputfile
+  base_dir = os.path.dirname(os.path.realpath(__file__))
+  config["outfile"] = "%s/%s/%s" % (base_dir, args.outputfolder, args.outputfile)
 
   # Check if we want timestamps in output
   config["timestamps"] = args.timestamps

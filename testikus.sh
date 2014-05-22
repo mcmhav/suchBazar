@@ -1,8 +1,31 @@
+#!/bin/bash
+
+# Trap ctrl+c and abort all if it is entered
+trap 'echo interrupted; exit' INT
+
+# Usage function, describing the parameters to the user.
+usage() { echo "Usage: ./$0 -i sobazar_input.tab"; exit 1; }
+
+# Some parameters changable in the opts.
+INFILE="-i ../datasets/v3/sobazar_events_prod_cleaned_formatted.tab"
+
+while getopts "i:" o; do
+  case "${o}" in
+    i)
+      INFILE=${OPTARG}
+      ;;
+    *)
+      usage
+      ;;
+  esac
+done
+
+OPTS="$INFILE"
+
 #Remove old ratings files
 # rm -f generators/ratings/*;
 # Generate ratings
-cd generators;
-./test.sh -b -t -i mongo;
+/bin/bash generators/test.sh -b -t $OPTS;
 
 # blend.txt -
 

@@ -13,6 +13,7 @@ rest/venv
 *.ratings
 generators/ratings
 generators/dists
+generators/files.conf
 mahout/jars/*
 */.idea/*
 *.iml

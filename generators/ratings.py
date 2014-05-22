@@ -117,7 +117,7 @@ def main():
   if not args.force:
     # Check if the output file already exist.
     if os.path.isfile(config["outfile"]):
-      print "File '%s' already exists. Skipping. Enable force-mode with -f if you want to continue." % args.outputfile
+      print ("File '%s' already exists. Skipping. Enable force-mode with -f if you want to continue." % args.outputfile)
       sys.exit(0)
 
   # Give some useful info to the user.

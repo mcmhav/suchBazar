@@ -12,8 +12,7 @@ cd generators;
 # ./split.sh -i ratings/blend.txt;
 # Cold start split
 cd ../evaluation;
-# python2.7 evaluation.py --coldstart-split ../generators/ratings/blend.txt -t -fb '1,1,1,1,0';
-python2.7 evaluation.py --coldstart-split ../generators/ratings/blend.txt -fb '1,1,1,1,0';
+python2.7 evaluation.py --coldstart-split ../generators/ratings/blend.txt -t -fb '1,1,1,1,0';
 
 exit;
 ./predict.sh

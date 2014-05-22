@@ -103,8 +103,8 @@ if __name__ == '__main__':
 
   # Write the output-file.
   out = open(args.dest, "w+")
-  for user_id, product in users.iteritems():
-    for product_id, u_p_obj in product.iteritems():
+  for user_id, product in users.items():
+    for product_id, u_p_obj in product.items():
       rating = u_p_obj["rating"]
       timestamp = u_p_obj.get("timestamp", None)
 

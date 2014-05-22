@@ -105,8 +105,11 @@ def evaluate(trainFile, testFile, predictionFile, k, beta, m):
     print('MAP%d: %.4f' %(k, mapk))
     print('nDCG%d: %.4f' %(k, nDCG))
     print('HLU%d: %.4f' %(beta, hluB))
-
-    helpers.writeEvauationScoreToLaTeX('')
+    helpers.writeEvauationScoreToLaTeX(
+        roc_auc,
+        k + "-" + mapk,
+        l + "-" + nDCG,
+        beta + "-" + hluB)
 
 
 def createColdStartSplits(ratingFile, timestamps, fbConfig):

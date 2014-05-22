@@ -13,7 +13,7 @@ def main():
     Helper functions
     '''
 
-def writeEvauationScoreToLaTeX(scores):
+def writeEvauationScoreToLaTeX(auc,map,ndcg,hlu):
     '''
     '''
     split_scores = scores.split('')
@@ -70,7 +70,8 @@ def readRatingsFromFile(path, convert=False):
         for rating in reader:
             if len(rating) == 3:
                 if rating[0] != '' and rating[1] != '' and rating[2] != '':
-                    ratings.append([int(rating[0]), int(rating[1]), float(rating[2])])
+                    tmp_rating = float(rating[2])
+                    ratings.append([int(rating[0]), int(rating[1]), tmp_rating])
             if len(rating) > 3:
                 if rating[0] != '' and rating[1] != '' and rating[2] != '' and rating[3] != '':
                     if convert:

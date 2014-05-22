@@ -12,7 +12,7 @@ def read_config(fname, rfolder):
 
   # Ensure we have more than 1 file to blend.
   if len(lines) < 2:
-    print "Error: we need more than one file in the config file to blend"
+    print ("Error: we need more than one file in the config file to blend")
     sys.exit(1)
   f.seek(0)
 
@@ -35,7 +35,7 @@ def read_config(fname, rfolder):
   for rfile in config['files']:
     s += rfile['ratio']
   if abs(s - 1.0) > 0.000000001:
-    print "Error: ratios does not add up to 1.0"
+    print ("Error: ratios does not add up to 1.0")
     sys.exit(1)
   f.seek(0)
 
@@ -43,7 +43,7 @@ def read_config(fname, rfolder):
   r = len(config["files"][0]["fh"].readlines())
   for rfile in config["files"][1:]:
     if len(rfile["fh"].readlines()) != r:
-      print "Line numbers in various files does not match"
+      print ("Line numbers in various files does not match")
       sys.exit(1)
 
   # Reset filehandles for all rating files
@@ -109,4 +109,4 @@ if __name__ == '__main__':
     rfile["fh"].close()
 
   # Write back to the user
-  print "Wrote %d ratings to %s. Average: %.4f,  Median: %.4f" % (num_ratings, args.dest, np.average(ratings), np.median(ratings))
+  print ("Wrote %d ratings to %s. Average: %.4f,  Median: %.4f") % (num_ratings, args.dest, np.average(ratings), np.median(ratings))

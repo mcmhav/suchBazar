@@ -291,10 +291,10 @@ def get_ratings_from_user(user_id, events, f, config):
     # This method needs to work on all events for all items that this user has
     # interacted on, and not one and one product_id. Thus, handle all events in
     # one array.
-    avg = np.mean([len(e) for e in events.iteritems()])
-    return fx_count([e for product_id, evt in events.iteritems() for e in evt], config, avg)
+    avg = np.mean([len(e) for e in events.items()])
+    return fx_count([e for product_id, evt in events.items() for e in evt], config, avg)
   else:
-    for product_id, evts in events.iteritems():
+    for product_id, evts in events.items():
       rating = None
       # Get the rating from one of the different calculation schemes.
       if config["method"] == 'recentness':

@@ -58,15 +58,37 @@ fi
 ##
 # Our various methods to test
 ##
-python ratings.py $OPTS -m naive
+# python ratings.py $OPTS -m naive
 
-python ratings.py $OPTS -m recentness -fx sigmoid_fixed -sr 4.5
-python ratings.py $OPTS -m recentness -fx sigmoid_constant -sc 30
-python ratings.py $OPTS -m recentness -fx linear
+# python ratings.py $OPTS -m recentness -fx sigmoid_constant -sc 30
+# python ratings.py $OPTS -m recentness -fx linear
 
-python ratings.py $OPTS -m count -fx linear
-python ratings.py $OPTS -m count -fx sigmoid_fixed -sr 4.5
-python ratings.py $OPTS -m count -fx sigmoid_constant -sc 30
+# python ratings.py $OPTS -m count -fx linear
+# python ratings.py $OPTS -m count -fx sigmoid_fixed -sr 4.5
+# python ratings.py $OPTS -m count -fx sigmoid_constant -sc 30
+
+python ratings.py -i mongo -m naive
+
+python ratings.py -i mongo -m recentness -fx linear
+python ratings.py -i mongo -m count -fx linear
+
+FROM=0
+TO=10
+srs=($(seq $FROM 0.5 $TO))
+for s in "${srs[@]}"
+do
+  python ratings.py -i mongo -fx sigmoid_fixed -m count -sr "$s"
+done
+
+
+FROM=20
+TO=40
+srs=($(seq $FROM 2 $TO))
+for s in "${srs[@]}"
+do
+  python ratings.py -i mongo -fx sigmoid_constant -m recentness -sc "$s"
+  python ratings.py -i mongo -fx sigmoid_constant -m count -sc "$s"
+done
 
 # If blend we do that as well.
 if [ $BLEND -eq 1 ]; then

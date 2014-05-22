@@ -73,19 +73,23 @@ def coldStartSplits():
 
 
 
-def evaluate(trainFile, testFile, predictionFile, k, beta):
+def evaluate(trainFile, testFile, predictionFile, k, beta, m):
 
 
     #train = helpers.readRatingsFromFile(trainFile)
     train = helpers.readRatings(trainFile, True)
     test = helpers.readRatingsFromFile(testFile)
-    predictions = helpers.readRatingsFromFile(predictionFile)
-    #train = fb.addFilterBotRatings(train, [1, 1, 1, 1, 0])
-    #predictions = itemAverage.itemAverage(train, test)
-    #predictions = itemAverage.mostPopular(train, test)
-    #predictions = helpers.readRatingsFromFile(predictionFile)
-    #predictions = helpers.readMyMediaLitePredictions(predictionFile)
 
+    if not predictionFile:
+        #train = fb.addFilterBotRatings(train, [1, 1, 1, 1, 0]
+        #predictions = itemAverage.itemAverage(train, test)
+        predictions = itemAverage.mostPopular(train, test)
+
+    else:
+        if m:
+            predictions = helpers.readMyMediaLitePredictions(predictionFile)
+        else:
+            predictions = helpers.readRatingsFromFile(predictionFile)
 
     us_coverage, is_coverage = coverage.compute(train, predictions)
     roc_auc = auc.compute(train, test, predictions)
@@ -167,11 +171,14 @@ parser.add_argument('--coldstart-split', dest='coldstart', type=str, help="Defau
 parser.add_argument('-fb', dest='fbConfig', type=str, help="Defaulting to ...")
 parser.add_argument('-t', dest='timestamps', default=False, action="store_true", help="Defaultign to...")
 
+
+
 parser.add_argument('--test-file', dest='test', type=str, help="Defaulting to ...")
 parser.add_argument('--training-file', dest='train', type=str, help="Defaulting to ...")
 parser.add_argument('--prediction-file', dest='pred', type=str, help="Defaulting to ...")
 parser.add_argument('-k', dest='k', type=int, default=20, help='Defaulting to...')
 parser.add_argument('-b', dest='beta', type=int, default=2, help='Defaulting to...')
+parser.add_argument('-m', dest='m', default=False, action="store_true", help="Defaultign to...")
 
 args = parser.parse_args()
 
@@ -189,7 +196,7 @@ if args.coldstart:
 if args.test:
 
 
-    evaluate(args.train, args.test, args.pred, args.k, args.beta)
+    evaluate(args.train, args.test, args.pred, args.k, args.beta, args.m)
 
 ### Examples ###
 

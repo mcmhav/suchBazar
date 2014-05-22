@@ -17,7 +17,7 @@ cd ../evaluation;
 declare -a RA=('MostPopular')
 for a in "${RA[@]}"
 do
-    python2.7 evaluation.py -b 2 -k 20 --training-file ../generators/ratings/blend.txt.9.txt --test-file ../generators/ratings/blend.txt.1.txt --prediction-file ../generators/predictions/"$a".predictions
+    python2.7 evaluation.py -b 2 -k 20 --training-file ../generators/ratings/blend.txt.9.txt --test-file ../generators/ratings/blend.txt.1.txt --prediction-file ../generators/predictions/"$a".predictions -m
 done
     # python2.7 evaluation.py --coldstart-split ../generators/predictions/"$a".predictions -t -fb '1,1,1,1,1'
 

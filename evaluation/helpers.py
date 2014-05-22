@@ -2,6 +2,7 @@ import sys
 import json
 import pymongo
 import csv
+import re
 from datetime import datetime
 import time
 from operator import itemgetter
@@ -251,6 +252,30 @@ def preprocessDCG(actual, predictions, k):
             pred.append(upred)
     return test, pred
 
+def determineLatexHeaderNumber(trainFile):
+    
+    #-1 in case the original rating file contains numbers
+    split_num = int(re.findall(r'\d', trainFile)[-1])
+    
+    if 'system' in trainFile:
+        if split_num == 1:
+            return 40
+        elif split_num == 2:
+            return 60
+        else:
+            return 80
+    else:
+        if split_num == 1:
+            return 10
+        elif split_num == 2:
+            return 40
+        else:
+            return 75
+    
+
 if __name__ == "__main__":
     main()
+    print(determineLatexHeaderNumber('../data/itemtrain1'))
+    
+
 

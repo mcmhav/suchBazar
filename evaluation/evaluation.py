@@ -22,8 +22,6 @@ import filterbots as fb
 
 
 
-
-
 def evaluation():
     '''
     Run Evaluation of the different cold-start splits
@@ -42,9 +40,6 @@ def evaluation():
     #evaluate('../data/ftrain.txt', '../data/user_test3.txt', '../data/predictions.txt')
     #evaluate('../generators/train.csv', '../generators/test.csv', '../mahout/testikus.txt')
     #evaluate('../generators/train.csv', '../generators/test.csv', '../generators/predictions.txt')
-
-
-
 
 def testCases():
     '''
@@ -73,7 +68,7 @@ def coldStartSplits():
 
 
 
-def evaluate(trainFile, testFile, predictionFile, k, beta, m):
+def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
 
 
     #train = helpers.readRatingsFromFile(trainFile)
@@ -81,7 +76,7 @@ def evaluate(trainFile, testFile, predictionFile, k, beta, m):
     test = helpers.readRatingsFromFile(testFile)
 
     if not predictionFile:
-        #train = fb.addFilterBotRatings(train, [1, 1, 1, 1, 0]
+        train = fb.addFilterBotRatings(train, [1, 1, 1, 1, 0])
         #predictions = itemAverage.itemAverage(train, test)
         predictions = itemAverage.mostPopular(train, test)
 
@@ -95,15 +90,15 @@ def evaluate(trainFile, testFile, predictionFile, k, beta, m):
     roc_auc = auc.compute(train, test, predictions)
     t, p = helpers.preprocessMAP(test, predictions, k)
     mapk = map.mapk(t, p, k)
-    t, p = helpers.preprocessDCG(test, predictions, k)
-    nDCG = ndcg.compute(t, p, 1, k)
+    t, p = helpers.preprocessDCG(test, predictions, l)
+    nDCG = ndcg.compute(t, p, 1, l)
     hluB = hlu.compute(t, p, beta)
 
     print('*** RESULTS ***')
     print('User-Space Coverage: %.4f\nItem-Space Coverage: %.4f' %(us_coverage, is_coverage))
     print('AUC: %.4f' %(roc_auc))
     print('MAP%d: %.4f' %(k, mapk))
-    print('nDCG%d: %.4f' %(k, nDCG))
+    print('nDCG%d: %.4f' %(l, nDCG))
     print('HLU%d: %.4f' %(beta, hluB))
     helpers.writeEvauationScoreToLaTeX(
         roc_auc,
@@ -171,17 +166,18 @@ def runTestCases():
         print('Kendall - Test case 2: %.2f' %stats.kendalltau(actual, pred)[0])
 
 
+
 parser = argparse.ArgumentParser(description='Evaluate Recommender Systems')
 parser.add_argument('--coldstart-split', dest='coldstart', type=str, help="Defaulting to ...")
 parser.add_argument('-fb', dest='fbConfig', type=str, help="Defaulting to ...")
 parser.add_argument('-t', dest='timestamps', default=False, action="store_true", help="Defaultign to...")
 
 
-
 parser.add_argument('--test-file', dest='test', type=str, help="Defaulting to ...")
 parser.add_argument('--training-file', dest='train', type=str, help="Defaulting to ...")
 parser.add_argument('--prediction-file', dest='pred', type=str, help="Defaulting to ...")
 parser.add_argument('-k', dest='k', type=int, default=20, help='Defaulting to...')
+parser.add_argument('-l', dest='l', type=int, default=20, help='Defaulting to...')
 parser.add_argument('-b', dest='beta', type=int, default=2, help='Defaulting to...')
 parser.add_argument('-m', dest='m', default=False, action="store_true", help="Defaultign to...")
 
@@ -199,21 +195,4 @@ if args.coldstart:
     createColdStartSplits(args.coldstart, args.timestamps, fb)
 
 if args.test:
-
-
-    evaluate(args.train, args.test, args.pred, args.k, args.beta, args.m)
-
-### Examples ###
-
-'''
-Generate cold-start split using timestamps and all filterbots
-'''
-
-#python evaluation.py --coldstart-split ../generators/ratings/count_linear.txt -fb '1,1,1,1,1'
-
-'''
-Evaluation of recommender
-'''
-
-#python evaluation.py -b 2 -k 20 --training-file ../data/user_train3.txt --test-file ../data/user_test3.txt --prediction-file ../mahout/testikus.txt
-
+    evaluate(args.train, args.test, args.pred, args.k, args.l, args.beta, args.m)

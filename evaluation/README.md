@@ -22,5 +22,6 @@ If you only want to use the BrandBot and PopularityBot you do the following:
   * `--test-file` is the path of the test file, 
   * `--prediction-file` is the path of the prediction file, if no prediction file use mostPopular recommender
   * `-b` the beta value for HLU
-  * `-k` the value for MAP and nDCG (MAP@k, nDCG@K)
+  * `-k` the value for MAP (MAP@k)
+  * `-l` the value for nDCG (nDCG@l)
   * `-m` if using mymedialite prediction files

@@ -22,13 +22,13 @@ import filterbots as fb
 
 
 
-    
-    
-def evaluation():    
+
+
+def evaluation():
     '''
     Run Evaluation of the different cold-start splits
     '''
-    
+
     #evaluate('../data/system_train1.txt', '../data/system_test.txt', '../mahout/testikus.txt')
     #evaluate('../data/system_train2.txt', '../data/system_test.txt', '../mahout/testikus.txt')
     #evaluate('../data/system_train3.txt', '../data/system_test.txt', '../mahout/testikus.txt')
@@ -38,13 +38,13 @@ def evaluation():
     #evaluate('../data/item_train1.txt', '../data/item_test1.txt', '../mahout/testikus.txt')
     #evaluate('../data/item_train2.txt', '../data/item_test2.txt', '../mahout/testikus.txt')
     #evaluate('../data/item_train3.txt', '../data/item_test3.txt', '../mahout/testikus.txt')
-    
+
     #evaluate('../data/ftrain.txt', '../data/user_test3.txt', '../data/predictions.txt')
     #evaluate('../generators/train.csv', '../generators/test.csv', '../mahout/testikus.txt')
     #evaluate('../generators/train.csv', '../generators/test.csv', '../generators/predictions.txt')
-    
-    
-    
+
+
+
 
 def testCases():
     '''
@@ -52,16 +52,16 @@ def testCases():
     '''
 
     #runTestCases()
-    
+
 def coldStartSplits():
     '''
     Functions for creating cold-start evaluation dataset splits
     '''
-    
+
     #Settings
     filterBotSettings = [0,0,0,0,0]
     timeStamps = True
-    
+
     createColdStartSplits('../generators/ratings/count_sigmoid_fixed_sr-3.5.txt', timeStamps, filterBotSettings)
     #createColdStartSplits('../generators/ratings/count_linear.txt', timeStamps, filterBotSettings)
     #createColdStartSplits('../generators/ratings/count_sigmoid_constant_sc-30.0.txt', timeStamps, filterBotSettings)
@@ -70,12 +70,12 @@ def coldStartSplits():
     #createColdStartSplits('../generators/ratings/recentness_linear.txt', timeStamps, filterBotSettings)
     #createColdStartSplits('../generators/ratings/recentness_sigmoid_constant_sc-30.0.txt', timeStamps, filterBotSettings)
     #createColdStartSplits('../generators/ratings/recentness_sigmoid_fixed_sr-4.5.txt', timeStamps, filterBotSettings)
-      
+
 
 
 def evaluate(trainFile, testFile, predictionFile, k, beta):
 
-    
+
     #train = helpers.readRatingsFromFile(trainFile)
     train = helpers.readRatings(trainFile, True)
     test = helpers.readRatingsFromFile(testFile)
@@ -107,7 +107,7 @@ def createColdStartSplits(ratingFile, timestamps, fbConfig):
 
     ratings = helpers.readRatingsFromFile(ratingFile, True)
     filename = ratingFile.split('/')[-1].split('.')[0]
-    
+
     print('Generating cold-start user dataset splits...')
     coldStart.generateColdStartSplits(filename, ratings, 'user', 0.1, 20, [0.10, 0.40, 0.75], timestamps, fbConfig)
     print('Generating cold-start item dataset splits...')
@@ -160,7 +160,7 @@ def runTestCases():
         print('nDCG - Test case 1: %.2f' %ndcg.compute(actual, pred, 0))
         print('Spearman - Test case 2: %.2f' %stats.spearmanr(actual, pred)[0])
         print('Kendall - Test case 2: %.2f' %stats.kendalltau(actual, pred)[0])
-        
+
 
 parser = argparse.ArgumentParser(description='Evaluate Recommender Systems')
 parser.add_argument('--coldstart-split', dest='coldstart', type=str, help="Defaulting to ...")
@@ -181,27 +181,27 @@ if args.coldstart:
         fb = [int(x) for x in fb]
         if(len(fb) < 5):
             print('Five arguments must be given, defaulting to [0,0,0,0,0]')
-            fb = [0,0,0,0,0]     
+            fb = [0,0,0,0,0]
     else:
         fb = [0,0,0,0,0]
     createColdStartSplits(args.coldstart, args.timestamps, fb)
-    
+
 if args.test:
-    
-    
+
+
     evaluate(args.train, args.test, args.pred, args.k, args.beta)
-    
+
 ### Examples ###
 
 '''
 Generate cold-start split using timestamps and all filterbots
 '''
 
-#python evaluation.py --coldstart-split ../generators/ratings/count_linear.txt -fb '1,1,1,1,1'   
+#python evaluation.py --coldstart-split ../generators/ratings/count_linear.txt -fb '1,1,1,1,1'
 
 '''
 Evaluation of recommender
 '''
 
 #python evaluation.py -b 2 -k 20 --training-file ../data/user_train3.txt --test-file ../data/user_test3.txt --prediction-file ../mahout/testikus.txt
-    
+

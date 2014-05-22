@@ -96,8 +96,8 @@ if __name__ == '__main__':
 
   # Write the output-file.
   out = open(args.dest, "w+")
-  for user_id, product in users.iteritems():
-    for product_id, rating in product.iteritems():
+  for user_id, product in users.items():
+    for product_id, rating in product.items():
       out.write("%s\t%s\t%s\n" % (user_id, product_id, rating))
 
       # Save for statistics
@@ -109,4 +109,4 @@ if __name__ == '__main__':
     rfile["fh"].close()
 
   # Write back to the user
-  print ("Wrote %d ratings to %s. Average: %.4f,  Median: %.4f") % (num_ratings, args.dest, np.average(ratings), np.median(ratings))
+  print ("Wrote %d ratings to %s. Average: %.4f,  Median: %.4f" % (num_ratings, args.dest, np.average(ratings), np.median(ratings)))

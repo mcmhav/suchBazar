@@ -1,8 +1,10 @@
 #Remove old ratings files
-rm -f generators/ratings/*;
+# rm -f generators/ratings/*;
 # Generate ratings
+
+
 cd generators;
-./test.sh -b -t -i mongo;
+./test.sh -b -t -c -i mongo;
 
 # blend.txt -
 
@@ -14,12 +16,15 @@ cd generators;
 cd ../evaluation;
 python2.7 evaluation.py --coldstart-split ../generators/ratings/blend.txt -t -fb '1,1,1,1,0';
 
-exit;
+# make predictions
+cd ../generators;
 ./predict.sh
-
-cd ../evaluation;
+exit;
 
 # declare -a RA=('BPRMF' 'ItemAttributeKNN' 'ItemKNN' 'MostPopular' 'Random' 'UserAttributeKNN' 'UserKNN' 'WRMF' 'Zero' 'MultiCoreBPRMF' 'SoftMarginRankingMF' 'WeightedBPRMF' 'BPRLinear' 'MostPopularByAttributes' 'BPRSLIM' 'LeastSquareSLIM')
+
+# Get score for the predictions
+cd ../evaluation;
 declare -a RA=('MostPopular')
 for a in "${RA[@]}"
 do

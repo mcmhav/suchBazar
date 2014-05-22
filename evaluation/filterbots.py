@@ -58,7 +58,6 @@ def getBrand(itemid, item_attributes):
     Returns the brand id for a given item
     '''
     for item in item_attributes:
-        print(item)
         if int(item[0]) == itemid:
             return item[2]
 

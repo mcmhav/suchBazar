@@ -38,7 +38,7 @@ def compute(train, test, predictions):
     #itemIds = helpers.getUniqueItemList(train)
     #predictions = appendZeroRatings(predictions, itemIds)
 
-    
+
     candidateItems = helpers.getUniqueItemList(train)
 
     numCandidateItems = len(candidateItems)                       #Number of unique items in training set
@@ -62,6 +62,9 @@ def compute(train, test, predictions):
             AUC += auc(predictions[user], test_users[user], numDroppedItems)
             num_users += 1
 
+    if (float(num_users) == 0):
+        print ("Lol, num_users are 0, try again")
+        return -1
     return AUC/float(num_users)
 
 def auc(predictionList, correctItems, numDroppedItems):

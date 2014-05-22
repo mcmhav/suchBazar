@@ -19,7 +19,7 @@ import hlu
 import ndcg
 import itemAverage
 import filterbots as fb
-
+import ntpath
 
 
 def evaluation():
@@ -69,8 +69,6 @@ def coldStartSplits():
 
 
 def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
-
-
     #train = helpers.readRatingsFromFile(trainFile)
     train = helpers.readRatings(trainFile, True)
     test = helpers.readRatingsFromFile(testFile)
@@ -100,16 +98,22 @@ def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
     print('MAP%d: %.4f' %(k, mapk))
     print('nDCG%d: %.4f' %(l, nDCG))
     print('HLU%d: %.4f' %(beta, hluB))
-    helpers.writeEvauationScoreToLaTeX(
-        roc_auc,
-        k + "-" + mapk,
-        l + "-" + nDCG,
-        beta + "-" + hluB)
-
+    helpers.prepareEvauationScoreToLaTeX(
+        ntpath.basename(predictionFile),
+        str(us_coverage),
+        str(is_coverage),
+        str(roc_auc),
+        str(mapk),
+        str(nDCG),
+        str(hluB),
+        str(k),
+        str(l),
+        str(beta)
+    )
 
 def createColdStartSplits(ratingFile, timestamps, fbConfig):
 
-    ratings = helpers.readRatingsFromFile(ratingFile, True)
+    ratings = helpers.readRatingsFromFileSmart(ratingFile, True)
     filename = ratingFile.split('/')[-1].split('.')[0]
 
     print('Generating cold-start user dataset splits...')

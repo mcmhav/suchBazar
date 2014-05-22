@@ -14,10 +14,27 @@ def main():
     Helper functions
     '''
 
-def writeEvauationScoreToLaTeX(auc,map,ndcg,hlu):
+def prepareEvauationScoreToLaTeX(filename,us_coverage,is_coverage,auc,mapk,ndcg,hlu,k,l,beta):
     '''
+    Make latex structure
+    AUC - nDCG - MAP - HLU - is coverage - us coverage
     '''
-    split_scores = scores.split('')
+    saveName = "evaluationScore/" + filename + k + "-" + "-" + l + "-" + beta + ".score"
+    f = open(saveName, 'w')
+    f.write('auc:' + auc + "\n")
+    f.write('ndcg:' + ndcg + "\n")
+    f.write('map:' + mapk + "\n")
+    f.write('hlu:' + hlu + "\n")
+    f.write('us_coverage:' + us_coverage + "\n")
+    f.write('is_coverage:' + is_coverage + "\n")
+    f.write('beta:' + beta + "\n")
+    f.write('k:' + k + "\n")
+    f.write('l:' + l + "\n")
+    f.close()
+
+    print ("wrote to %s" % saveName)
+
+
 
 def printProgress(count,total):
     progress = (count/total)*100
@@ -51,10 +68,10 @@ def readPredictionsFromFile(path):
     predictions = []
     f = open(path, 'r+')
     lines = f.readlines()
+    f.close()
     for line in lines:
         tmp = line.split(',')
         predictions.append([int(tmp[0]), int(tmp[1]), float(tmp[2])])
-    f.close()
     return predictions
 
 def closeF():
@@ -62,24 +79,47 @@ def closeF():
     f.close()
 
 def readRatingsFromFile(path, convert=False):
+    ratings = []
+    f = open(path, 'r+')
+    reader = f.readlines()
+    f.close()
+    for line in reader:
+        rating = line.split('\t')
+        if len(rating) == 3:
+            if rating[0] != '' and rating[1] != '' and rating[2] != '':
+                tmp_rating = float(rating[2])
+                ratings.append([int(rating[0]), int(rating[1]), tmp_rating])
+        if len(rating) > 3:
+            if rating[0] != '' and rating[1] != '' and rating[2] != '' and rating[3] != '':
+                if convert:
+                    t = datetime.strptime(rating[3],"%Y-%m-%d %H:%M:%S")
+                    ratings.append([int(rating[0]), int(rating[1]), float(rating[2]), int(time.mktime(t.timetuple()))])
+                else:
+                    ratings.append([int(rating[0]), int(rating[1]), float(rating[2]), int(rating[3])])
+    return ratings
 
+def readRatingsFromFileSmart(path, convert=False):
     ratings = []
     with open(path, 'r') as file:
 
         dialect = csv.Sniffer().sniff(file.read(1024))
         reader =  csv.reader(file, delimiter=dialect.delimiter)
+
         for rating in reader:
-            if len(rating) == 3:
-                if rating[0] != '' and rating[1] != '' and rating[2] != '':
-                    tmp_rating = float(rating[2])
-                    ratings.append([int(rating[0]), int(rating[1]), tmp_rating])
-            if len(rating) > 3:
-                if rating[0] != '' and rating[1] != '' and rating[2] != '' and rating[3] != '':
-                    if convert:
-                        t = datetime.strptime(rating[3],"%Y-%m-%d %H:%M:%S")
-                        ratings.append([int(rating[0]), int(rating[1]), float(rating[2]), int(time.mktime(t.timetuple()))])
-                    else:
-                        ratings.append([int(rating[0]), int(rating[1]), float(rating[2]), int(rating[3])])
+            try:
+                if len(rating) == 3:
+                    if rating[0] != '' and rating[1] != '' and rating[2] != '':
+                        tmp_rating = float(rating[2])
+                        ratings.append([int(rating[0]), int(rating[1]), tmp_rating])
+                if len(rating) > 3:
+                    if rating[0] != '' and rating[1] != '' and rating[2] != '' and rating[3] != '':
+                        if convert:
+                            t = datetime.strptime(rating[3],"%Y-%m-%d %H:%M:%S")
+                            ratings.append([int(rating[0]), int(rating[1]), float(rating[2]), int(time.mktime(t.timetuple()))])
+                        else:
+                            ratings.append([int(rating[0]), int(rating[1]), float(rating[2]), int(rating[3])])
+            except:
+                print (rating)
     return ratings
 
 def readRatings(path, timestamps):
@@ -111,8 +151,14 @@ def readMyMediaLitePredictions(path):
             items = s[1].split(',')
             for item in items:
                 i = item.split(':')
-                rating = [int(s[0]), int(i[0]), float(i[1])]
-                ratings.append(rating)
+                try:
+                    userID = int(s[0])
+                    itemID = int(i[0])
+                    rating = float(i[1])
+                    ratingTriple = [userID, itemID, rating]
+                    ratings.append(ratingTriple)
+                except:
+                    print (item)
 
     return ratings
 
@@ -253,10 +299,10 @@ def preprocessDCG(actual, predictions, k):
     return test, pred
 
 def determineLatexHeaderNumber(trainFile):
-    
+
     #-1 in case the original rating file contains numbers
     split_num = int(re.findall(r'\d', trainFile)[-1])
-    
+
     if 'system' in trainFile:
         if split_num == 1:
             return 40
@@ -271,11 +317,11 @@ def determineLatexHeaderNumber(trainFile):
             return 40
         else:
             return 75
-    
+
 
 if __name__ == "__main__":
     main()
     print(determineLatexHeaderNumber('../data/itemtrain1'))
-    
+
 
 

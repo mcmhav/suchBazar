@@ -1,10 +1,8 @@
 #Remove old ratings files
 # rm -f generators/ratings/*;
 # Generate ratings
-
-
 cd generators;
-./test.sh -b -t -c -i mongo;
+./test.sh -b -t -i mongo;
 
 # blend.txt -
 
@@ -18,19 +16,38 @@ python2.7 evaluation.py --coldstart-split ../generators/ratings/blend.txt -t -fb
 
 # make predictions
 cd ../generators;
-./predict.sh
-exit;
-
+./predict.sh &
+wait $!
 # declare -a RA=('BPRMF' 'ItemAttributeKNN' 'ItemKNN' 'MostPopular' 'Random' 'UserAttributeKNN' 'UserKNN' 'WRMF' 'Zero' 'MultiCoreBPRMF' 'SoftMarginRankingMF' 'WeightedBPRMF' 'BPRLinear' 'MostPopularByAttributes' 'BPRSLIM' 'LeastSquareSLIM')
 
 # Get score for the predictions
+echo "Evaluating"
 cd ../evaluation;
+declare -a trainTestTuples=('blend_itemtrain1.txt:blend_itemtest1.txt' 'blend_itemtrain2.txt:blend_itemtest2.txt' 'blend_itemtrain3.txt:blend_itemtest3.txt' 'blend_systemtrain1.txt:blend_systemtest.txt' 'blend_systemtrain2.txt:blend_systemtest.txt' 'blend_systemtrain3.txt:blend_systemtest.txt' 'blend_usertrain1.txt:blend_usertest1.txt' 'blend_usertrain2.txt:blend_usertest2.txt' 'blend_usertrain3.txt:blend_usertest3.txt')
 declare -a RA=('MostPopular')
 for a in "${RA[@]}"
 do
-    python2.7 evaluation.py -b 2 -k 20 --training-file ../generators/ratings/blend.txt.9.txt --test-file ../generators/ratings/blend.txt.1.txt --prediction-file ../generators/predictions/"$a".predictions -m
+    for ttt in "${trainTestTuples[@]}"
+    do
+        set -- "$ttt"
+        IFS=":"; declare -a Array=($*)
+        echo "${Array[@]}"
+        python2.7 evaluation.py -b 2 -k 20 --training-file ../generators/splits/"${Array[0]}" --test-file ../generators/splits/"${Array[1]}" --prediction-file ../generators/predictions/"${Array[0]}"-"${Array[1]}"-"$a".predictions -m
+    done
 done
 
+echo 'lol, done'
 # Evaluate the top K recommendations
 # javac SobazarRecommender.java && java SobazarRecommender;
+
+Traceback (most recent call last):
+  File "evaluation.py", line 199, in <module>
+    createColdStartSplits(args.coldstart, args.timestamps, fb)
+  File "evaluation.py", line 116, in createColdStartSplits
+    ratings = helpers.readRatingsFromFile(ratingFile, True)
+  File "/home/m/repos/suchBazar/evaluation/helpers.py", line 93, in readRatingsFromFile
+    t = datetime.strptime(rating[3],"%Y-%m-%d %H:%M:%S")
+  File "/usr/lib/python2.7/_strptime.py", line 328, in _strptime
+    data_string[found.end():])
+ValueError: unconverted data remains:
 

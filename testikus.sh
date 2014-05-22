@@ -12,7 +12,7 @@ INFILE="-i ../datasets/v3/sobazar_events_prod_cleaned_formatted.tab"
 while getopts "i:" o; do
   case "${o}" in
     i)
-      INFILE=${OPTARG}
+      INFILE="-i ${OPTARG}"
       ;;
     *)
       usage
@@ -21,6 +21,7 @@ while getopts "i:" o; do
 done
 
 OPTS="$INFILE"
+echo $OPTS
 
 #Remove old ratings files
 # rm -f generators/ratings/*;
@@ -34,7 +35,7 @@ OPTS="$INFILE"
 # Split ratings
 # ./split.sh -i ratings/blend.txt;
 # Cold start split
-cd ../evaluation;
+cd evaluation;
 python2.7 evaluation.py --coldstart-split ../generators/ratings/blend.txt -t -fb '1,1,1,1,0';
 
 # make predictions

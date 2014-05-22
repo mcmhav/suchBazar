@@ -19,14 +19,14 @@ def prepareEvauationScoreToLaTeX(filename,us_coverage,is_coverage,auc,mapk,ndcg,
     Make latex structure
     AUC - nDCG - MAP - HLU - is coverage - us coverage
     '''
-    saveName = "evaluationScore/" + filename + "-" + k  + "-" + l + "-" + beta + ".score"
+    saveName = "evaluationScore/" + k  + "-" + l + "-" + beta + '-' + filename + ".score"
     f = open(saveName, 'w')
-    f.write('auc:' + auc + "\n")
-    f.write('ndcg:' + ndcg + "\n")
-    f.write('map:' + mapk + "\n")
-    f.write('hlu:' + hlu + "\n")
-    f.write('us_coverage:' + us_coverage + "\n")
-    f.write('is_coverage:' + is_coverage + "\n")
+    f.write('1auc:' + auc + "\n")
+    f.write('2ndcg:' + ndcg + "\n")
+    f.write('3map:' + mapk + "\n")
+    f.write('4hlu:' + hlu + "\n")
+    f.write('5us_coverage:' + us_coverage + "\n")
+    f.write('6is_coverage:' + is_coverage + "\n")
     f.write('beta:' + beta + "\n")
     f.write('k:' + k + "\n")
     f.write('l:' + l + "\n")

@@ -56,9 +56,10 @@ do
         set -- "$ttt"
         IFS=":"; declare -a Array=($*)
         echo "${Array[@]}"
-        python2.7 evaluation.py -b 2 -k 20 --training-file ../generators/splits/"${Array[0]}" --test-file ../generators/splits/"${Array[1]}" --prediction-file ../generators/predictions/"${Array[0]}"-"${Array[1]}"-"$a".predictions -m
+        python2.7 evaluation.py -b 2 -k 20 --training-file ../generators/splits/"${Array[0]}" --test-file ../generators/splits/"${Array[1]}" --prediction-file ../generators/predictions/"${Array[0]}"-"${Array[1]}"-"$a".predictions -m &
     done
 done
+wait $!
 
 echo 'lol, done'
 # Evaluate the top K recommendations

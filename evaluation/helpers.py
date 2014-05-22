@@ -19,7 +19,7 @@ def prepareEvauationScoreToLaTeX(filename,us_coverage,is_coverage,auc,mapk,ndcg,
     Make latex structure
     AUC - nDCG - MAP - HLU - is coverage - us coverage
     '''
-    saveName = "evaluationScore/" + filename + k + "-" + "-" + l + "-" + beta + ".score"
+    saveName = "evaluationScore/" + filename + "-" + k  + "-" + l + "-" + beta + ".score"
     f = open(saveName, 'w')
     f.write('auc:' + auc + "\n")
     f.write('ndcg:' + ndcg + "\n")
@@ -33,7 +33,6 @@ def prepareEvauationScoreToLaTeX(filename,us_coverage,is_coverage,auc,mapk,ndcg,
     f.close()
 
     print ("wrote to %s" % saveName)
-
 
 
 def printProgress(count,total):

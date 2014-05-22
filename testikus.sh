@@ -39,15 +39,3 @@ done
 echo 'lol, done'
 # Evaluate the top K recommendations
 # javac SobazarRecommender.java && java SobazarRecommender;
-
-Traceback (most recent call last):
-  File "evaluation.py", line 199, in <module>
-    createColdStartSplits(args.coldstart, args.timestamps, fb)
-  File "evaluation.py", line 116, in createColdStartSplits
-    ratings = helpers.readRatingsFromFile(ratingFile, True)
-  File "/home/m/repos/suchBazar/evaluation/helpers.py", line 93, in readRatingsFromFile
-    t = datetime.strptime(rating[3],"%Y-%m-%d %H:%M:%S")
-  File "/usr/lib/python2.7/_strptime.py", line 328, in _strptime
-    data_string[found.end():])
-ValueError: unconverted data remains:
-

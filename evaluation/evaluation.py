@@ -99,7 +99,7 @@ def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
     print('nDCG%d: %.4f' %(l, nDCG))
     print('HLU%d: %.4f' %(beta, hluB))
     helpers.prepareEvauationScoreToLaTeX(
-        ntpath.basename(predictionFile),
+        ntpath.basename(trainFile),
         str(us_coverage),
         str(is_coverage),
         str(roc_auc),

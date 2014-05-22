@@ -106,6 +106,8 @@ def evaluate(trainFile, testFile, predictionFile, k, beta, m):
     print('nDCG%d: %.4f' %(k, nDCG))
     print('HLU%d: %.4f' %(beta, hluB))
 
+    helpers.writeEvauationScoreToLaTeX('')
+
 
 def createColdStartSplits(ratingFile, timestamps, fbConfig):
 

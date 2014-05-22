@@ -59,16 +59,23 @@ def blend(users, f, ratio):
   for l in f.readlines():
     # Read in all ratings from the given file.
     args = l.split('\t')
-    user_id = args[0]
-    product_id = args[1]
-    rating = float(args[2])
+    user_id = args[0].strip()
+    product_id = args[1].strip()
+    rating = float(args[2].strip())
+
+    timestamp = None
+    if len(args) > 2:
+      timestamp = args[3].strip()
 
     # A linear blend, so we calculate the part for this rating.
     rating *= ratio
 
     # Blend into our data-structure
-    current_rating = users[user_id][product_id]
-    users[user_id][product_id] = current_rating + rating
+    current_rating = users[user_id][product_id].get("rating", 0.0)
+    new_rating = current_rating + rating
+
+    # Add to datastructure
+    users[user_id][product_id] = {'rating': new_rating, 'timestamp': timestamp}
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description = 'Blend ratings')
@@ -84,7 +91,7 @@ if __name__ == '__main__':
   conf = read_config(args.conf, args.rfolder)
 
   # Data structure holding all information about all ratings for a user.
-  users = defaultdict(lambda: defaultdict(int))
+  users = defaultdict(lambda: defaultdict(lambda: defaultdict()))
 
   # Do the blending.
   for rfile in conf["files"]:
@@ -96,9 +103,18 @@ if __name__ == '__main__':
 
   # Write the output-file.
   out = open(args.dest, "w+")
-  for user_id, product in users.items():
-    for product_id, rating in product.items():
-      out.write("%s\t%s\t%s\n" % (user_id, product_id, rating))
+  for user_id, product in users.iteritems():
+    for product_id, u_p_obj in product.iteritems():
+      rating = u_p_obj["rating"]
+      timestamp = u_p_obj.get("timestamp", None)
+
+      # Create the output string
+      s = "%s\t%s\t%s" % (user_id, product_id, rating)
+      if timestamp:
+        s += "\t%s" % timestamp
+
+      # Write to file
+      out.write("%s\n" % s)
 
       # Save for statistics
       num_ratings += 1

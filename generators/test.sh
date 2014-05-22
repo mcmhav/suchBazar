@@ -58,24 +58,24 @@ fi
 ##
 # Our various methods to test
 ##
-# python ratings.py $OPTS -m naive
+python ratings.py $OPTS -m naive
 
-# python ratings.py $OPTS -m recentness -fx sigmoid_constant -sc 30
-# python ratings.py $OPTS -m recentness -fx linear
+python ratings.py $OPTS -m recentness -fx sigmoid_constant -sc 30
+python ratings.py $OPTS -m recentness -fx linear
 
-# python ratings.py $OPTS -m count -fx linear
-# python ratings.py $OPTS -m count -fx sigmoid_fixed -sr 4.5
-# python ratings.py $OPTS -m count -fx sigmoid_constant -sc 30
+python ratings.py $OPTS -m count -fx linear
+python ratings.py $OPTS -m count -fx sigmoid_fixed -sr 4.5
+python ratings.py $OPTS -m count -fx sigmoid_constant -sc 30
 
-python ratings.py -i mongo -m naive
+# python ratings.py -i mongo -m naive -t
 
-python ratings.py -i mongo -m recentness -fx linear
-python ratings.py -i mongo -m count -fx linear
+# python ratings.py -i mongo -m recentness -fx linear -t
+# python ratings.py -i mongo -m count -fx linear -t
 
-python ratings.py -i mongo -fx sigmoid_fixed -m count -sr 4.5
+# python ratings.py -i mongo -fx sigmoid_fixed -m count -sr 4.5 -t
 
-python ratings.py -i mongo -fx sigmoid_constant -m recentness -sc 30
-python ratings.py -i mongo -fx sigmoid_constant -m count -sc 30
+# python ratings.py -i mongo -fx sigmoid_constant -m recentness -sc 30 -t
+# python ratings.py -i mongo -fx sigmoid_constant -m count -sc 30 -t
 
 # FROM=0.5
 # TO=10

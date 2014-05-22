@@ -13,6 +13,11 @@ def main():
     Helper functions
     '''
 
+def writeEvauationScoreToLaTeX(scores):
+    '''
+    '''
+    split_scores = scores.split('')
+
 def printProgress(count,total):
     progress = (count/total)*100
     sys.stdout.write("Progress: %s%%\r" % progress)
@@ -198,11 +203,11 @@ def appendZeroRatings(user, predictions, candidateItems):
 def preprocessMAP(actual, predictions, k):
     '''
     Preprocessing nMAP calculations
-    
+
     Extracts the top k list of item-ids from each user
-    
+
     '''
-    
+
     a = buildDictByIndex(actual, 0)
     p = buildDictByIndex(predictions, 0)
     pred = []
@@ -223,11 +228,11 @@ def preprocessMAP(actual, predictions, k):
 def preprocessDCG(actual, predictions, k):
     '''
     Preprocessing nDCG calculations
-    
+
     Extracts the top k list of item-ids from each user
-    
+
     '''
-    
+
     a = buildDictByIndex(actual, 0)
     p = buildDictByIndex(predictions, 0)
     pred = []
@@ -243,7 +248,7 @@ def preprocessDCG(actual, predictions, k):
             for j in range(k):
                 upred.append([p[user][j][1], p[user][j][2]])
             pred.append(upred)
-    return test, pred 
+    return test, pred
 
 if __name__ == "__main__":
     main()

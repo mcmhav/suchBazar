@@ -8,13 +8,14 @@ trap 'echo interrupted; exit' INT
 CLEAN=0
 PLOT=0
 BLEND=0
+FORCE=""
 TIMESTAMP=""
 MIN_DATE=""
 MAX_DATE=""
 INFILE="-i ../../datasets/v3/sobazar_events_prod_cleaned_formatted.tab"
 
 # Check options (basically if we want to clean and/or plot)
-while getopts "i:m:x:cpbt" o; do
+while getopts "i:m:x:cpbtf" o; do
   case "${o}" in
     c)
       CLEAN=1
@@ -24,6 +25,9 @@ while getopts "i:m:x:cpbt" o; do
       ;;
     b)
       BLEND=1
+      ;;
+    f)
+      FORCE="-f"
       ;;
     t)
       TIMESTAMP="-t"
@@ -42,7 +46,7 @@ while getopts "i:m:x:cpbt" o; do
       ;;
   esac
 done
-OPTS="$INFILE $TIMESTAMP $MIN_DATE $MAX_DATE"
+OPTS="$INFILE $TIMESTAMP $MIN_DATE $MAX_DATE $FORCE"
 
 # If cleaning, then we delete everything in ratings/ and dists/
 if [ $CLEAN -eq 1 ]; then

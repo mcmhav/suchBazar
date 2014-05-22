@@ -18,6 +18,7 @@ def main():
   parser.add_argument('-o', dest='outputfile', help="Defaulting to '<method-name>.txt'")
   parser.add_argument('-d', dest='outputfolder', default='ratings', help="Defaulting to 'ratings'")
   parser.add_argument('-t', dest='timestamps', action='store_true', default=False, help="Include timestamps in output")
+  parser.add_argument('-f', dest='force', action='store_true', default=False, help='Create rating file, even if it already exist')
   parser.add_argument('--debug', dest='debug', action='store_true', default=False)
   parser.add_argument('--skip-header', dest='skipheader', action='store_true', default=False)
   parser.add_argument('--min-date', dest='min_date', default=None)
@@ -111,6 +112,13 @@ def main():
   # Check if we want to skip first line in csv
   if args.skipheader:
     config["skipheader"] = args.skipheader
+
+  # Check if we want force mode.
+  if not args.force:
+    # Check if the output file already exist.
+    if os.path.isfile(config["outfile"]):
+      print "File '%s' already exists. Skipping. Enable force-mode with -f if you want to continue." % args.outputfile
+      sys.exit(0)
 
   # Give some useful info to the user.
   print ("----------------------------------------------------------------------")

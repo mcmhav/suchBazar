@@ -5,6 +5,9 @@ usage() { echo "Usage: $0 [-c (clean)] [-p (plot)] [-b (blend)] [-i (infile)] [
 # Check for ctrl+c
 trap 'echo interrupted; exit' INT
 
+# Save the current path
+CWD=$( cd "$( dirname "$0" )" && pwd );
+
 CLEAN=0
 PLOT=0
 BLEND=0
@@ -51,25 +54,26 @@ OPTS="$INFILE $TIMESTAMP $MIN_DATE $MAX_DATE $FORCE"
 # If cleaning, then we delete everything in ratings/ and dists/
 if [ $CLEAN -eq 1 ]; then
   if [ -d ratings ]; then
-    rm -f ratings/*.txt
+    rm -f $CWD/ratings/*.txt
   fi
 
   if [ -d dists ]; then
-    rm -f dists/*.png
+    rm -f $CWD/dists/*.png
   fi
 fi
 
 ##
 # Our various methods to test
 ##
-python ratings.py $OPTS -m naive
+SCRIPT="$CWD/ratings.py"
+python $SCRIPT $OPTS -m naive
 
-python ratings.py $OPTS -m recentness -fx sigmoid_constant -sc 30
-python ratings.py $OPTS -m recentness -fx linear
+python $SCRIPT $OPTS -m recentness -fx sigmoid_constant -sc 30
+python $SCRIPT $OPTS -m recentness -fx linear
 
-python ratings.py $OPTS -m count -fx linear
-python ratings.py $OPTS -m count -fx sigmoid_fixed -sr 4.5
-python ratings.py $OPTS -m count -fx sigmoid_constant -sc 30
+python $SCRIPT $OPTS -m count -fx linear
+python $SCRIPT $OPTS -m count -fx sigmoid_fixed -sr 4.5
+python $SCRIPT $OPTS -m count -fx sigmoid_constant -sc 30
 
 # python ratings.py -i mongo -m naive -t
 
@@ -103,11 +107,11 @@ python ratings.py $OPTS -m count -fx sigmoid_constant -sc 30
 # If blend we do that as well.
 if [ $BLEND -eq 1 ]; then
   ls ratings > files.conf
-  python blend.py -c files.conf
+  python $CWD/blend.py -c files.conf
 fi
 
 # If plot then we run the plotting tool
 if [ $PLOT -eq 1 ]; then
-  python plot_distribution.py
+  python $CWD/plot_distribution.py
 fi
 

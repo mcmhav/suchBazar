@@ -106,8 +106,8 @@ python $SCRIPT $OPTS -m count -fx sigmoid_constant -sc 30
 
 # If blend we do that as well.
 if [ $BLEND -eq 1 ]; then
-  ls ratings > files.conf
-  python $CWD/blend.py -c files.conf
+  ls "$CWD/ratings" > "$CWD/files.conf"
+  python $CWD/blend.py -c "$CWD/files.conf"
 fi
 
 # If plot then we run the plotting tool

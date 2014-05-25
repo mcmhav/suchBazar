@@ -21,7 +21,7 @@ do
         item_recommendation --training-file="${Array[0]}" --test-file="${Array[1]}" --recommender="$a" --prediction-file=../predictions/"${Array[0]}"-"${Array[1]}"-"$a".predictions &
     done
 done
-    wait $!
+wait $!
 
 # Please provide either --test-file=FILE, --test-ratio=NUM, --cross-validation=K, --chronological-split=NUM|DATETIME, or --save-model=FILE.
 

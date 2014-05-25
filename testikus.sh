@@ -26,7 +26,8 @@ echo $OPTS
 #Remove old ratings files
 # rm -f generators/ratings/*;
 # Generate ratings
-/bin/bash generators/test.sh -b -t $OPTS;
+cd generators;
+./test.sh -b -t $OPTS;
 
 # blend.txt -
 
@@ -35,7 +36,7 @@ echo $OPTS
 # Split ratings
 # ./split.sh -i ratings/blend.txt;
 # Cold start split
-cd evaluation;
+cd ../evaluation;
 python2.7 evaluation.py --coldstart-split ../generators/ratings/blend.txt -t -fb '1,1,1,1,0';
 
 # make predictions
@@ -60,6 +61,8 @@ do
     done
 done
 wait $!
+
+python generateLatexLines.py
 
 echo 'lol, done'
 # Evaluate the top K recommendations

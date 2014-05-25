@@ -17,7 +17,6 @@ def makeLaTeXTable(preLatexObj):
     Write the table to file in latex format
     '''
 
-
     systemScore = ""
     itemScore = ""
     userScore = ""
@@ -32,10 +31,12 @@ def makeLaTeXTable(preLatexObj):
                 tmp[score].append(preLatexObj[nameID][key[0]][score])
 
         line = makeLineFromDict(tmp)
+        print ("NameID: %s\t " % (nameID))
+        print (line)
         e.write(line)
         e.close()
 
-    print ("Done, lol")
+    print ("Done generating latex lines")
 
 def makeLineFromDict(dictL):
     line = ''

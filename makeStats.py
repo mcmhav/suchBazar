@@ -17,6 +17,8 @@ def main():
     simpleGeoPlotter.main()
     globalSessionsCounter.main()
 
+    print ("Done!")
+
 
 if __name__ == "__main__":
     main()

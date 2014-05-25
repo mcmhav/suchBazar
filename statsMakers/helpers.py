@@ -3,6 +3,7 @@ import json
 import pymongo
 import csv
 import os
+import helpers
 
 f = ""
 
@@ -42,6 +43,9 @@ def getCSVWriter(cFile):
 def closeF():
     global f
     f.close()
+
+def update_progress(count,total):
+    print ('\r[{0}] {1}%'.format('#'*(progress/10), progress))
 
 if __name__ == "__main__":
     main()

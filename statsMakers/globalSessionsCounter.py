@@ -7,7 +7,7 @@ import os
 from bson import Binary, Code
 
 parser = argparse.ArgumentParser(description='Constructs overview of how many sessions users have.')
-parser.add_argument('-c',type=str, default="sessions")
+parser.add_argument('-c',type=str, default="sessionsNew")
 parser.add_argument('-d',type=str, default="stats")
 args = parser.parse_args()
 

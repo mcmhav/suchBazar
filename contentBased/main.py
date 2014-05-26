@@ -8,9 +8,10 @@ import pymongo
 # from nltk import wordpunct_tokenize
 # from nltk.corpus import stopwords
 
-client = pymongo.MongoClient()
-db = client.mydb
-col = db["items"]
+def get_mongo_db():
+  client = pymongo.MongoClient()
+  db = client.mydb
+  return db["items"]
 
 # stop = stopwords.words('english') + stopwords.words('norwegian')
 
@@ -191,11 +192,16 @@ def readProductData():
     return filterProducts(products_json)
 
 
-def getProductsMongoDb():
-
-
+def getProductsMongoDb(col):
     return col.find()
 
+def getProductsFile(filename):
+    products = {}
+    with open(filename, 'r') as f:
+      for line in f.readlines():
+        j = json.loads(line)
+        products[int(j['id'])] = j
+    return products
 
 def filterProducts(products_json):
     '''
@@ -246,48 +252,62 @@ def averageDescriptionLength(products_json):
 
     print ('Average product description length: %d' %(totalLength / len(products_json)))
 
+def get_keywords(product):
+  title = product.get('title', '').split()
+  desc = product.get('description', '').split()
+  mdesc = product.get('metaDescription', '').split()
+  description = title + desc + mdesc
+  keywords = []
+  for word in description:
+    keywords.append(re.sub(r'\W+', '', word.lower()))
+  return keywords
 
-
-def extractFeatures(products_json):
+def extractFeatures(products_json, ratings, col):
     '''
     Attemps to extracts the following features
     <id><priceGroup><brand><Color><Style><Material><productType>
     '''
     print('Extracting product features from product database')
 
-    ratings = readSobazarRatings('../generators/ratings/count_linear.txt')
-    print(products_json)
-    products_json = countMatchingItems(ratings, products_json)
+    products_json = countMatchingItems(ratings, products_json, col)
 
     products = []
 
     for p in products_json:
+        # Get a list of keywords for this product, based on title, description
+        # and meta-description.
+        keywords = get_keywords(p)
 
         product = []
-        keywords = []
 
-        description = p['title'].split() + p['description'].split()
-        if 'metaDescription' in p:
-            description += p['metaDescription'].split()
-        for word in description:
-            keywords.append(re.sub(r'\W+', '', word.lower()))
+        #1: Product id
         product.append(int(p['id']))
+
+        #2: Product price group
         product.append(determinePriceGroup(int(p['newPrice'])))
+
+        #3: Product brand
         if 'brandName' in p:
             product.append(determineBrand(p['brandName']))
         else:
             product.append(0)
+
+        #4: Product color
         product.append(determineColor(keywords))
+
+        #5: Product style
         product.append(determineStyle(keywords))
+
+        #6: Product material
         product.append(determineMaterial(keywords))
+
+        #7: Product type
         product.append(determineProductType(keywords))
+
+        # Append the list of features to list of products
         products.append(product)
 
-
-
-    #countNonZeroAttributes(products)
-    writeProductsToFile(products)
-    #createMyMediaLiteAttributeFile(products)
+    return products
 
 def extractTopKeywords(products, num_keywords):
 
@@ -346,10 +366,7 @@ def extractTopKeywords(products, num_keywords):
 
 
 def createMyMediaLiteAttributeFile(products):
-
     additions = [0,20,40,60,80,100,120]
-
-
     with open('../data/mymedialite_features.txt', 'wb') as file:
         writer =  csv.writer(file, delimiter='\t')
         for product in products:
@@ -358,9 +375,7 @@ def createMyMediaLiteAttributeFile(products):
                     writer.writerow([product[0], product[i+1]+additions[i]])
 
 def countNonZeroAttributes(attributes):
-
     counts = [0,0,0,0,0,0]
-
     for item in attributes:
         if item[1] != 0:
             counts[0] += 1
@@ -380,38 +395,46 @@ def countNonZeroAttributes(attributes):
     print(counts)
 
 
-def countMatchingItems(ratings, products):
-
+def countMatchingItems(ratings, products, col):
     print('Counting matching, dropping the "dead" ones')
-
     count = 0
-    items = []
+    items = {}
     prod_cleaned = []
 
     for rating in ratings:
-        if rating[1] not in items:
-            items.append(rating[1])
-    for product in products:
-        if int(product['id']) in items:
-            count += 1
-            prod_cleaned.append(product)
-        else:
-            col.remove({'id': product['id']})
+        if not items.get(rating[1], None):
+            items[rating[1]] = 1
+
+    if not col:
+      # File-mode
+      for key, value in products.iteritems():
+        if items.get(key, None):
+          count += 1
+          prod_cleaned.append(value)
+    else:
+      # Using mongo-db
+      for product in products:
+          if int(product['id']) in items:
+              count += 1
+              prod_cleaned.append(product)
+          else:
+              # Remove form Mongo
+              col.remove({'id': product['id']})
 
     print('Number of matching items: %d' %count)
     return prod_cleaned
 
-
-
 def readSobazarRatings(path):
     ratings = []
     with open(path, 'r') as file:
-        dialect = csv.Sniffer().sniff(file.read(1024))
+        dialect = csv.Sniffer().sniff(file.read(2048))
         reader =  csv.reader(file, delimiter=dialect.delimiter)
         for rating in reader:
             if len(rating) >= 3:
-                if rating[0] != '' and rating[1] != '' and rating[2] != '':
-                    ratings.append([int(rating[0]), int(rating[1]), float(rating[2])])
+              ratings.append([int(rating[0]), int(rating[1]), float(rating[2])])
+            else:
+              print "The input ratings are on a wrong format (less than two columns). Exiting."
+              sys.exit(1)
     return ratings
 
 
@@ -441,35 +464,43 @@ def calculate_language_ratios(text):
     return languages_ratios
 
 
-def writeProductsToFile(products):
+def writeProductsToFile(filename, products):
+    """
+      Write a set of features for every product. The products array looks like:
 
-    with open('../data/product_features.txt', 'wb') as file:
-        #print(products)
-        writer =  csv.writer(file, delimiter='\t')
+      11111000      0       1       1       1         1
+
+      Which maps to the following properties:
+
+      product_id    price  brand    color   material  product_type
+    """
+    with open(filename, 'wb') as f:
+        writer =  csv.writer(f, delimiter='\t')
         writer.writerows(products)
 
-
 def main():
-    products_json = getProductsMongoDb()
-    #products_json = readProductData()
-    #print(products_json[0])
-    extractFeatures(products_json)
-    #extractTopKeywords(products_json, 200)
+    PRODUCT_FILE = '../rest/products.txt'
+    RATING_FILE = '../generators/ratings/blend.txt'
+    OUT_FILE = 'itemFeatures.txt'
+
+    MONGO_DB, col = False, None
+    products_json = None
+
+    # Read the JSON-data of product descriptions from file or DB.
+    if MONGO_DB:
+      col = get_mongo_db()
+      products_json = getProductsMongoDb(col)
+    else:
+      products_json = getProductsFile(PRODUCT_FILE)
+
+    # Get the ratings from a rating file.
+    ratings = readSobazarRatings(RATING_FILE)
+
+    # Use the ratings and product-descriptions in order to extract features.
+    products = extractFeatures(products_json, ratings, col)
+
+    # Write feature-file
+    writeProductsToFile(OUT_FILE, products)
+
 if __name__ == "__main__":
     main()
-
-
-
-#extractTopKeywords(products_json, 200)
-#print(len(products_json))
-
-#averageDescriptionLength(products_json)
-#countBrandNames(products_json)
-#priceRangeDistribution(products_json)
-#keywords = ['jacket', 'penis', 'anal']
-#stopwords = ['jacket', 'tits', 'gram']
-#if any(word in ['jacket', 'tits', 'gram'] for word in keywords):
-#    print('BLACK DICKS IN YOUR ASS')'
-
-
-

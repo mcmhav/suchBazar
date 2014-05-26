@@ -41,7 +41,7 @@ def insert_item(f, col, item):
   if col:
     col.insert(item)
     return
-  f.write('%s\n' % str(item))
+  f.write('%s\n' % json.dumps(item))
 
 def sniff_page_size(offers_url):
   jdata = get_product_json(offers_url, timeout=0)

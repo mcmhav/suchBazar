@@ -8,11 +8,47 @@ usage() { echo "Usage: ./$0 -i sobazar_input.tab"; exit 1; }
 
 # Some parameters changable in the opts.
 INFILE="-i ../datasets/v3/sobazar_events_prod_cleaned_formatted.tab"
+CLEAN=""
+MYMEDIAITEM=""
+MYMEDIAIRANK=""
+MAHOUT=""
 
-while getopts "i:" o; do
+# declare -a RAItem=('BPRMF' 'ItemAttributeKNN' 'ItemKNN' 'MostPopular' 'Random' 'UserAttributeKNN' 'UserKNN' 'WRMF' 'Zero' 'MultiCoreBPRMF' 'SoftMarginRankingMF' 'WeightedBPRMF' 'BPRLinear' 'MostPopularByAttributes' 'BPRSLIM' 'LeastSquareSLIM')
+ITEMRECOMMENDERS="MostPopular WRMF BPRMF"
+
+# declare -a RARatingPrediction=('BiPolarSlopeOne' 'GlobalAverage' 'ItemAttributeKNN' 'ItemAverage' 'ItemKNN' 'MatrixFactorization' 'SlopeOne' 'UserAttributeKNN' 'UserAverage' 'UserItemBaseline' 'UserKNN' 'TimeAwareBaseline' 'TimeAwareBaselineWithFrequencies' 'CoClustering' 'Random' 'Constant' 'LatentFeatureLogLinearModel' 'BiasedMatrixFactorization' 'SVDPlusPlus' 'SigmoidSVDPlusPlus' 'SocialMF' 'SigmoidItemAsymmetricFactorModel' 'SigmoidUserAsymmetricFactorModel' 'SigmoidCombinedAsymmetricFactorModel' 'NaiveBayes' 'ExternalRatingPredictor' 'GSVDPlusPlus')
+RANKRECOMMENDERS="MatrixFactorization NaiveBayes"
+MAHOUTRECOMMENDERS=""
+
+while getopts "i:cp:r:mt" o; do
   case "${o}" in
     i)
       INFILE="-i ${OPTARG}"
+      ;;
+    c)
+      CLEAN="-c"
+      ;;
+    p)
+      MYMEDIAITEM="-i"
+      ITEMRECOMMENDERS="${OPTARG}"
+      ;;
+    r)
+      MYMEDIAIRANK="-r"
+      RANKRECOMMENDERS="${OPTARG}"
+      ;;
+    m)
+      MAHOUT="-m"
+      MAHOUTRECOMMENDERS="${OPTARG}"
+      ;;
+    t)
+      MYMEDIAITEM="-i"
+      ITEMRECOMMENDERS="BPRMF ItemAttributeKNN ItemKNN MostPopular Random UserAttributeKNN UserKNN WRMF Zero WeightedBPRMF"
+      # ITEMRECOMMENDERS="BPRMF ItemAttributeKNN ItemKNN MostPopular Random UserAttributeKNN UserKNN WRMF Zero MultiCoreBPRMF SoftMarginRankingMF WeightedBPRMF BPRLinear MostPopularByAttributes BPRSLIM LeastSquareSLIM"
+      MYMEDIAIRANK="-r"
+      RANKRECOMMENDERS="BiPolarSlopeOne GlobalAverage ItemAttributeKNN ItemAverage ItemKNN MatrixFactorization SlopeOne UserAverage UserItemBaseline UserKNN TimeAwareBaseline TimeAwareBaselineWithFrequencies Random NaiveBayes"
+      # RANKRECOMMENDERS="BiPolarSlopeOne GlobalAverage ItemAttributeKNN ItemAverage ItemKNN MatrixFactorization SlopeOne UserAttributeKNN UserAverage UserItemBaseline UserKNN TimeAwareBaseline TimeAwareBaselineWithFrequencies CoClustering Random Constant LatentFeatureLogLinearModel BiasedMatrixFactorization SVDPlusPlus SigmoidSVDPlusPlus SocialMF SigmoidItemAsymmetricFactorModel SigmoidUserAsymmetricFactorModel SigmoidCombinedAsymmetricFactorModel NaiveBayes ExternalRatingPredictor GSVDPlusPlus"
+      # MAHOUT="-m"
+      # MAHOUTRECOMMENDERS="${OPTARG}"
       ;;
     *)
       usage
@@ -20,47 +56,65 @@ while getopts "i:" o; do
   esac
 done
 
-OPTS="$INFILE"
-echo $OPTS
+OPTS="$INFILE $CLEAN"
+RECOMMENDERSYS="$MYMEDIAITEM $MYMEDIAIRANK $MAHOUT"
 
-#Remove old ratings files
-# rm -f generators/ratings/*;
 # Generate ratings
 cd generators;
-./test.sh -b -t $OPTS;
-
-# blend.txt -
-
-#Todo set blend split - should be possible to run the system on single files?
+./test.sh -b -t $OPTS >/dev/null;
 
 # Split ratings
 # ./split.sh -i ratings/blend.txt;
 # Cold start split
 cd ../evaluation;
-python2.7 evaluation.py --coldstart-split ../generators/ratings/blend.txt -t -fb '1,1,1,1,0';
+if [[ $CLEAN ]]; then
+  echo "Splitting data into colstart splits"
+  python2.7 evaluation.py --coldstart-split ../generators/ratings/blend.txt -t -fb '1,1,1,1,0' >/dev/null;
+fi
 
-# make predictions
 cd ../generators;
-./predict.sh &
-wait $!
+# declare -a trainTestTuples=('blend_itemtrain1.txt:blend_itemtest1.txt' 'blend_itemtrain2.txt:blend_itemtest2.txt' 'blend_itemtrain3.txt:blend_itemtest3.txt' 'blend_systemtrain1.txt:blend_systemtest.txt' 'blend_systemtrain2.txt:blend_systemtest.txt' 'blend_systemtrain3.txt:blend_systemtest.txt' 'blend_usertrain1.txt:blend_usertest1.txt' 'blend_usertrain2.txt:blend_usertest2.txt' 'blend_usertrain3.txt:blend_usertest3.txt')
+
+trainTestTuples="blend_itemtrain1.txt:blend_itemtest1.txt blend_itemtrain2.txt:blend_itemtest2.txt blend_itemtrain3.txt:blend_itemtest3.txt blend_systemtrain1.txt:blend_systemtest.txt blend_systemtrain2.txt:blend_systemtest.txt blend_systemtrain3.txt:blend_systemtest.txt blend_usertrain1.txt:blend_usertest1.txt blend_usertrain2.txt:blend_usertest2.txt blend_usertrain3.txt:blend_usertest3.txt"
+
+if [[ $MYMEDIAITEM ]]; then
+  for ir in $ITEMRECOMMENDERS
+  do
+    # make predictions
+    cd ../generators;
+    ./myMediaLitePredicter.sh -t "$trainTestTuples" $MYMEDIAITEM -p $ir;
+    # evaluate predicted values
+    cd ../evaluation;
+    ./evaluate.sh -t "$trainTestTuples" -r $MYMEDIAITEM -p $ir -m;
+  done
+fi
+
+if [[ $MYMEDIAIRANK ]]; then
+  for ir in $RANKRECOMMENDERS
+  do
+    # make predictions
+    cd ../generators;
+    ./myMediaLitePredicter.sh -t "$trainTestTuples" $MYMEDIAIRANK -p $ir;
+    # evaluate predicted values
+    cd ../evaluation;
+    ./evaluate.sh -t "$trainTestTuples" -r $MYMEDIAIRANK -p $ir;
+  done
+fi
+
+if [[ $MAHOUT ]]; then
+  for ir in $MAHOUTRECOMMENDERS
+  do
+    # make predictions
+    cd ../generators;
+    ./mahoutPredict.sh -t "$trainTestTuples" $MAHOUT -p $ir;
+    # evaluate predicted values
+    cd ../evaluation;
+    ./evaluate.sh -t "$trainTestTuples" -r $MAHOUT -p $ir;
+  done
+fi
 # declare -a RA=('BPRMF' 'ItemAttributeKNN' 'ItemKNN' 'MostPopular' 'Random' 'UserAttributeKNN' 'UserKNN' 'WRMF' 'Zero' 'MultiCoreBPRMF' 'SoftMarginRankingMF' 'WeightedBPRMF' 'BPRLinear' 'MostPopularByAttributes' 'BPRSLIM' 'LeastSquareSLIM')
 
-# Get score for the predictions
-echo "Evaluating"
-cd ../evaluation;
-declare -a trainTestTuples=('blend_itemtrain1.txt:blend_itemtest1.txt' 'blend_itemtrain2.txt:blend_itemtest2.txt' 'blend_itemtrain3.txt:blend_itemtest3.txt' 'blend_systemtrain1.txt:blend_systemtest.txt' 'blend_systemtrain2.txt:blend_systemtest.txt' 'blend_systemtrain3.txt:blend_systemtest.txt' 'blend_usertrain1.txt:blend_usertest1.txt' 'blend_usertrain2.txt:blend_usertest2.txt' 'blend_usertrain3.txt:blend_usertest3.txt')
-declare -a RA=('MostPopular')
-for a in "${RA[@]}"
-do
-    for ttt in "${trainTestTuples[@]}"
-    do
-        set -- "$ttt"
-        IFS=":"; declare -a Array=($*)
-        echo "${Array[@]}"
-        python2.7 evaluation.py -b 2 -k 20 --training-file ../generators/splits/"${Array[0]}" --test-file ../generators/splits/"${Array[1]}" --prediction-file ../generators/predictions/"${Array[0]}"-"${Array[1]}"-"$a".predictions -m &
-    done
-done
-wait $!
+
 
 python generateLatexLines.py
 

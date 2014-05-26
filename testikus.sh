@@ -18,9 +18,9 @@ ITEMRECOMMENDERS="MostPopular WRMF BPRMF"
 
 # declare -a RARatingPrediction=('BiPolarSlopeOne' 'GlobalAverage' 'ItemAttributeKNN' 'ItemAverage' 'ItemKNN' 'MatrixFactorization' 'SlopeOne' 'UserAttributeKNN' 'UserAverage' 'UserItemBaseline' 'UserKNN' 'TimeAwareBaseline' 'TimeAwareBaselineWithFrequencies' 'CoClustering' 'Random' 'Constant' 'LatentFeatureLogLinearModel' 'BiasedMatrixFactorization' 'SVDPlusPlus' 'SigmoidSVDPlusPlus' 'SocialMF' 'SigmoidItemAsymmetricFactorModel' 'SigmoidUserAsymmetricFactorModel' 'SigmoidCombinedAsymmetricFactorModel' 'NaiveBayes' 'ExternalRatingPredictor' 'GSVDPlusPlus')
 RANKRECOMMENDERS="MatrixFactorization NaiveBayes"
-MAHOUTRECOMMENDERS=""
+MAHOUTRECOMMENDERS="svd"
 
-while getopts "i:cp:r:mt" o; do
+while getopts "i:cp:r:h:tm" o; do
   case "${o}" in
     i)
       INFILE="-i ${OPTARG}"
@@ -36,19 +36,19 @@ while getopts "i:cp:r:mt" o; do
       MYMEDIAIRANK="-r"
       RANKRECOMMENDERS="${OPTARG}"
       ;;
-    m)
-      MAHOUT="-m"
+    h)
+      MAHOUT="-h"
       MAHOUTRECOMMENDERS="${OPTARG}"
       ;;
     t)
       MYMEDIAITEM="-i"
-      ITEMRECOMMENDERS="BPRMF ItemAttributeKNN ItemKNN MostPopular Random UserAttributeKNN UserKNN WRMF Zero WeightedBPRMF"
+      ITEMRECOMMENDERS="BPRMF ItemKNN MostPopular Random UserKNN WRMF"
       # ITEMRECOMMENDERS="BPRMF ItemAttributeKNN ItemKNN MostPopular Random UserAttributeKNN UserKNN WRMF Zero MultiCoreBPRMF SoftMarginRankingMF WeightedBPRMF BPRLinear MostPopularByAttributes BPRSLIM LeastSquareSLIM"
-      MYMEDIAIRANK="-r"
-      RANKRECOMMENDERS="BiPolarSlopeOne GlobalAverage ItemAttributeKNN ItemAverage ItemKNN MatrixFactorization SlopeOne UserAverage UserItemBaseline UserKNN TimeAwareBaseline TimeAwareBaselineWithFrequencies Random NaiveBayes"
+      # MYMEDIAIRANK="-r"
+      # RANKRECOMMENDERS="GlobalAverage ItemAverage ItemKNN MatrixFactorization SlopeOne UserAverage UserKNN TimeAwareBaseline Random NaiveBayes"
       # RANKRECOMMENDERS="BiPolarSlopeOne GlobalAverage ItemAttributeKNN ItemAverage ItemKNN MatrixFactorization SlopeOne UserAttributeKNN UserAverage UserItemBaseline UserKNN TimeAwareBaseline TimeAwareBaselineWithFrequencies CoClustering Random Constant LatentFeatureLogLinearModel BiasedMatrixFactorization SVDPlusPlus SigmoidSVDPlusPlus SocialMF SigmoidItemAsymmetricFactorModel SigmoidUserAsymmetricFactorModel SigmoidCombinedAsymmetricFactorModel NaiveBayes ExternalRatingPredictor GSVDPlusPlus"
-      # MAHOUT="-m"
-      # MAHOUTRECOMMENDERS="${OPTARG}"
+      MAHOUT="-h"
+      MAHOUTRECOMMENDERS="svd"
       ;;
     *)
       usage

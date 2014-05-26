@@ -20,6 +20,7 @@ import ndcg
 import itemAverage
 import filterbots as fb
 import ntpath
+import sys
 
 
 def evaluation():
@@ -82,7 +83,9 @@ def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
         if m:
             predictions = helpers.readMyMediaLitePredictions(predictionFile)
         else:
-            predictions = helpers.readRatingsFromFile(predictionFile)
+            predictions = helpers.readRatingsFromFileSmart(predictionFile)
+    # print (predictions)
+    # sys.exit()
 
     us_coverage, is_coverage = coverage.compute(train, predictions)
     roc_auc = auc.compute(train, test, predictions)

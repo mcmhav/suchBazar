@@ -267,8 +267,9 @@ def preprocessMAP(actual, predictions, k):
         if user in p:
             upred = []
             p[user] = sorted(p[user], key=itemgetter(2), reverse=True)
-            for j in range(k):
-                upred.append(p[user][j][1])
+            if len(p[user]) >= k:
+                for j in range(k):
+                    upred.append(p[user][j][1])
             pred.append(upred)
     return test, pred
 

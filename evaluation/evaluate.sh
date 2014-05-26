@@ -38,7 +38,7 @@ for ttt in $TTT
 do
     set -- "$ttt"
     IFS=":"; declare -a Array=($*)
-    python2.7 evaluation.py -b 2 -k 20 --training-file ../generators/splits/"${Array[0]}" --test-file ../generators/splits/"${Array[1]}" --prediction-file ../generators/predictions/"${Array[0]}"-"${Array[1]}"-"$RECOMMENDERSYS"-"$RECOMMENDER".predictions $MMLITEMRATINGSTYLE >/dev/null&
+    python2.7 evaluation.py -b 2 -k 20 --training-file ../generators/splits/"${Array[0]}" --test-file ../generators/splits/"${Array[1]}" --prediction-file ../generators/predictions/"${Array[0]}"-"${Array[1]}"-"$RECOMMENDERSYS"-"$RECOMMENDER".predictions $MMLITEMRATINGSTYLE >/dev/null &
 done
 wait $!
 echo "Done evaluating $RECOMMENDER"

@@ -70,7 +70,7 @@ done
 OPTS="$INFILE $CLEAN"
 RECOMMENDERSYS="$MYMEDIAITEM $MYMEDIAIRANK $MAHOUT"
 
-# Generate ratings
+# Generate ratings (blending and timestamps enabled by default)
 /bin/bash $ROOT/generators/test.sh -b -t $OPTS;
 
 if [ $SPLIT -eq 1 ]; then

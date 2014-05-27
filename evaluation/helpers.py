@@ -6,6 +6,8 @@ import re
 from datetime import datetime
 import time
 from operator import itemgetter
+import os
+import sys
 
 f = ""
 
@@ -19,7 +21,12 @@ def prepareEvauationScoreToLaTeX(filename,us_coverage,is_coverage,auc,mapk,ndcg,
     Make latex structure
     AUC - nDCG - MAP - HLU - is coverage - us coverage
     '''
-    saveName = "evaluationScore/" + k  + "-" + l + "-" + beta + '-' + filename + ".score"
+
+    SCRIPT_FOLDER = os.path.dirname(os.path.realpath(__file__))
+    ROOT_FOLDER = os.path.dirname(SCRIPT_FOLDER)
+    folder = ROOT_FOLDER + '/evaluation/evaluationScore/'
+
+    saveName = folder + k  + "-" + l + "-" + beta + '-' + filename + ".score"
     f = open(saveName, 'w')
     f.write('1auc:' + auc + "\n")
     f.write('2ndcg:' + ndcg + "\n")
@@ -33,7 +40,6 @@ def prepareEvauationScoreToLaTeX(filename,us_coverage,is_coverage,auc,mapk,ndcg,
     f.close()
 
     print ("wrote to %s" % saveName)
-
 
 def printProgress(count,total):
     progress = (count/total)*100
@@ -119,6 +125,8 @@ def readRatingsFromFileSmart(path, convert=False):
                             ratings.append([int(rating[0]), int(rating[1]), float(rating[2]), int(rating[3])])
             except:
                 print (rating)
+                print ("readRatingsFromFileSmart")
+                sys.exit()
     return ratings
 
 def readRatings(path, timestamps):
@@ -147,6 +155,8 @@ def readMyMediaLitePredictions(path):
             s = line.split()
             s[1] = s[1].replace('[', '')
             s[1] = s[1].replace(']', '')
+            if not s[1]:
+                continue
             items = s[1].split(',')
             for item in items:
                 i = item.split(':')
@@ -158,7 +168,6 @@ def readMyMediaLitePredictions(path):
                     ratings.append(ratingTriple)
                 except:
                     print (item)
-
     return ratings
 
 def readMyMediaLitePredictionsForMPR(path):
@@ -317,6 +326,7 @@ def determineLatexHeaderNumber(trainFile):
             return 40
         else:
             return 75
+    return -1
 
 
 if __name__ == "__main__":

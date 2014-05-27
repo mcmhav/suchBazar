@@ -2,6 +2,7 @@ import helpers
 import sys
 from os import walk
 import operator
+import os
 # testur = ["blend_itemtrain1.txt", "blend_itemtrain3.txt", "blend_systemtrain2.txt". "blend_usertrain1.txt"  blend_usertrain3.txt
 # blend_itemtrain2.txt  blend_systemtrain1.txt  blend_systemtrain3.txt  blend_usertrain2.txt
 
@@ -9,10 +10,28 @@ def main():
     '''
     Generate LaTeX lines
     '''
-    preLatexObj = readFromScoreFolder('../evaluation/evaluationScore/')
-    makeLaTeXTable(preLatexObj)
+    SCRIPT_FOLDER = os.path.dirname(os.path.realpath(__file__))
+    ROOT_FOLDER = os.path.dirname(SCRIPT_FOLDER)
+    folder = ROOT_FOLDER + '/evaluation/evaluationScore/'
+
+    preLatexObj = readFromScoreFolder(folder)
+    makeLaTeXTableColdstart(preLatexObj, ROOT_FOLDER)
+    # makeLaTeXTable(preLatexObj)
 
 def makeLaTeXTable(preLatexObj):
+    '''
+    '''
+
+    for rec in preLatexObj:
+        for mode in preLatexObj[rec]:
+            for split in preLatexObj[rec][mode]:
+                tmp = {}
+                tmp[split] = [preLatexObj[rec][mode][split]]
+                # print (preLatexObj[rec][mode][split])
+                print (tmp)
+                sys.exit()
+
+def makeLaTeXTableColdstart(preLatexObj, ROOT_FOLDER):
     '''
     Write the table to file in latex format
     '''
@@ -21,20 +40,23 @@ def makeLaTeXTable(preLatexObj):
     itemScore = ""
     userScore = ""
     for nameID in preLatexObj:
-        e = open('../data/latextable' + nameID + '.tmptex','w')
         keySorted = sorted(preLatexObj[nameID].items(), key=operator.itemgetter(0))
-        tmp = {}
         for key in keySorted:
-            for score in key[1]:
-                if score not in tmp:
-                    tmp[score] = []
-                tmp[score].append(preLatexObj[nameID][key[0]][score])
-
-        line = makeLineFromDict(tmp)
-        print ("NameID: %s\t " % (nameID))
-        print (line)
-        e.write(line)
-        e.close()
+            mode = key[0]
+            e = open(ROOT_FOLDER + '/data/latextable' + nameID + '.tmptex','w')
+            tmp = {}
+            split_sorted = sorted(key[1].items(), key=operator.itemgetter(0))
+            for split in split_sorted:
+                for score in split[1]:
+                    if score not in tmp:
+                        tmp[score] = []
+                    tmp[score].append(split[1][score])
+            idString = ("NameID: %s\t mode: %s" % (nameID,mode))
+            line = makeLineFromDict(tmp)
+            # print (idString)
+            print (idString + line + " \\\\")
+            e.write(line)
+            e.close()
 
     print ("Done generating latex lines")
 
@@ -43,9 +65,9 @@ def makeLineFromDict(dictL):
     ignoreList = {'beta', 'k', 'l'}
     dict_sorted = sorted(dictL.items(), key=operator.itemgetter(0))
     for k in dict_sorted:
-        if k[0] not in ignoreList:
-            for s in k[1]:
-                line += s.rstrip() + "\t&\t"
+        for s in k[1]:
+            if k[0] not in ignoreList:
+                line += "\t&\t" + ('%.4f' % (float(s.rstrip())))
     return line
 
 def readFromScoreFolder(path):
@@ -58,11 +80,15 @@ def readFromScoreFolder(path):
 
     preLatexObj = {}
     for f in files:
-        scoreId,scoreName = getIDFromFileName(f)
-        if scoreName not in preLatexObj:
-            preLatexObj[scoreName] = {}
-        preLatexObj[scoreName][scoreId] = readFromScoreFile(path,f)
+        scoreId,scoreName,recommender,recSys = getIDFromFileName(f)
+
+        if recommender not in preLatexObj:
+            preLatexObj[recommender] = {}
+        if scoreName not in preLatexObj[recommender]:
+            preLatexObj[recommender][scoreName] = {}
+        preLatexObj[recommender][scoreName][scoreId] = readFromScoreFile(path,f)
     return preLatexObj
+
 
 def getIDFromFileName(filename):
     '''
@@ -70,7 +96,32 @@ def getIDFromFileName(filename):
     '''
     headNumber = helpers.determineLatexHeaderNumber(filename)
     coldName = getColdstartNameFromFileName(filename)
-    return headNumber,coldName
+    recommender = getRecommender(filename)
+    recSys = getRecommenderSystem(filename)
+
+    return headNumber,coldName,recommender,recSys
+
+def getRecommenderSystem(filename):
+    '''
+    '''
+    recSysNames = {'--i', '--r', '--h'}
+
+    for name in recSysNames:
+        if name in recSysNames:
+            return name
+
+
+
+def getRecommender(filename):
+    '''
+    Super dependent on the predictionfile name structure, not perfect
+    '''
+    recNames = {'--i', '--r', '--h'}
+
+    tmp = filename.split('.')
+    testur = tmp[2].split('-')[-1]
+
+    return testur
 
 def getColdstartNameFromFileName(filename):
     '''
@@ -81,6 +132,7 @@ def getColdstartNameFromFileName(filename):
     for csn in coldstartNames:
         if csn in filename:
             return csn
+    return "normal"
 
 def readFromScoreFile(path,filename):
     '''

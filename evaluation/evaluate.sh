@@ -43,12 +43,16 @@ do
     set -- "$ttt"
     IFS=":"; declare -a Array=($*)
 
-    TRAIN_FILE="--training-file generators/splits/${Array[0]}";
-    TEST_FILE="--test-file generators/splits/${Array[1]}";
-    PRED_FILE="--prediction-file generators/predictions/${Array[0]}-${Array[1]} $RECOMMENDERSYS $RECOMMENDER.predictions";
-    F_FILE="--feature-file $FEATUREFILE";
+    TRAIN_FILE="generators/splits/${Array[0]}";
+    TEST_FILE="generators/splits/${Array[1]}";
+    PRED_FILE="generators/predictions/${Array[0]}-${Array[1]}-$RECOMMENDERSYS-$RECOMMENDER.predictions";
+    F_FILE="$FEATUREFILE";
 
-    python2.7 $ROOT/evaluation.py -b 2 -k 20 $TRAIN_FILE $TEST_FILE $F_FILE $PRED_FILE $MMLITEMRATINGSTYLE >/dev/null &
+    OPT=(--training-file $TRAIN_FILE);
+    OPT+=(--test-file $TEST_FILE);
+    OPT+=(--prediction-file $PRED_FILE);
+
+    python2.7 $ROOT/evaluation.py -b 2 -k 20 "${OPT[@]}" $MMLITEMRATINGSTYLE >/dev/null &
 done
 wait $!
 echo "Done evaluating $RECOMMENDER"

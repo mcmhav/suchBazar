@@ -10,6 +10,8 @@ from collections import OrderedDict
 import csv
 import random
 import time
+from multiprocessing import Pool
+from multiprocessing import Process
 
 def criticBot(ratings, num_critics=20):
     '''
@@ -243,19 +245,93 @@ def addFilterBotRatings(train, featurefile='', fbots=[0,0,0,0,0]):
     item_attributes = readItemAttributes(featurefile)
     fbRatings = []
 
+    # pool = Pool()
+    # result1 = pool.apply_async(solve1, [A])    # evaluate "solve1(A)" asynchronously
+    # result2 = pool.apply_async(solve2, [B])    # evaluate "solve2(B)" asynchronously
+    # answer1 = result1.get(timeout=10)
+    # answer2 = result2.get(timeout=10)
+    # mp.set_start_method('spawn')
+    # q = mp.Queue()
+    # p = mp.Process(target=foo, args=(q,))
+    # p.start()
+    # print(q.get())
+    # p.join()
+    # p1 = Process(target=func1)
+    # p1.start()
+    # p2 = Process(target=func2)
+    # p2.start()
+    # p1.join()
+    # p2.join()
+
+    procs = []
+
+    # with Pool(processes=4) as pool:
+    print ("lol")
     if fbots[0]:
-        fbRatings.extend(brandBot(train, item_attributes))
+        # bandBotResult = pool.apply_async(brandBot, [train, item_attributes])
+        # fbRatings.extend(bandBotResult.get())
+        # testur(fbRatings, brandBot, train, item_attributes)
+        p0 = Process(target=testur, args=[fbRatings, brandBot, train, item_attributes])
+        p0.start()
+        procs.append(p0)
+        # fbRatings.extend(p0)
+        # fbRatings.extend(brandBot(train, item_attributes))
     if fbots[1]:
-        fbRatings.extend(averageBot(train))
+        # averageBotResult = pool.apply_async(averageBot, [train])
+        # fbRatings.extend(averageBotResult.get())
+        p1 = Process(target=testur, args=[fbRatings, averageBot, train])
+        p1.start()
+        procs.append(p1)
+        # fbRatings.extend(p0)
+        # fbRatings.extend(averageBot(train))
     if fbots[2]:
-        fbRatings.extend(popularityBot(train, 5))
+        # popularityBotResult = pool.apply_async(popularityBot, [train, 5])
+        # fbRatings.extend(popularityBotResult.get())
+        p2 = Process(target=testur, args=[fbRatings, popularityBot, train, 5])
+        p2.start()
+        procs.append(p2)
+        # fbRatings.extend(p0)
+        # fbRatings.extend(popularityBot(train, 5))
     if fbots[3]:
-        fbRatings.extend(criticBot(train))
+        # criticBotResult = pool.apply_async(criticBot, [train])
+        # fbRatings.extend(criticBotResult.get())
+        p3 = Process(target=testur, args=[fbRatings, criticBot, train])
+        p3.start()
+        procs.append(p3)
+        # fbRatings.extend(p0)
+        # fbRatings.extend(criticBot(train))
     if fbots[4]:
-        fbRatings.extend(conformityBot(train))
+        # conformityBotResult = pool.apply_async(conformityBot, [train])
+        # fbRatings.extend(conformityBotResult.get())
+        p4 = Process(target=testur, args=[fbRatings, conformityBot, train])
+        p4.start()
+        procs.append(p4)
+        # fbRatings.extend(p0)
+        # fbRatings.extend(conformityBot(train))
+
+    for p in procs:
+        p.join()
+        # fbRatings.extend(p)
 
     return train + fbRatings
 
+def testur(fbRatings, bot, *args):
+    '''
+    '''
+    fbRatings.extend(bot(*args))
+
+# def perform( fun, *args ):
+#     fun( *args )
+
+# def action1( args ):
+#     something
+
+# def action2( args ):
+#     something
+
+# perform( action1 )
+# perform( action2, p )
+# perform( action3, p, r )
 
 ### TESTING ###
 #ratings = readRatings('../../datasets/blend.txt')

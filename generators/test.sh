@@ -53,11 +53,11 @@ OPTS="$INFILE $TIMESTAMP $MIN_DATE $MAX_DATE $FORCE"
 
 # If cleaning, then we delete everything in ratings/ and dists/
 if [ $CLEAN -eq 1 ]; then
-  if [ -d ratings ]; then
+  if [ -d $CWD/ratings ]; then
     rm -f $CWD/ratings/*.txt
   fi
 
-  if [ -d dists ]; then
+  if [ -d $CWD/dists ]; then
     rm -f $CWD/dists/*.png
   fi
 fi
@@ -66,43 +66,22 @@ fi
 # Our various methods to test
 ##
 SCRIPT="$CWD/ratings.py"
-python $SCRIPT $OPTS -m naive
 
-python $SCRIPT $OPTS -m recentness -fx sigmoid_constant -sc 30
-python $SCRIPT $OPTS -m recentness -fx linear
+#python $SCRIPT $OPTS -m naive
 
+#python $SCRIPT $OPTS -m recentness -fx sigmoid_constant -sc 30
+#python $SCRIPT $OPTS -m recentness -fx linear
+
+#python $SCRIPT $OPTS -m count -fx linear
+#python $SCRIPT $OPTS -m count -fx sigmoid_fixed -sr 4.5
+#python $SCRIPT $OPTS -m count -fx sigmoid_constant -sc 30
+
+## A nice, example blend
 python $SCRIPT $OPTS -m count -fx linear
+python $SCRIPT $OPTS -m count -fx sigmoid_fixed -sr 3.5
 python $SCRIPT $OPTS -m count -fx sigmoid_fixed -sr 4.5
-python $SCRIPT $OPTS -m count -fx sigmoid_constant -sc 30
-
-# python ratings.py -i mongo -m naive -t
-
-# python ratings.py -i mongo -m recentness -fx linear -t
-# python ratings.py -i mongo -m count -fx linear -t
-
-# python ratings.py -i mongo -fx sigmoid_fixed -m count -sr 4.5 -t
-
-# python ratings.py -i mongo -fx sigmoid_constant -m recentness -sc 30 -t
-# python ratings.py -i mongo -fx sigmoid_constant -m count -sc 30 -t
-
-# FROM=0.5
-# TO=10
-# srs=($(seq $FROM 0.5 $TO))
-# for s in "${srs[@]}"
-# do
-#   python ratings.py -i mongo -fx sigmoid_fixed -m count -sr "$s"
-# done
-
-# FROM=20
-# TO=40
-# srs=($(seq $FROM 2 $TO))
-# for s in "${srs[@]}"
-# do
-#   python ratings.py -i mongo -fx sigmoid_constant -m recentness -sc "$s"
-#   python ratings.py -i mongo -fx sigmoid_constant -m count -sc "$s"
-# done
-
-
+python $SCRIPT $OPTS -m recentness -fx sigmoid_constant -sc 15
+python $SCRIPT $OPTS -m recentness -fx sigmoid_fixed -sr 1.5
 
 # If blend we do that as well.
 if [ $BLEND -eq 1 ]; then

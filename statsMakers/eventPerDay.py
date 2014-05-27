@@ -12,18 +12,8 @@ import matplotlib.ticker as ticker
 import operator
 import os
 
-parser = argparse.ArgumentParser(description='')
-parser.add_argument('-c',type=str, default="sessions")
-parser.add_argument('-d',type=str, default="stats")
-parser.set_defaults(v=False)
-args = parser.parse_args()
-
-print ("Collection used: %s" % args.c)
-
-col = helpers.getCollection(args.c)
-
-def main():
-  eventGroups = eventsPerDay()
+def main(sessDB='sessionsNew', writeLocation='stats/eventsPerDay'):
+  eventGroups = eventsPerDay(sessDB)
   makePlot(eventGroups)
 
 def writeEventsToFile(eventGroups):
@@ -40,7 +30,8 @@ def writeEventsToFile(eventGroups):
 
   helpers.closeF()
 
-def eventsPerDay():
+def eventsPerDay(sessDB):
+  col = helpers.getCollection(sessDB)
   reducer = Code("""
                   function (cur,result) {
                       result.count += 1
@@ -80,7 +71,9 @@ def makePlot(eventGroups):
   fig, ax = plt.subplots()
   fig.set_size_inches(14.0,8.0)
   plt.axis([0, count, 0, 2500])
-  ax.bar(range(len(yaxis_labels)*9+1), xaxis, width=width)
+  print (len(yaxis_labels)*9+1)
+  print (len(xaxis))
+  ax.bar(range(len(yaxis_labels)*9+3), xaxis, width=width)
   ax.set_xticks(yaxis)
   ax.set_xticklabels(yaxis_labels)
   fig.autofmt_xdate()

@@ -22,5 +22,6 @@ mahout/jars/*
 *.gv
 *.pdf
 *.predictions
+*.prediction
 *.score
 *.tmptex

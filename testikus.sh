@@ -78,7 +78,7 @@ if [ $SPLIT -eq 1 ]; then
   echo "Splitting data into colstart splits"
   python2.7 $ROOT/evaluation/evaluation.py --coldstart-split $ROOT/generators/ratings/blend.txt --feature-file $ROOT/data/product_features.txt -t -fb '1,1,1,1,0';
 fi
-exit;
+
 # Todo: can we avoid having such a long string which, to be honest, no one will change in near future anyways?
 trainTestTuples="blend_itemtrain1.txt:blend_itemtest1.txt blend_itemtrain2.txt:blend_itemtest2.txt blend_itemtrain3.txt:blend_itemtest3.txt blend_systemtrain1.txt:blend_systemtest.txt blend_systemtrain2.txt:blend_systemtest.txt blend_systemtrain3.txt:blend_systemtest.txt blend_usertrain1.txt:blend_usertest1.txt blend_usertrain2.txt:blend_usertest2.txt blend_usertrain3.txt:blend_usertest3.txt"
 

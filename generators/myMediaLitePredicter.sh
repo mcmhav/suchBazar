@@ -5,10 +5,10 @@ trap 'echo interrupted; exit' INT
 set -e
 
 ensure_dependencies() {
-  hash item_recommendation 2>/dev/null || { 
+  hash item_recommendation 2>/dev/null || {
     echo >&2 "I require MyMediaLite (item_recommendation and rating_prediction), but it's not installed.  Aborting.";
     exit 1;
-  } 
+  }
 }
 
 usage() { echo "Usage: ./$0 mtodo"; exit 1; }
@@ -56,7 +56,7 @@ fi
 
 if [ "$RECOMMENDER" == "" ]; then
   echo "Need to specify recommender with -p. E.g. '-p svd'";
-  exit 1        
+  exit 1
 fi
 
 if [ "$TTT" == "" ]; then
@@ -65,28 +65,27 @@ if [ "$TTT" == "" ]; then
 fi
 
 if [ $MYMEDIAITEM -eq 1 ] || [ $MYMEDIARANK -eq 1 ]; then
+    echo "Making MyMediaLite rating predictions with $RECOMMENDER";
     for ttt in $TTT; do
       set -- "$ttt"
       IFS=":"; declare -a Array=($*)
 
-      OPT=(--training-file ${Array[0]});
-      OPT+=(--test-file ${Array[1]});
+      OPT=(--training-file "$ROOT/splits/${Array[0]}");
+      OPT+=(--test-file "$ROOT/splits/${Array[1]}");
       OPT+=(--recommender $RECOMMENDER);
 
       # Do item predictions
       if [ $MYMEDIAITEM -eq 1 ]; then
-        echo "Making MyMediaLite item predictions with $RECOMMENDER";
-        OPT+=(--prediction-file "../predictions/${Array[0]}-${Array[1]}--i-$RECOMMENDER.prediction");
+        OPT+=(--prediction-file "$ROOT/predictions/${Array[0]}-${Array[1]}--i-$RECOMMENDER.prediction");
         item_recommendation ${OPT[@]} $STDOUT &
       fi
 
       # Do rank predictions
       if [ $MYMEDIARANK -eq 1 ]; then
-        echo "Making MyMediaLite rating predictions with $RECOMMENDER";
-        OPT+=(--prediction-file "../predictions/${Array[0]}-${Array[1]}--r-$RECOMMENDER.prediction");
+        OPT+=(--prediction-file "$ROOT/predictions/${Array[0]}-${Array[1]}--r-$RECOMMENDER.prediction");
         rating_prediction ${OPT[@]} $STDOUT &
       fi
     done
     wait $!
-    echo "Done making MyMediaLite items predictions with $RECOMMENDER";
+    echo "Done making MyMediaLite rating predictions with $RECOMMENDER";
 fi

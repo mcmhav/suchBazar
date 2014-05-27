@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import sys
+import sys, os
 import argparse
 from collections import defaultdict
 import numpy as np
@@ -7,6 +7,7 @@ import numpy as np
 def read_config(fname, rfolder):
   config = { 'files' : []}
   f = open(fname)
+  rel_path = os.path.dirname(f.name)
 
   lines = list(line for line in (l.strip() for l in f) if line)
 
@@ -25,7 +26,7 @@ def read_config(fname, rfolder):
   # Read the config and open the file handlers
   for i, l in enumerate(lines):
     args = l.split()
-    fh = open("%s/%s" % (rfolder, args[0]))
+    fh = open("%s/%s/%s" % (rel_path, rfolder, args[0]))
     ratio = float(args[1]) if not auto else 1/float(num_files)
     config['files'].append({ 'fh': fh, 'ratio': ratio })
   f.seek(0)
@@ -84,9 +85,10 @@ if __name__ == '__main__':
   parser.add_argument('-i', dest='rfolder', default="ratings", help="Where to find all files defined in conf file")
   parser.add_argument('-o', dest='filename', default='blend.txt', help="Filename for the blended result. Default to: 'blend.txt'")
   args = parser.parse_args()
+  abs_path = os.path.dirname(os.path.realpath(__file__))
 
   # Add the directory + filename
-  args.dest = args.dest + '/' + args.filename
+  args.dest = abs_path + '/' + args.dest + '/' + args.filename
 
   conf = read_config(args.conf, args.rfolder)
 

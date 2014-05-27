@@ -114,17 +114,17 @@ def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
         str(beta)
     )
 
-def createColdStartSplits(ratingFile, timestamps, fbConfig):
+def createColdStartSplits(ratingFile, timestamps, featurefile, fbConfig):
 
     ratings = helpers.readRatingsFromFileSmart(ratingFile, True)
     filename = ratingFile.split('/')[-1].split('.')[0]
 
     print('Generating cold-start user dataset splits...')
-    coldStart.generateColdStartSplits(filename, ratings, 'user', 0.1, 20, [0.10, 0.40, 0.75], timestamps, fbConfig)
+    coldStart.generateColdStartSplits(filename, ratings, 'user', 0.1, 20, featurefile, [0.10, 0.40, 0.75], timestamps, fbConfig)
     print('Generating cold-start item dataset splits...')
-    coldStart.generateColdStartSplits(filename, ratings, 'item', 0.05, 15, [0.10, 0.40, 0.75], timestamps, fbConfig)
+    coldStart.generateColdStartSplits(filename, ratings, 'item', 0.05, 15, featurefile, [0.10, 0.40, 0.75], timestamps, fbConfig)
     print('Generating cold-start system dataset splits...')
-    coldStart.generateColdStartSystemSplits(filename, ratings, 0.20, [0.4, 0.6, 0.8], timestamps, fbConfig)
+    coldStart.generateColdStartSystemSplits(filename, ratings, 0.20, featurefile, [0.4, 0.6, 0.8], timestamps, fbConfig)
     print('Done!')
 
 def runTestCases():
@@ -183,6 +183,7 @@ parser.add_argument('-t', dest='timestamps', default=False, action="store_true",
 parser.add_argument('--test-file', dest='test', type=str, help="Defaulting to ...")
 parser.add_argument('--training-file', dest='train', type=str, help="Defaulting to ...")
 parser.add_argument('--prediction-file', dest='pred', type=str, help="Defaulting to ...")
+parser.add_argument('--feature-file', dest='featurefile', type=str, help="Defaulting to ...")
 parser.add_argument('-k', dest='k', type=int, default=20, help='Defaulting to...')
 parser.add_argument('-l', dest='l', type=int, default=20, help='Defaulting to...')
 parser.add_argument('-b', dest='beta', type=int, default=2, help='Defaulting to...')
@@ -191,15 +192,15 @@ parser.add_argument('-m', dest='m', default=False, action="store_true", help="De
 args = parser.parse_args()
 
 if args.coldstart:
+    fb = [0,0,0,0,0]
     if args.fbConfig:
         fb = args.fbConfig.split(',')
         fb = [int(x) for x in fb]
         if(len(fb) < 5):
             print('Five arguments must be given, defaulting to [0,0,0,0,0]')
             fb = [0,0,0,0,0]
-    else:
-        fb = [0,0,0,0,0]
-    createColdStartSplits(args.coldstart, args.timestamps, fb)
+    print args.featurefile
+    createColdStartSplits(args.coldstart, args.timestamps, args.featurefile, fb)
 
 if args.test:
     evaluate(args.train, args.test, args.pred, args.k, args.l, args.beta, args.m)

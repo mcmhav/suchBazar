@@ -2,6 +2,9 @@ trap 'echo interrupted; exit' INT
 
 usage() { echo "Usage: ./$0 mtodo"; exit 1; }
 
+# Save the current path
+ROOT=$( cd "$( dirname "$0" )" && pwd );
+
 # Some parameters changable in the opts.
 TTT=""
 MYMEDIAITEM=0
@@ -30,8 +33,6 @@ done
 
 # OPTS="-t $TTT $MYMEDIAITEM $MYMEDIAIRANK"
 # echo $OPTS
-
-cd splits;
 
 if [ $MYMEDIAITEM -eq 1 ]; then
     # declare -a RAItem=('BPRMF' 'ItemAttributeKNN' 'ItemKNN' 'MostPopular' 'Random' 'UserAttributeKNN' 'UserKNN' 'WRMF' 'Zero' 'MultiCoreBPRMF' 'SoftMarginRankingMF' 'WeightedBPRMF' 'BPRLinear' 'MostPopularByAttributes' 'BPRSLIM' 'LeastSquareSLIM')

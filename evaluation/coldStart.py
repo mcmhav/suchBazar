@@ -13,13 +13,16 @@ The generateColdStartSystemSplits function is similar to the approach described 
 
 import random
 import helpers
+import os
 import filterbots as fb
 from operator import itemgetter
 
 #Ratings are written to the following folder
-folder = '../generators/splits'
+SCRIPT_FOLDER = os.path.dirname(os.path.realpath(__file__))
+ROOT_FOLDER = os.path.dirname(SCRIPT_FOLDER)
+folder = ROOT_FOLDER + '/generators/splits'
 
-def generateColdStartSplits(filename, ratings, type, test_ratio, rating_limit, rating_splits = [0.10, 0.40, 0.75], time_stamps=False, fbots=False):
+def generateColdStartSplits(filename, ratings, type, test_ratio, rating_limit, featurefile='/', rating_splits = [0.10, 0.40, 0.75], time_stamps=False, fbots=False):
     """
     Generates splits for cold-start user/item evaluation:
     ratings: list of ratings,
@@ -28,7 +31,6 @@ def generateColdStartSplits(filename, ratings, type, test_ratio, rating_limit, r
     rating_splits: number test item ratings used for training for each split
 
     """
-
     #TODO - Make more robust & Add support for timestamps
     if type == 'user':
         index = 0
@@ -64,13 +66,13 @@ def generateColdStartSplits(filename, ratings, type, test_ratio, rating_limit, r
                 else:
                     test.append(X[y][j])                                             #Add the remaining ratings to the test set
         if fbots:
-            X_train = fb.addFilterBotRatings(train, fbots)
+            X_train = fb.addFilterBotRatings(train, featurefile, fbots)
 
-        helpers.writeRatingsToFile('%s/%s_%strain%d.txt' %(folder, filename,  prefix, i+1), X_train, '\t')
-        helpers.writeRatingsToFile('%s/%s_%stest%d.txt' %(folder,filename, prefix, i+1), test, '\t')
+        helpers.writeRatingsToFile('%s/%s_%strain%d.txt' % (folder, filename,  prefix, i+1), X_train, '\t')
+        helpers.writeRatingsToFile('%s/%s_%stest%d.txt' % (folder,filename, prefix, i+1), test, '\t')
 
 
-def generateColdStartSystemSplits(filename, ratings, test_ratio, ratios, time_stamps = False, fbots=False):
+def generateColdStartSystemSplits(filename, ratings, test_ratio, ratios, featurefile='/', time_stamps = False, fbots=False):
     """
     Generate splits for cold-start system evaluation
 
@@ -92,7 +94,7 @@ def generateColdStartSystemSplits(filename, ratings, test_ratio, ratios, time_st
         for i in range(len(ratios)):                                                              #For each training ratio supplied
             X_train = generateDatasetSplit(X_pool, ratios[i], num_ratings)                        #Generate a split of size ratios[i]
             if fbots:
-                X_train = fb.addFilterBotRatings(X_train, fbots)
+                X_train = fb.addFilterBotRatings(X_train, featurefile, fbots)
             helpers.writeRatingsToFile('%s/%s_systemtrain%d.txt' %(folder, filename, i+1), X_train, delimiter='\t')
         helpers.writeRatingsToFile('%s/%s_systemtest.txt' %(folder, filename), y_test, delimiter='\t')
 
@@ -104,7 +106,7 @@ def generateColdStartSystemSplits(filename, ratings, test_ratio, ratios, time_st
         for i in range(len(ratios)):                                                              #For each training ratio supplied
             X_train = generateDatasetSplit(X_pool, ratios[i], num_ratings)                               #Generate a split of size ratios[i]
             if fbots:
-                X_train = fb.addFilterBotRatings(X_train, fbots)
+                X_train = fb.addFilterBotRatings(X_train, featurefile, fbots)
             helpers.writeRatingsToFile('%s/%s_systemtrain%d.txt' %(folder, filename, i+1), X_train, delimiter='\t')
         helpers.writeRatingsToFile('%s/%s_systemtest.txt' %(folder, filename), y_test, delimiter='\t')
 

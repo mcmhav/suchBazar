@@ -207,14 +207,11 @@ def writeRatingsToFile(path, data, delimiter=','):
         writer.writerows(data)
 
 def readItemAttributes(path):
-
     itemAttributes = []
-
-    with open(path, 'r') as file:
-        reader =  csv.reader(file, delimiter='\t')
+    with open(path, 'r') as f:
+        reader =  csv.reader(f, delimiter='\t')
         for item in reader:
             itemAttributes.append(item)
-
     return itemAttributes
 
 def createSplit(ratings, item_attributes, test_ratio, split=True):
@@ -242,9 +239,8 @@ def createSplit(ratings, item_attributes, test_ratio, split=True):
 
     writeRatingsToFile('./Data/ftrain.txt', train, '\t')
 
-def addFilterBotRatings(train, fbots=[0,0,0,0,0]):
-
-    item_attributes = readItemAttributes('../data/product_features.txt')
+def addFilterBotRatings(train, featurefile='', fbots=[0,0,0,0,0]):
+    item_attributes = readItemAttributes(featurefile)
     fbRatings = []
 
     if fbots[0]:

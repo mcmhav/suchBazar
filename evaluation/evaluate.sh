@@ -7,7 +7,8 @@ trap 'echo interrupted; exit' INT
 usage() { echo "Usage: ./$0 -i sobazar_input.tab"; exit 1; }
 
 # Save the current path
-ROOT=$( cd "$( dirname "$0" )" && pwd );
+CMD=$( cd "$( dirname "$0" )" && pwd );
+ROOT=`pwd`
 
 # Some parameters changable in the opts.
 TTT=""
@@ -43,16 +44,16 @@ do
     set -- "$ttt"
     IFS=":"; declare -a Array=($*)
 
-    TRAIN_FILE="generators/splits/${Array[0]}";
-    TEST_FILE="generators/splits/${Array[1]}";
-    PRED_FILE="generators/predictions/${Array[0]}-${Array[1]}-$RECOMMENDERSYS-$RECOMMENDER.predictions";
+    TRAIN_FILE="$ROOT/generators/splits/${Array[0]}";
+    TEST_FILE="$ROOT/generators/splits/${Array[1]}";
+    PRED_FILE="$ROOT/generators/predictions/${Array[0]}-${Array[1]}-$RECOMMENDERSYS-$RECOMMENDER.predictions";
     F_FILE="$FEATUREFILE";
 
     OPT=(--training-file $TRAIN_FILE);
     OPT+=(--test-file $TEST_FILE);
     OPT+=(--prediction-file $PRED_FILE);
 
-    python2.7 $ROOT/evaluation.py -b 2 -k 20 "${OPT[@]}" $MMLITEMRATINGSTYLE >/dev/null &
+    python2.7 $CMD/evaluation.py -b 2 -k 20 "${OPT[@]}" $MMLITEMRATINGSTYLE >/dev/null &
 done
 wait $!
 echo "Done evaluating $RECOMMENDER"

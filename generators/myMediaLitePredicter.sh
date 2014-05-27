@@ -1,6 +1,20 @@
+# Trap ctrl+c
 trap 'echo interrupted; exit' INT
 
+# Exit on error
+set -e
+
+ensure_dependencies() {
+  hash item_recommendation 2>/dev/null || { 
+    echo >&2 "I require MyMediaLite (item_recommendation and rating_prediction), but it's not installed.  Aborting.";
+    exit 1;
+  } 
+}
+
 usage() { echo "Usage: ./$0 mtodo"; exit 1; }
+
+# Check that MyMediaLite is installed
+ensure_dependencies;
 
 # Save the current path
 ROOT=$( cd "$( dirname "$0" )" && pwd );
@@ -8,10 +22,11 @@ ROOT=$( cd "$( dirname "$0" )" && pwd );
 # Some parameters changable in the opts.
 TTT=""
 MYMEDIAITEM=0
-MYMEDIAIRANK=0
+MYMEDIARANK=0
 RECOMMENDER=""
+QUIET=0
 
-while getopts "t:irp:" o; do
+while getopts "t:irqp:" o; do
   case "${o}" in
     t)
       TTT=("${OPTARG}")
@@ -20,10 +35,13 @@ while getopts "t:irp:" o; do
       MYMEDIAITEM=1
       ;;
     r)
-      MYMEDIAIRANK=1
+      MYMEDIARANK=1
       ;;
     p)
       RECOMMENDER="${OPTARG}"
+      ;;
+    q)
+      QUIET=1
       ;;
     *)
       usage
@@ -31,31 +49,44 @@ while getopts "t:irp:" o; do
   esac
 done
 
-# OPTS="-t $TTT $MYMEDIAITEM $MYMEDIAIRANK"
-# echo $OPTS
+STDOUT=''
+if [ $QUIET -eq 1 ]; then
+  STDOUT='>/dev/null 2>/dev/null';
+fi
 
-if [ $MYMEDIAITEM -eq 1 ]; then
-    # declare -a RAItem=('BPRMF' 'ItemAttributeKNN' 'ItemKNN' 'MostPopular' 'Random' 'UserAttributeKNN' 'UserKNN' 'WRMF' 'Zero' 'MultiCoreBPRMF' 'SoftMarginRankingMF' 'WeightedBPRMF' 'BPRLinear' 'MostPopularByAttributes' 'BPRSLIM' 'LeastSquareSLIM')
-    echo "Making MyMediaLite items predictions with $RECOMMENDER";
-    for ttt in $TTT
-    do
-        set -- "$ttt"
-        IFS=":"; declare -a Array=($*)
-        item_recommendation --training-file="${Array[0]}" --test-file="${Array[1]}" --recommender="$RECOMMENDER" --prediction-file=../predictions/"${Array[0]}"-"${Array[1]}"--i-"$RECOMMENDER".predictions >/dev/null 2>/dev/null &
+if [ "$RECOMMENDER" == "" ]; then
+  echo "Need to specify recommender with -p. E.g. '-p svd'";
+  exit 1        
+fi
+
+if [ "$TTT" == "" ]; then
+  echo "Need to specify Train-Test-Tuples with -t";
+  exit 1;
+fi
+
+if [ $MYMEDIAITEM -eq 1 ] || [ $MYMEDIARANK -eq 1 ]; then
+    for ttt in $TTT; do
+      set -- "$ttt"
+      IFS=":"; declare -a Array=($*)
+
+      OPT=(--training-file ${Array[0]});
+      OPT+=(--test-file ${Array[1]});
+      OPT+=(--recommender $RECOMMENDER);
+
+      # Do item predictions
+      if [ $MYMEDIAITEM -eq 1 ]; then
+        echo "Making MyMediaLite item predictions with $RECOMMENDER";
+        OPT+=(--prediction-file "../predictions/${Array[0]}-${Array[1]}--i-$RECOMMENDER.prediction");
+        item_recommendation ${OPT[@]} $STDOUT &
+      fi
+
+      # Do rank predictions
+      if [ $MYMEDIARANK -eq 1 ]; then
+        echo "Making MyMediaLite rating predictions with $RECOMMENDER";
+        OPT+=(--prediction-file "../predictions/${Array[0]}-${Array[1]}--r-$RECOMMENDER.prediction");
+        rating_prediction ${OPT[@]} $STDOUT &
+      fi
     done
     wait $!
     echo "Done making MyMediaLite items predictions with $RECOMMENDER";
-fi
-
-if [ $MYMEDIAIRANK -eq 1 ]; then
-    # declare -a RARatingPrediction=('BiPolarSlopeOne' 'GlobalAverage' 'ItemAttributeKNN' 'ItemAverage' 'ItemKNN' 'MatrixFactorization' 'SlopeOne' 'UserAttributeKNN' 'UserAverage' 'UserItemBaseline' 'UserKNN' 'TimeAwareBaseline' 'TimeAwareBaselineWithFrequencies' 'CoClustering' 'Random' 'Constant' 'LatentFeatureLogLinearModel' 'BiasedMatrixFactorization' 'SVDPlusPlus' 'SigmoidSVDPlusPlus' 'SocialMF' 'SigmoidItemAsymmetricFactorModel' 'SigmoidUserAsymmetricFactorModel' 'SigmoidCombinedAsymmetricFactorModel' 'NaiveBayes' 'ExternalRatingPredictor' 'GSVDPlusPlus')
-    echo "Making MyMediaLite rating predictions with $RECOMMENDER";
-    for ttt in $TTT
-    do
-        set -- "$ttt"
-        IFS=":"; declare -a Array=($*)
-        rating_prediction --training-file="${Array[0]}" --test-file="${Array[1]}" --recommender="$RECOMMENDER" --prediction-file=../predictions/"${Array[0]}"-"${Array[1]}"--r-"$RECOMMENDER".predictions >/dev/null 2>/dev/null &
-    done
-    wait $!
-    echo "Done making MyMediaLite rating predictions with $RECOMMENDER";
 fi

@@ -77,11 +77,12 @@ def brandBot(ratings, item_attributes):
     brandCounter = {}
     botRatings = []
     itemBrands = {}
-    uniqueItems = []
+    uniqueItemsD = {}
 
     for rating in ratings:
-        if not rating[1] in uniqueItems:
-            uniqueItems.append(rating[1])
+        if not uniqueItemsD.get(rating[1], None):
+          uniqueItemsD[rating[1]] = 1
+
         if rating[1] in itemBrands:
             brand = itemBrands[rating[1]]
         else:
@@ -97,7 +98,7 @@ def brandBot(ratings, item_attributes):
     brandAverage = {k: float(brandAverage[k])/brandCounter[k] for k in brandAverage}
 
     for item in item_attributes:
-        if int(item[0]) in uniqueItems:
+        if uniqueItemsD.get(int(item[0]), None):
             botRatings.append([brandBotId, item[0], brandAverage[item[2]]])
 
     print('brandBot used %d seconds to generate %d ratings' %(time.time()-start, len(botRatings)))

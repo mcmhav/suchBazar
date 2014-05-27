@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Exit on error
+set -e
+
 # Trap ctrl+c and abort all if it is entered
 trap 'echo interrupted; exit' INT
 

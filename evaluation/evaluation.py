@@ -199,7 +199,6 @@ if args.coldstart:
         if(len(fb) < 5):
             print('Five arguments must be given, defaulting to [0,0,0,0,0]')
             fb = [0,0,0,0,0]
-    print args.featurefile
     createColdStartSplits(args.coldstart, args.timestamps, args.featurefile, fb)
 
 if args.test:

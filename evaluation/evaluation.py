@@ -21,6 +21,7 @@ import itemAverage
 import filterbots as fb
 import ntpath
 import sys
+from multiprocessing import Process
 
 
 def evaluation():
@@ -118,14 +119,27 @@ def createColdStartSplits(ratingFile, timestamps, featurefile, fbConfig):
 
     ratings = helpers.readRatingsFromFileSmart(ratingFile, True)
     filename = ratingFile.split('/')[-1].split('.')[0]
+    procs = []
 
     print('Generating cold-start user dataset splits...')
-    coldStart.generateColdStartSplits(filename, ratings, 'user', 0.1, 20, featurefile, [0.10, 0.40, 0.75], timestamps, fbConfig)
+    addToParallelRun(procs, coldStart.generateColdStartSplits, filename, ratings, 'user', 0.1, 20, featurefile, [0.10, 0.40, 0.75], timestamps, fbConfig)
     print('Generating cold-start item dataset splits...')
-    coldStart.generateColdStartSplits(filename, ratings, 'item', 0.05, 15, featurefile, [0.10, 0.40, 0.75], timestamps, fbConfig)
+    addToParallelRun(procs, coldStart.generateColdStartSplits, filename, ratings, 'item', 0.05, 15, featurefile, [0.10, 0.40, 0.75], timestamps, fbConfig)
     print('Generating cold-start system dataset splits...')
-    coldStart.generateColdStartSystemSplits(filename, ratings, 0.20, featurefile, [0.4, 0.6, 0.8], timestamps, fbConfig)
+    addToParallelRun(procs, coldStart.generateColdStartSystemSplits, filename, ratings, 0.20, featurefile, [0.4, 0.6, 0.8], timestamps, fbConfig)
+
+    # combine jobs
+    for p in procs:
+        p.join()
     print('Done!')
+
+def addToParallelRun(procs, method, *args):
+    '''
+    Run procs parallel
+    '''
+    p = Process(target=method, args=args)
+    p.start()
+    procs.append(p)
 
 def runTestCases():
     '''

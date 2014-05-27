@@ -77,13 +77,23 @@ if [ $MYMEDIAITEM -eq 1 ] || [ $MYMEDIARANK -eq 1 ]; then
       # Do item predictions
       if [ $MYMEDIAITEM -eq 1 ]; then
         OPT+=(--prediction-file "$ROOT/predictions/${Array[0]}-${Array[1]}--i-$RECOMMENDER.prediction");
-        item_recommendation ${OPT[@]} $STDOUT &
+        # OPT+=($STDOUT)
+        # echo ${OPT[@]}
+        if [ $QUIET -eq 1 ]; then
+          item_recommendation ${OPT[@]} >/dev/null 2>/dev/null &
+        else
+          item_recommendation ${OPT[@]} $STDOUT &
+        fi
       fi
 
       # Do rank predictions
       if [ $MYMEDIARANK -eq 1 ]; then
         OPT+=(--prediction-file "$ROOT/predictions/${Array[0]}-${Array[1]}--r-$RECOMMENDER.prediction");
-        rating_prediction ${OPT[@]} $STDOUT &
+        if [ $QUIET -eq 1 ]; then
+          rating_prediction ${OPT[@]} >/dev/null 2>/dev/null &
+        else
+          rating_prediction ${OPT[@]} &
+        fi
       fi
     done
     wait $!

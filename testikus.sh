@@ -31,8 +31,9 @@ RANKRECOMMENDERS="MatrixFactorization NaiveBayes"
 #Available Mahout recommenders
 # 'svd' ...
 MAHOUTRECOMMENDERS="svd"
+QUIET=''
 
-while getopts "i:cp:sr:h:tm" o; do
+while getopts "i:cp:sr:h:tmq" o; do
   case "${o}" in
     i)
       INFILE="-i ${OPTARG}"
@@ -61,6 +62,9 @@ while getopts "i:cp:sr:h:tm" o; do
     s)
       SPLIT=1
       ;;
+    q)
+      QUIET="-q"
+      ;;
     *)
       usage
       ;;
@@ -88,7 +92,7 @@ if [[ $MYMEDIAITEM ]]; then
     # make predictions
     echo "------------------------------"
     echo "Running $ROOT/generators/myMediaLitePredicter.sh -t '$trainTestTuples' $MYMEDIAITEM -p $ir";
-    /bin/bash $ROOT/generators/myMediaLitePredicter.sh -t "$trainTestTuples" $MYMEDIAITEM -p $ir;
+    /bin/bash $ROOT/generators/myMediaLitePredicter.sh -t "$trainTestTuples" $MYMEDIAITEM -p $ir $QUIET;
 
     echo "------------------------------"
 

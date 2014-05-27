@@ -13,6 +13,7 @@ MAHOUT=0
 RECOMMENDER="svd"
 RATINGSLOCATION="../generators/splits"
 PREDICTIONSLOCATION="../generators/predictions"
+QUIET=0
 
 while getopts "t:hp:l:" o; do
   case "${o}" in
@@ -27,6 +28,9 @@ while getopts "t:hp:l:" o; do
       ;;
     l)
       RATINGSLOCATION="${OPTARG}"
+      ;;
+    q)
+      QUIET=1
       ;;
     *)
       usage
@@ -43,8 +47,12 @@ for ttt in $TTT
 do
     set -- "$ttt"
     IFS=":"; declare -a Array=($*)
-    java TopKRecommendations $RATINGSLOCATION $RECOMMENDER "${Array[0]}" $PREDICTIONSLOCATION/"${Array[0]}"-"${Array[1]}"--h-"$RECOMMENDER".predictions >/dev/null 2>/dev/null &
-    # item_recommendation --training-file="${Array[0]}" --test-file="${Array[1]}" --recommender="$RECOMMENDER" --prediction-file=../predictions/"${Array[0]}"-"${Array[1]}"--i-"$RECOMMENDER".predictions >/dev/null 2>/dev/null &
+    if [ $QUIET -eq 1 ]; then
+      java TopKRecommendations $RATINGSLOCATION $RECOMMENDER "${Array[0]}" $PREDICTIONSLOCATION/"${Array[0]}"-"${Array[1]}"--h-"$RECOMMENDER".predictions >/dev/null 2>/dev/null &
+      item_recommendation ${OPT[@]} >/dev/null 2>/dev/null &
+    else
+      java TopKRecommendations $RATINGSLOCATION $RECOMMENDER "${Array[0]}" $PREDICTIONSLOCATION/"${Array[0]}"-"${Array[1]}"--h-"$RECOMMENDER".predictions &
+    fi
 done
 wait $!
 echo "Done making Mahout items predictions with $RECOMMENDER";

@@ -29,7 +29,7 @@ RANKRECOMMENDERS="MatrixFactorization NaiveBayes"
 # 'svd' ...
 MAHOUTRECOMMENDERS="svd"
 
-while getopts "i:cp:s:r:h:tm" o; do
+while getopts "i:cp:sr:h:tm" o; do
   case "${o}" in
     i)
       INFILE="-i ${OPTARG}"

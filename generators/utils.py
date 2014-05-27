@@ -118,6 +118,7 @@ def create_usermatrix(config):
 def fx_naive(events):
   # A list of events.
   multipliers = {
+    'negative_event': [10],
     'featured_product_clicked': [30, 40, 50, 60, 70],
     'product_detail_clicked': [30, 40, 50, 60, 70],
     'product_wanted': [80],

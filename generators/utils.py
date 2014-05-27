@@ -88,7 +88,7 @@ def parse_eventline(row, users, config):
 def parse_mongo(users, config):
   client = pymongo.MongoClient()
   db = client.mydb
-  col = db['negValues']
+  col = db['negValuesNew']
   mongoDB = col.find()
   for instance in mongoDB:
     row = [''] * 17
@@ -204,7 +204,10 @@ def get_without_neg_multipliers():
 def fx_recentness(events, oldest_event, config, rating=0):
   today = datetime.now()
   # Get multipliers and valid events
-  multipliers = get_without_neg_multipliers()
+  if config["infile"] == "mongo":
+    multipliers = get_multipliers()
+  else:
+    multipliers = get_without_neg_multipliers()
 
   # Remove events which we dont care about.
   events[:] = [d for d in events if d.get('event_id') in multipliers]
@@ -239,8 +242,19 @@ def fx_recentness(events, oldest_event, config, rating=0):
     # Calculate the diff between the scores, and multiply with penalization.
     score = scores[1] - ((scores[1] - scores[0]) * penalization)
 
-    rating = max(rating, normalize(score=score, a=1, b=5.0, xmin=10))
+    # Get the min multiplier in the multiplier set
+    xmin = findMinMultiplier(multipliers)
+
+    rating = max(rating, normalize(score=score, a=1, b=5.0, xmin=xmin))
   return rating
+
+def findMinMultiplier(multipliers):
+  '''
+  Find the minimum value of all the multipliers
+  '''
+  mV = min(multipliers, key=multipliers.get)
+  m = multipliers[mV][0]
+  return m
 
 def fx_count(events, config, avg_num_events):
   """
@@ -250,7 +264,10 @@ def fx_count(events, config, avg_num_events):
   """
   today = datetime.now()
   # Get multipliers and valid events
-  multipliers = get_without_neg_multipliers()
+  if config["infile"] == "mongo":
+    multipliers = get_multipliers()
+  else:
+    multipliers = get_without_neg_multipliers()
 
   # Remove events which we dont care about.
   events[:] = [d for d in events if d.get('event_id') in multipliers]
@@ -271,7 +288,8 @@ def fx_count(events, config, avg_num_events):
 
     scores = multipliers.get(event['event_id'])
     score = scores[1] - ((scores[1] - scores[0]) * product_penalization)
-    norm_score = normalize(score, a=1, b=5.0, xmin=10)
+    xmin = findMinMultiplier(multipliers)
+    norm_score = normalize(score, a=1, b=5.0, xmin=xmin)
     r = max(ratings.get(event['product_id'], 0.0), norm_score)
     ratings[event['product_id']] = r
   return ratings

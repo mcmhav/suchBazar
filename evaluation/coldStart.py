@@ -72,7 +72,7 @@ def generateColdStartSplits(filename, ratings, type, test_ratio, rating_limit, f
         helpers.writeRatingsToFile('%s/%s_%stest%d.txt' % (folder,filename, prefix, i+1), test, '\t')
 
 
-def generateColdStartSystemSplits(filename, ratings, test_ratio, ratios, featurefile='/', time_stamps = False, fbots=False):
+def generateColdStartSystemSplits(filename, ratings, test_ratio, featurefile, ratios, time_stamps = False, fbots=False):
     """
     Generate splits for cold-start system evaluation
 

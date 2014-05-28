@@ -1,9 +1,5 @@
 #!/usr/bin/env python
-import requests
-import time
-import json
-import sys
-import pymongo
+import urllib2, base64, time, json, sys, os
 
 # Settings
 base_url = "https://goodiez-staging.appspot.com/api/goodiez"
@@ -11,7 +7,11 @@ username = "goodiez"
 password = "goodiez"
 increment = 1000
 mode = 'file'
-output_file = 'products.txt'
+
+# This folder
+base_dir = os.path.dirname(os.path.realpath(__file__))
+root_dir = os.path.dirname(base_dir)
+output_file = "%s/%s/%s" % (root_dir, 'generated', 'products_json.txt')
 
 def get_empty_mongo_db(db):
   # Reset it and return col-object.
@@ -21,10 +21,14 @@ def get_empty_mongo_db(db):
 def get_product_json(offers_url, timeout=3):
   # Request all offers in this collection
   time.sleep(timeout)
-  res = requests.get(offers_url, auth=(username, password))
-  if res.status_code != 200:
-    return res.json()
-  return res.json()
+
+  # Make authenticated request
+  request = urllib2.Request(offers_url)
+  base64string = base64.encodestring('%s:%s' % (username, password)).replace('\n', '')
+  request.add_header("Authorization", "Basic %s" % base64string)
+  res = urllib2.urlopen(request)
+
+  return json.loads(res.read())
 
 def get_offer_url(increment, cursor_key):
   offers_url = "%s/%s?pageSize=%s" % (base_url, "offer/v10", increment)
@@ -51,6 +55,7 @@ def main():
   f, col, cursor_key, current = None, None, None, 0
   if mode == 'mongo':
     # Open mongo-db connection
+    import pymongo
     client = pymongo.MongoClient()
     col = get_empty_mongo_db(client.db)
   else:

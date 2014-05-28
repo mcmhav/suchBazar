@@ -1,4 +1,14 @@
 #!/bin/bash
+#
+# A shell script utilizing various script created under our Master Thesis 2014.
+# Input is a event log with implicit data.
+# Output is the implicit ratings, based on various schemes (defined below).
+#
+# If flags are provided the script also removes old files, blends the ratings
+# and plots its distributions.
+####
+
+# Exit on error
 set -e
 
 usage() { echo "Usage: $0 [-c (clean)] [-p (plot)] [-b (blend)] [-i (infile)] [-h (help)]"; exit 1; }

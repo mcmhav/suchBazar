@@ -21,3 +21,5 @@ mahout/jars/*
 *.prediction
 *.score
 *.tmptex
+*.csv
+*.conf

@@ -27,12 +27,12 @@ import java.io.*;
 import java.util.*;
 
 public class TopKRecommendations {
-    static String dataPath = "../generators/splits";
+    static String dataPath = "../generated/splits";
     /* static String[] files = { "naive.txt", "sigmoid_count.txt", "sigmoid_recent.txt", "blend.txt" }; */
     String[] files = { "blend.txt" };
   /* static String recommender = "itembased"; */
 
-    public void recommendations(String filename, final String recommender, String predictionFile) throws IOException, TasteException {
+    public void recommendations(String dataPath, String filename, final String recommender, String predictionFile) throws IOException, TasteException {
         System.out.println("Using recommender-engine: " + recommender);
         long startTime = System.currentTimeMillis();
 
@@ -77,6 +77,11 @@ public class TopKRecommendations {
     public void writeToFile(HashMap<Long,List<RecommendedItem>> topKForUsers, String predictionFile) throws IOException {
         //File file = new File("testikus");
         //BufferedReader reader = new BufferedReader(new FileReader(file));
+
+        String saveLocation = getSaveLocation(predictionFile);
+        File dir = new File(saveLocation);
+        dir.mkdir();
+
         PrintWriter writer = new PrintWriter(predictionFile, "UTF-8");
 
         Iterator it = topKForUsers.entrySet().iterator();
@@ -88,6 +93,15 @@ public class TopKRecommendations {
             it.remove();
         }
         writer.close();
+    }
+
+    private String getSaveLocation(String predictionFile){
+        String[] folders = predictionFile.split("/");
+        String saveLocation = "";
+        for (int i = 0; i < folders.length-1; i++) {
+            saveLocation += folders[i] + "/";
+        }
+        return saveLocation;
     }
 
     public List<String> parseConfig(String filename) throws IOException {
@@ -102,14 +116,14 @@ public class TopKRecommendations {
     }
 
     public void start(String[] args) throws IOException, TasteException {
-        String[] vals = new String[3];
+        String[] vals = new String[4];
         if (args.length < 3) {
             System.out.print("Needs arguments: <ratings-folder> <method> <rating-file> <predictionfile>\n");
             System.out.print("Defaulting to: ../generators/ratings itembased\n");
-            vals[0] = "../generators/splits";
-            vals[1] = "svd";
-            vals[2] = "blend_itemtrain1.txt";
-            vals[3] = "../generators/predictions/tmp.predictions";
+            vals[0] = "../generated/splits";
+            vals[1] = "blend_itemtrain1.txt";
+            vals[2] = "svd";
+            vals[3] = "../generated/predictions/tmp.predictions";
         } else {
             vals = args;
         }
@@ -119,7 +133,7 @@ public class TopKRecommendations {
         this.dataPath = vals[0];
         for (int i = 0; i < files.size(); i++) {
         }*/
-        recommendations(vals[2], vals[1], vals[3]);
+        recommendations(vals[0], vals[1], vals[2], vals[3]);
     }
 
     public static void main(String[] args) throws IOException, TasteException{

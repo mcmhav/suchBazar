@@ -80,7 +80,7 @@ RECOMMENDERSYS="$MYMEDIAITEM $MYMEDIAIRANK $MAHOUT"
 if [ $SPLIT -eq 1 ]; then
   # Cold start split
   echo "Splitting data into colstart splits"
-  python2.7 $ROOT/evaluation/evaluation.py --coldstart-split $ROOT/generators/ratings/blend.txt --feature-file $ROOT/data/product_features.txt -t -fb '1,1,1,1,0';
+  python2.7 $ROOT/evaluation/evaluation.py --coldstart-split $ROOT/generated/ratings/blend.txt --feature-file $ROOT/data/product_features.txt -t -fb '1,1,1,1,0';
 fi
 
 # Todo: can we avoid having such a long string which, to be honest, no one will change in near future anyways?
@@ -106,7 +106,7 @@ if [[ $MYMEDIAIRANK ]]; then
   for ir in $RANKRECOMMENDERS
   do
     # make predictions
-    /bin/bash $ROOT/generators/myMediaLitePredicter.sh -t "$trainTestTuples" $MYMEDIAIRANK -p $ir;
+    /bin/bash $ROOT/generators/myMediaLitePredicter.sh -t "$trainTestTuples" $MYMEDIAIRANK -p $ir $QUIET;
 
     # evaluate predicted values
     /bin/bash $ROOT/generators/evaluate.sh -t "$trainTestTuples" -r $MYMEDIAIRANK -p $ir;
@@ -117,7 +117,7 @@ if [[ $MAHOUT ]]; then
   for ir in $MAHOUTRECOMMENDERS
   do
     # make predictions
-    /bin/bash $ROOT/generators/mahoutPredict.sh -t "$trainTestTuples" $MAHOUT -p $ir;
+    /bin/bash $ROOT/generators/mahoutPredict.sh -t "$trainTestTuples" $MAHOUT -p $ir $QUIET;
 
     # evaluate predicted values
     /bin/bash $ROOT/evaluation/evaluate.sh -t "$trainTestTuples" -r $MAHOUT -p $ir;

@@ -18,9 +18,11 @@ ROOT=$( dirname "$CWD");
 RATINGS="$ROOT/generated/splits"
 PREDICTIONS="$ROOT/generated/predictions"
 
+RECOMMENDER_LOCATION="$ROOT/mahout"
+
 QUIET=0
 
-while getopts "t:hp:l:" o; do
+while getopts "t:hp:l:q" o; do
   case "${o}" in
     t)
       TTT=("${OPTARG}")
@@ -47,21 +49,26 @@ OPTS=""
 if [ $QUIET -eq 1 ]; then
   OPTS+=" >/dev/null 2>/dev/null"
 fi
+cd $RECOMMENDER_LOCATION;
 
-javac TopKRecommendations.java $OPTS;
+rm *.class
+
+if [ $QUIET -eq 1 ]; then
+  javac TopKRecommendations.java >/dev/null 2>/dev/null;
+else
+  javac TopKRecommendations.java;
+fi
 
 echo "Making Mahout predictions with $RECOMMENDER";
 for ttt in $TTT
 do
     set -- "$ttt"
     IFS=":"; declare -a Array=($*)
+    PREDFILE="$PREDICTIONS/"${Array[0]}"-"${Array[1]}"--h-"$RECOMMENDER".predictions"
     if [ $QUIET -eq 1 ]; then
-      PREDFILE="$PREDICTIONS/"${Array[0]}"-"${Array[1]}"--h-"$RECOMMENDER".predictions"
-
-      java TopKRecommendations $RATINGS $RECOMMENDER "${Array[0]}" $PREDFILE $OPTS &
-      item_recommendation ${OPT[@]} $OPTS &
+      java TopKRecommendations $RATINGS "${Array[0]}" $RECOMMENDER  $PREDFILE >/dev/null 2>/dev/null &
     else
-      java TopKRecommendations $RATINGSLOCATION $RECOMMENDER "${Array[0]}" $PREDFILE $OPTS &
+      java TopKRecommendations $RATINGS "${Array[0]}" $RECOMMENDER  $PREDFILE &
     fi
 done
 wait $!

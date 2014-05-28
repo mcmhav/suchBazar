@@ -11,15 +11,16 @@ import csv
 import random
 import time
 from multiprocessing import Process
+import os
 
 SCRIPT_FOLDER = os.path.dirname(os.path.realpath(__file__))
 ROOT_FOLDER = os.path.dirname(SCRIPT_FOLDER)
 GENERATED_LOCATION = 'generated'
 SAVE_FOLDER = 'Data'
-    folder = ROOT_FOLDER + '/' + GENERATED_LOCATION + '/' + SAVE_FOLDER + '/'
+folder = ROOT_FOLDER + '/' + GENERATED_LOCATION + '/' + SAVE_FOLDER + '/'
 
-    if not os.path.exists(folder):
-        os.makedirs(folder)
+if not os.path.exists(folder):
+    os.makedirs(folder)
 
 def criticBot(ratings, num_critics=20):
     '''

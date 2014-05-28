@@ -3,6 +3,8 @@ import json
 from collections import Counter
 import re
 import pymongo
+import sys
+import os
 # from nltk.stem.snowball import NorwegianStemmer
 # from nltk.stem.snowball import EnglishStemmer
 # from nltk import wordpunct_tokenize
@@ -11,7 +13,7 @@ import pymongo
 def get_mongo_db():
   client = pymongo.MongoClient()
   db = client.mydb
-  return db["items"]
+  return db["offerstaging"]
 
 # stop = stopwords.words('english') + stopwords.words('norwegian')
 
@@ -426,15 +428,32 @@ def countMatchingItems(ratings, products, col):
 
 def readSobazarRatings(path):
     ratings = []
-    with open(path, 'r') as file:
-        dialect = csv.Sniffer().sniff(file.read(2048))
-        reader =  csv.reader(file, delimiter=dialect.delimiter)
-        for rating in reader:
-            if len(rating) >= 3:
-              ratings.append([int(rating[0]), int(rating[1]), float(rating[2])])
-            else:
-              print "The input ratings are on a wrong format (less than two columns). Exiting."
-              sys.exit(1)
+    f = open(path, 'r+')
+    reader = f.readlines()
+    f.close()
+    for tmp in reader:
+        rating = tmp.split('\t')
+        # print (rating)
+        # sys.exit()
+        if len(rating) >= 3:
+          ratings.append([int(rating[0]), int(rating[1]), float(rating[2])])
+        else:
+          print "The input ratings are on a wrong format (less than two columns). Exiting."
+          sys.exit(1)
+    # for line in lines:
+    #     tmp = line.split(',')
+    #     predictions.append([int(tmp[0]), int(tmp[1]), float(tmp[2])])
+
+    # with open(path, 'r') as file:
+    #     dialect = csv.Sniffer().sniff(file.read(2048))
+    #     reader =  csv.reader(file, delimiter='\t')
+    #     for rating in reader:
+    #         print (rating)
+    #         if len(rating) >= 3:
+    #           ratings.append([int(rating[0]), int(rating[1]), float(rating[2])])
+    #         else:
+    #           print "The input ratings are on a wrong format (less than two columns). Exiting."
+    #           sys.exit(1)
     return ratings
 
 
@@ -479,11 +498,17 @@ def writeProductsToFile(filename, products):
         writer.writerows(products)
 
 def main():
-    PRODUCT_FILE = '../rest/products.txt'
-    RATING_FILE = '../generators/ratings/blend.txt'
-    OUT_FILE = 'itemFeatures.txt'
+    SCRIPT_FOLDER = os.path.dirname(os.path.realpath(__file__))
+    ROOT_FOLDER = os.path.dirname(SCRIPT_FOLDER)
+    GENERATED_LOCATION = 'generated'
 
-    MONGO_DB, col = False, None
+    PRODUCT_FILE = '../rest/products.txt'
+
+    RATING_FILE = ROOT_FOLDER + '/' + GENERATED_LOCATION + '/' + 'ratings/blend.txt'
+    OUT_FILE = ROOT_FOLDER + '/' + GENERATED_LOCATION + '/' + 'itemFeatures.txt'
+
+
+    MONGO_DB, col = True, 'items'
     products_json = None
 
     # Read the JSON-data of product descriptions from file or DB.

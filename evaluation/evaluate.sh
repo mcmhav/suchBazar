@@ -15,7 +15,7 @@ TTT=""
 MMLITEMRATINGSTYLE=""
 RECOMMENDERSYS=""
 RECOMMENDER=""
-FEATUREFILE="$ROOT/data/product_features.txt"
+FEATUREFILE="$ROOT/generated/itemFeatures.txt"
 
 while getopts "t:p:r:m" o; do
   case "${o}" in
@@ -44,9 +44,9 @@ do
     set -- "$ttt"
     IFS=":"; declare -a Array=($*)
 
-    TRAIN_FILE="$ROOT/generators/splits/${Array[0]}";
-    TEST_FILE="$ROOT/generators/splits/${Array[1]}";
-    PRED_FILE="$ROOT/generators/predictions/${Array[0]}-${Array[1]}-$RECOMMENDERSYS-$RECOMMENDER.predictions";
+    TRAIN_FILE="$ROOT/generated/splits/${Array[0]}";
+    TEST_FILE="$ROOT/generated/splits/${Array[1]}";
+    PRED_FILE="$ROOT/generated/predictions/${Array[0]}-${Array[1]}-$RECOMMENDERSYS-$RECOMMENDER.predictions";
     F_FILE="$FEATUREFILE";
 
     OPT=(--training-file $TRAIN_FILE);

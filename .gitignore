@@ -1,7 +1,6 @@
 *.tab
 *.json
 *.dot
-*.csv
 cvsProd/
 .project
 .pydevproject

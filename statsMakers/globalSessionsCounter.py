@@ -6,21 +6,13 @@ import matplotlib.pyplot as plt
 import os
 from bson import Binary, Code
 
-parser = argparse.ArgumentParser(description='Constructs overview of how many sessions users have.')
-parser.add_argument('-c',type=str, default="sessionsNew")
-parser.add_argument('-d',type=str, default="stats")
-args = parser.parse_args()
-
-print ("Collection used: %s" % args.c)
-
-col = helpers.getCollection(args.c)
-
-def main():
+def main(sessDB='sessionsNew'):
     # sessionCountGroups()
-    xaxis,yaxis = handle_appStarted()
+    xaxis,yaxis = handle_appStarted(sessDB)
     makePlot(xaxis,yaxis)
 
-def handle_appStarted():
+def handle_appStarted(sessDB):
+    col = helpers.getCollection(sessDB)
     userCount = -1
     sessionCount = 0
     prevSessionCount = 0

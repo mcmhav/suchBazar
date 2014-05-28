@@ -19,18 +19,19 @@ SPLIT=0
 
 # Available Item Recommenders:
 # 'BPRMF' 'ItemAttributeKNN' 'ItemKNN' 'MostPopular' 'Random' 'UserAttributeKNN' 'UserKNN' 'WRMF' 'Zero' 'MultiCoreBPRMF' 'SoftMarginRankingMF' 'WeightedBPRMF' 'BPRLinear' 'MostPopularByAttributes' 'BPRSLIM' 'LeastSquareSLIM'
-ITEMRECOMMENDERS=""
+ITEMRECOMMENDERS="MostPopular"
 
 # Available Rank Recommenders:
 # 'BiPolarSlopeOne' 'GlobalAverage' 'ItemAttributeKNN' 'ItemAverage' 'ItemKNN' 'MatrixFactorization' 'SlopeOne' 'UserAttributeKNN' 'UserAverage' 'UserItemBaseline' 'UserKNN' 'TimeAwareBaseline' 'TimeAwareBaselineWithFrequencies' 'CoClustering' 'Random' 'Constant' 'LatentFeatureLogLinearModel' 'BiasedMatrixFactorization' 'SVDPlusPlus' 'SigmoidSVDPlusPlus' 'SocialMF' 'SigmoidItemAsymmetricFactorModel' 'SigmoidUserAsymmetricFactorModel' 'SigmoidCombinedAsymmetricFactorModel' 'NaiveBayes' 'ExternalRatingPredictor' 'GSVDPlusPlus'
-RANKRECOMMENDERS=""
+RANKRECOMMENDERS="MatrixFactorization"
 
 #Available Mahout recommenders
 # 'svd' ...
-MAHOUTRECOMMENDERS=""
+MAHOUTRECOMMENDERS="svd"
+
 QUIET=''
 
-while getopts "i:cp:sr:m:tmq" o; do
+while getopts "i:cp:sr:m:q" o; do
   case "${o}" in
     i)
       INFILE="-i ${OPTARG}"
@@ -46,11 +47,6 @@ while getopts "i:cp:sr:m:tmq" o; do
       ;;
     m)
       MAHOUTRECOMMENDERS="${OPTARG}"
-      ;;
-    t)
-      # Test a variety of good default options.
-      ITEMRECOMMENDERS="BPRMF ItemKNN MostPopular Random UserKNN WRMF"
-      RANKRECOMMENDERS="MatrixFactorization NaiveBayes"
       ;;
     s)
       SPLIT=1

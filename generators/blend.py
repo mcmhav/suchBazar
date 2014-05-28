@@ -1,4 +1,15 @@
 #!/usr/bin/env python
+#
+# Blending-tool for Sobazar and master thesis 2014
+# Input: a config-file (list of files) and optionally their ratios
+# Output: a linear blend of the average ratings weighted by ratio, of all files.
+#
+# Rating files should be on the following format:
+# user_id \t product_id \t rating [ \t timestamp]
+#
+# That is a tab-seperated list of (user, product, rating) and optionally the
+# timestamp of the rating.
+####
 import sys, os
 import argparse
 from collections import defaultdict

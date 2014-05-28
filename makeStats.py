@@ -7,6 +7,7 @@ from statsMakers import priceDistibution
 from statsMakers import eventPerDay
 from statsMakers import simpleGeoPlotter
 from statsMakers import globalSessionsCounter
+from statsMakers import eventCountDistributions
 
 def main():
     print ("start")
@@ -16,6 +17,7 @@ def main():
     eventPerDay.main()
     simpleGeoPlotter.main()
     globalSessionsCounter.main()
+    eventCountDistributions.main()
 
     print ("Done!")
 

@@ -20,7 +20,12 @@ from operator import itemgetter
 #Ratings are written to the following folder
 SCRIPT_FOLDER = os.path.dirname(os.path.realpath(__file__))
 ROOT_FOLDER = os.path.dirname(SCRIPT_FOLDER)
-folder = ROOT_FOLDER + '/generators/splits'
+SPLITS_FOLDER = 'splits'
+GENERATED_LOCATION = 'generated'
+folder = ROOT_FOLDER + '/' + GENERATED_LOCATION + '/' + SPLITS_FOLDER
+
+if not os.path.exists(folder):
+        os.makedirs(folder)
 
 def generateColdStartSplits(filename, ratings, type, test_ratio, rating_limit, featurefile='/', rating_splits = [0.10, 0.40, 0.75], time_stamps=False, fbots=False):
     """

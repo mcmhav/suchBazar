@@ -12,6 +12,15 @@ import random
 import time
 from multiprocessing import Process
 
+SCRIPT_FOLDER = os.path.dirname(os.path.realpath(__file__))
+ROOT_FOLDER = os.path.dirname(SCRIPT_FOLDER)
+GENERATED_LOCATION = 'generated'
+SAVE_FOLDER = 'Data'
+    folder = ROOT_FOLDER + '/' + GENERATED_LOCATION + '/' + SAVE_FOLDER + '/'
+
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
 def criticBot(ratings, num_critics=20):
     '''
     Select a set of critics among the most active users
@@ -202,9 +211,9 @@ def readRatings(path):
                     ratings.append([int(rating[0]), int(rating[1]), float(rating[2])])
     return ratings
 
-def writeRatingsToFile(path, data, delimiter=','):
+def writeRatingsToFile(fileName, data, delimiter=','):
 
-    with open(path, 'wb') as file:
+    with open(folder + fileName, 'wb') as file:
         writer =  csv.writer(file, delimiter=delimiter)
         writer.writerows(data)
 
@@ -228,8 +237,8 @@ def createSplit(ratings, item_attributes, test_ratio, split=True):
         test = ratings[:numTestRatings]
         train = ratings[numTestRatings:]
         #Write original 'unenhanced' training set to file
-        writeRatingsToFile('./Data/train.txt', train, '\t')
-        writeRatingsToFile('./Data/test.txt', test, '\t')
+        writeRatingsToFile('train.txt', train, '\t')
+        writeRatingsToFile('test.txt', test, '\t')
     else:
         train = ratings
 
@@ -239,7 +248,7 @@ def createSplit(ratings, item_attributes, test_ratio, split=True):
     #train.extend(criticBot(train))
     #train.extend(conformityBot(train))
 
-    writeRatingsToFile('./Data/ftrain.txt', train, '\t')
+    writeRatingsToFile('ftrain.txt', train, '\t')
 
 def addFilterBotRatings(train, featurefile='', fbots=[0,0,0,0,0]):
     item_attributes = readItemAttributes(featurefile)

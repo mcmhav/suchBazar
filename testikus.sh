@@ -55,7 +55,7 @@ while getopts "i:cp:sr:h:tmq" o; do
       ;;
     t)
       MYMEDIAITEM="-i"
-      ITEMRECOMMENDERS="BPRMF ItemKNN MostPopular Random UserKNN WRMF"
+      ITEMRECOMMENDERS="BPRMF"
       MAHOUT="-h"
       MAHOUTRECOMMENDERS="svd"
       ;;

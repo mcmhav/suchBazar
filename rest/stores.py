@@ -7,7 +7,7 @@ import pymongo
 
 parser = argparse.ArgumentParser(description='Crawl the API db.')
 parser.add_argument('-v',dest='v', action='store_true')
-parser.add_argument('-f',type=str, default="offer")
+parser.add_argument('-f',type=str, default="brand")
 parser.add_argument('-version',type=str, default="v10")
 parser.add_argument('-e',type=str, default="staging")
 parser.set_defaults(v=False)

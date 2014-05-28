@@ -6,16 +6,24 @@ import os
 # testur = ["blend_itemtrain1.txt", "blend_itemtrain3.txt", "blend_systemtrain2.txt". "blend_usertrain1.txt"  blend_usertrain3.txt
 # blend_itemtrain2.txt  blend_systemtrain1.txt  blend_systemtrain3.txt  blend_usertrain2.txt
 
+SCRIPT_FOLDER = os.path.dirname(os.path.realpath(__file__))
+ROOT_FOLDER = os.path.dirname(SCRIPT_FOLDER)
+GENERATED_LOCATION = 'generated'
+SAVE_FOLDER = 'latexLines'
+SCORE_FOLDER = 'evaluationScore'
+folder = ROOT_FOLDER + '/' + GENERATED_LOCATION + '/' + SAVE_FOLDER + '/'
+SCORE_PATH = ROOT_FOLDER + '/' + GENERATED_LOCATION + '/' + SCORE_FOLDER + '/'
+
+if not os.path.exists(folder):
+    os.makedirs(folder)
+
 def main():
     '''
     Generate LaTeX lines
     '''
-    SCRIPT_FOLDER = os.path.dirname(os.path.realpath(__file__))
-    ROOT_FOLDER = os.path.dirname(SCRIPT_FOLDER)
-    folder = ROOT_FOLDER + '/evaluation/evaluationScore/'
 
-    preLatexObj = readFromScoreFolder(folder)
-    makeLaTeXTableColdstart(preLatexObj, ROOT_FOLDER)
+    preLatexObj = readFromScoreFolder(SCORE_PATH)
+    makeLaTeXTableColdstart(preLatexObj)
     # makeLaTeXTable(preLatexObj)
 
 def makeLaTeXTable(preLatexObj):
@@ -31,7 +39,7 @@ def makeLaTeXTable(preLatexObj):
                 print (tmp)
                 sys.exit()
 
-def makeLaTeXTableColdstart(preLatexObj, ROOT_FOLDER):
+def makeLaTeXTableColdstart(preLatexObj):
     '''
     Write the table to file in latex format
     '''
@@ -43,7 +51,7 @@ def makeLaTeXTableColdstart(preLatexObj, ROOT_FOLDER):
         keySorted = sorted(preLatexObj[nameID].items(), key=operator.itemgetter(0))
         for key in keySorted:
             mode = key[0]
-            e = open(ROOT_FOLDER + '/data/latextable' + nameID + '.tmptex','w')
+            e = open(folder + 'latextable' + nameID + '.tmptex','w')
             tmp = {}
             split_sorted = sorted(key[1].items(), key=operator.itemgetter(0))
             for split in split_sorted:

@@ -40,11 +40,26 @@ def handle_k(k,sessDB):
     #     else:
     #         makePlot(group,k)
 
-def makePlot(group,k):
+def makePlot(groups,k):
     '''
     '''
-    ks = [str(x[k]) for x in group]
-    counts = [int(x['count']) for x in group]
+    ks = [str(x[k]) for x in groups]
+    counts = [int(x['count']) for x in groups]
+    print (counts)
+    print (len(ks))
+    if (k == 'storefront_name'):
+        i = 0
+        tmpCounts = counts[:]
+        counts = []
+        tmpks = []
+        for count in tmpCounts:
+            if (count < 1000):
+                counts.append()
+                del ks[i]
+            i += 1
+    print (len(ks))
+
+
     index = np.arange(len(counts))
     width = 0.8
 
@@ -56,33 +71,49 @@ def makePlot(group,k):
     # for l in range(0,6):
     #     tmp = math.floor(l * (maxPrice/5))
     #     labels.append(tmp)
+    if (k == "retailer_brand"):
+        labels = getLabelFromItemDB(ks)
+        plt.xticks(index+width/2., labels)
+    else:
+        plt.xticks(index+width/2., ks)
     plt.ylabel('Amount ' + k)
     plt.xlabel(k)
     # ax.set_xticks(range(0,len(counts)+2))
 
-    plt.xticks(index+width/2., ks)
+    fig.autofmt_xdate()
     # ax.set_xticklabels(ks)
 
-    # plt.axis([0, len(ks), 0, max(counts) + (max(counts)/100)])
+    plt.axis([0, len(ks), 0, max(counts) + (max(counts)/100)])
     plt.grid(True)
     location = os.path.dirname(os.path.abspath(__file__)) + "/../../muchBazar/src/image/" + k + "distribution.png"
     plt.savefig(location)
     plt.show()
-    sys.exit()
     print ('Price distribution written to: %s' % location)
+
+def getLabelFromItemDB(bids):
+    labels = []
+    col = helpers.getCollection('brandstaging')
+
+    for bid in bids:
+        for dbId in col.find():
+            if (bid) == str(float(dbId['id'])):
+                labels.append(dbId['displayName'])
+    return labels
+
+
 
 useVals = {
     # "service_id",
-    "event_id",
+    # "event_id",
     # # "event_data",
     # "price",
     # "product_id",
     # # "product_name",
-    # "retailer_brand",
+    "retailer_brand",
     # # "user_agent",
     # "gender_target",
     # # "storefront_position",
-    # "storefront_name",
+    "storefront_name",
     # "storefront_id",
     # "country_id",
     # "user_id",

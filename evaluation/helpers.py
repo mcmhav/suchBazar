@@ -24,7 +24,12 @@ def prepareEvauationScoreToLaTeX(filename,us_coverage,is_coverage,auc,mapk,ndcg,
 
     SCRIPT_FOLDER = os.path.dirname(os.path.realpath(__file__))
     ROOT_FOLDER = os.path.dirname(SCRIPT_FOLDER)
-    folder = ROOT_FOLDER + '/evaluation/evaluationScore/'
+    GENERATED_LOCATION = 'generated'
+    SAVE_FOLDER = 'evaluationScore'
+    folder = ROOT_FOLDER + '/' + GENERATED_LOCATION + '/' + SAVE_FOLDER + '/'
+
+    if not os.path.exists(folder):
+        os.makedirs(folder)
 
     saveName = folder + k  + "-" + l + "-" + beta + '-' + filename + ".score"
     f = open(saveName, 'w')

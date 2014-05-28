@@ -6,21 +6,6 @@ import sys
 from bson import Binary, Code
 import helpers
 
-parser = argparse.ArgumentParser(description='Divides each store into 5 children events. Count children and visualize this distribution.')
-parser.add_argument('-v',dest='v', action='store_true')
-parser.add_argument('-sc',type=str, default="sessions")
-parser.add_argument('-t',dest='t', action='store_true')
-parser.set_defaults(v=True)
-parser.set_defaults(t=False)
-args = parser.parse_args()
-
-print ("Verbose:                     %d" % args.v)
-print ("Sessions collection used:    %s" % args.sc)
-print ("Test run:                    %s" % args.t)
-print ("")
-
-sessCol = helpers.getCollection(args.sc)
-
 uSE = {
     1: "product_wanted",
     2: "storefront_clicked",
@@ -29,8 +14,9 @@ uSE = {
     5: "product_purchase_intended",
 }
 
-def main():
-    stores = sessCol.distinct('storefront_name')
+def main(sessDB='sessionsNew'):
+    col = helpers.getCollection(sessDB)
+    stores = col.distinct('storefront_name')
 
     total = len(stores)
     count = 0.0
@@ -41,14 +27,16 @@ def main():
         if store == 'NULL' or store == '':
             continue
         else:
-            sJson['children'].append(someAwesomeName(store))
+            sJson['children'].append(someAwesomeName(store,col))
             count += 1
             helpers.printProgress(count,total)
 
-    writeToFlare(sJson)
-    writeToCSV(sJson)
+    print (sJson)
+    sys.exit()
+    # writeToFlare(sJson)
+    # writeToCSV(sJson)
 
-def someAwesomeName(store):
+def someAwesomeName(store,col):
     # db.sessions.group({key:{'event_id':1},cond:{'storefront_name':'Reiss'},reduce:function(cur,result){result.count += 1}, initial: {count:0}})
     reducer = Code("""
                     function (cur,result) {
@@ -56,7 +44,7 @@ def someAwesomeName(store):
                     }
                    """)
 
-    groups = sessCol.group(
+    groups = col.group(
                            key={'event_id':1},
                            condition={'storefront_name':store},
                            reduce=reducer,

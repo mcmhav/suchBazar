@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 usage() { echo "Usage: $0 [-c (clean)] [-p (plot)] [-b (blend)] [-i (infile)] [-h (help)]"; exit 1; }
 
@@ -104,4 +105,3 @@ fi
 if [ $PLOT -eq 1 ]; then
   python $CWD/plot_distribution.py -i "$RATINGS" -d "$RATING_DISTS"
 fi
-

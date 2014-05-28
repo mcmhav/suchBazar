@@ -17,8 +17,9 @@ usage() { echo "Usage: ./$0 mtodo"; exit 1; }
 ensure_dependencies;
 
 # Save the current path
-ROOT=$( cd "$( dirname "$0" )" && pwd );
+CWD=$( cd "$( dirname "$0" )" && pwd );
 
+ROOT=$( dirname "$CWD");
 # Some parameters changable in the opts.
 TTT=""
 MYMEDIAITEM=0
@@ -70,13 +71,13 @@ if [ $MYMEDIAITEM -eq 1 ] || [ $MYMEDIARANK -eq 1 ]; then
       set -- "$ttt"
       IFS=":"; declare -a Array=($*)
 
-      OPT=(--training-file "$ROOT/splits/${Array[0]}");
-      OPT+=(--test-file "$ROOT/splits/${Array[1]}");
+      OPT=(--training-file "$ROOT/generated/splits/${Array[0]}");
+      OPT+=(--test-file "$ROOT/generated/splits/${Array[1]}");
       OPT+=(--recommender $RECOMMENDER);
 
       # Do item predictions
       if [ $MYMEDIAITEM -eq 1 ]; then
-        OPT+=(--prediction-file "$ROOT/predictions/${Array[0]}-${Array[1]}--i-$RECOMMENDER.predictions");
+        OPT+=(--prediction-file "$ROOT/generated/predictions/${Array[0]}-${Array[1]}--i-$RECOMMENDER.predictions");
         # OPT+=($STDOUT)
         # echo ${OPT[@]}
         if [ $QUIET -eq 1 ]; then
@@ -88,7 +89,7 @@ if [ $MYMEDIAITEM -eq 1 ] || [ $MYMEDIARANK -eq 1 ]; then
 
       # Do rank predictions
       if [ $MYMEDIARANK -eq 1 ]; then
-        OPT+=(--prediction-file "$ROOT/predictions/${Array[0]}-${Array[1]}--r-$RECOMMENDER.predictions");
+        OPT+=(--prediction-file "$ROOT/generated/predictions/${Array[0]}-${Array[1]}--r-$RECOMMENDER.predictions");
         if [ $QUIET -eq 1 ]; then
           rating_prediction ${OPT[@]} >/dev/null 2>/dev/null &
         else

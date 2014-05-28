@@ -2,17 +2,26 @@
 import os
 import csv
 import matplotlib.pyplot as plt
+import argparse
+
+parser = argparse.ArgumentParser(description = 'Blend ratings')
+parser.add_argument('-d', dest='dest', default="distributions", help="Where should we put our distributions?")
+parser.add_argument('-i', dest='infolder', default="ratings", help="Which folder should we plot from?")
+args = parser.parse_args()
 
 # Some preferences
 BASEPATH = os.path.dirname(os.path.realpath(__file__))
-INFOLDER = "ratings"
-OUTFOLDER = "dists"
 
-print "Starting plotting from folder %s/%s" % (BASEPATH, INFOLDER)
+INFOLDER = args.infolder
+# Check if infolder is absolute
+if args.infolder[0] != '/':
+  INFOLDER = "%s/%s" % (BASEPATH, args.infolder)
+
+print "Starting plotting from folder %s" % (INFOLDER)
 
 # Create output folder if not exists.
-if not os.path.exists(OUTFOLDER):
-  os.makedirs(OUTFOLDER)
+if not os.path.exists(args.dest):
+  os.makedirs(args.dest)
 
 # Get all files in input-folder
 rfiles = []
@@ -48,7 +57,7 @@ for f in rfiles:
   plt.ylabel('Number of ratings')
   plt.title(f["fname"][:-4])
 
-  plt.savefig("%s/%s/%s.png" % (BASEPATH, OUTFOLDER, f["fname"][:-4]))
+  plt.savefig("%s/%s.png" % (args.dest, f["fname"][:-4]))
   plt.clf()
 
-print "Success. Plotted %d files into %s/%s" % (len(rfiles), BASEPATH, OUTFOLDER)
+print "Success. Plotted %d files into %s" % (len(rfiles), args.dest)

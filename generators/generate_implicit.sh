@@ -83,11 +83,14 @@ SCRIPT="$CWD/ratings.py"
 #python $SCRIPT $OPTS -m count -fx sigmoid_constant -sc 30
 
 ## A nice, example blend
-python $SCRIPT $OPTS -m count -fx linear
-python $SCRIPT $OPTS -m count -fx sigmoid_fixed -sr 3.5
-python $SCRIPT $OPTS -m count -fx sigmoid_fixed -sr 4.5
-python $SCRIPT $OPTS -m recentness -fx sigmoid_constant -sc 15
-python $SCRIPT $OPTS -m recentness -fx sigmoid_fixed -sr 1.5
+python $SCRIPT $OPTS -m count -fx linear &
+python $SCRIPT $OPTS -m count -fx sigmoid_fixed -sr 3.5 &
+python $SCRIPT $OPTS -m count -fx sigmoid_fixed -sr 4.5 &
+python $SCRIPT $OPTS -m recentness -fx sigmoid_constant -sc 15 &
+python $SCRIPT $OPTS -m recentness -fx sigmoid_fixed -sr 1.5 &
+
+# Wait till the last backgorund process has completed.
+wait
 
 # If blend we do that as well.
 if [ $BLEND -eq 1 ]; then

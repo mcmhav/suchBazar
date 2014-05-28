@@ -87,7 +87,11 @@ def main():
     else:
       args.outputfile = config["method"] + '.txt'
   base_dir = os.path.dirname(os.path.realpath(__file__))
-  config["outfile"] = "%s/%s/%s" % (base_dir, args.outputfolder, args.outputfile)
+
+  # Check if the folder is relative
+  config["outfile"] = "%s/%s" % (args.outputfolder, args.outputfile)
+  if args.outputfolder[0] != '/':
+    config["outfile"] = "%s/%s" % (base_dir, config["outfile"])
 
   # Check if we want timestamps in output
   config["timestamps"] = args.timestamps

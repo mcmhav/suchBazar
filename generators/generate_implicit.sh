@@ -7,7 +7,7 @@ trap 'echo interrupted; exit' INT
 
 # Save the current path
 CWD=$( cd "$( dirname "$0" )" && pwd );
-ROOT=`pwd`
+ROOT=$( dirname "$CWD");
 GENERATED="$ROOT/generated"
 
 CLEAN=0
@@ -54,7 +54,7 @@ while getopts "i:m:x:cpbtf" o; do
       ;;
   esac
 done
-OPTS="$INFILE $TIMESTAMP $MIN_DATE $MAX_DATE $FORCE"
+OPTS="$INFILE $TIMESTAMP $MIN_DATE $MAX_DATE $FORCE -d $RATINGS"
 
 # If cleaning, then we delete everything in ratings/ and dists/
 if [ $CLEAN -eq 1 ]; then

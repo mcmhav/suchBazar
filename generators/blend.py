@@ -88,7 +88,9 @@ if __name__ == '__main__':
   abs_path = os.path.dirname(os.path.realpath(__file__))
 
   # Add the directory + filename
-  args.dest = abs_path + '/' + args.dest + '/' + args.filename
+  if args.dest[0] != '/':
+    args.dest = abs_path + '/' + args.dest
+  args.dest += '/' + args.filename
 
   conf = read_config(args.conf, args.rfolder)
 

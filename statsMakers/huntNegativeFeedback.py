@@ -3,27 +3,50 @@ import sys
 import argparse
 import helpers
 from bson import Binary, Code
+import numpy as np
+import os.path
 
-parser = argparse.ArgumentParser(description='Time spent on item before action is taken, and what action.')
-parser.add_argument('-sc', type=str, default="sessions")
-args = parser.parse_args()
+SCRIPT_FOLDER = os.path.dirname(os.path.realpath(__file__))
+ROOT_FOLDER = os.path.dirname(SCRIPT_FOLDER)
+DATA_FOLDER = 'data'
+folder = SCRIPT_FOLDER + '/' + DATA_FOLDER
 
-col = helpers.getCollection(args.sc)
+if not os.path.exists(folder):
+        os.makedirs(folder)
 
-print ("Collection used: ", args.sc)
-print ("")
+def main(sessDB='sessionsNew'):
+    col = helpers.getCollection(sessDB)
+    findTimeFor("product_detail_clicked",col)
 
-def main():
-    findTimeFor("product_detail_clicked")
+def findTimeFor(action,col):
 
-def findTimeFor(action):
+    if os.path.isfile(folder + '/' + action + '.csv'):
+        avgTimeForUser = getActionFile(action)
+    else:
+        avgTimeForUser = findUserAVGS(action,col)
+        writeUserAverages(avgTimeForUser,action)
+
+    helpers.plotAverageSomething(
+        avgTimeForUser,
+        action,
+        title='Bounce rate',
+        ylabel='Amount of Users',
+        xlabel='View time',
+        show=True,
+        capAtEnd=True,
+        capVal=60,
+        addCapped=True
+    )
+
+def findUserAVGS(action,col):
     users = col.distinct('user_id')
     total = len(users)
-    count = 0
     globalTot = 0
     zeroC = 0
-    e = open("ignoreTime" + '.csv','w')
     wtf = 0
+    count = 0
+    avgTimeForUser = []
+    # e = open("ignoreTime" + '.csv','w')
     for user in users:
         userEvents = col.find({'user_id':user}).sort('ts',1)
         avgViewTimeOnIgnoredItem = 0
@@ -53,7 +76,8 @@ def findTimeFor(action):
                 # print (event)
         if avgViewTimeOnIgnoredItem > 0:
             globalTot += avgViewTimeOnIgnoredItem/c
-            e.write("uid" + str(user) + "," + str(avgViewTimeOnIgnoredItem/c) + "\n")
+            # e.write("uid" + str(user) + "," + str(avgViewTimeOnIgnoredItem/c) + "\n")
+            avgTimeForUser.append(float(avgViewTimeOnIgnoredItem/c))
             wtf += 1
             # print (wtf)
         else:
@@ -61,20 +85,33 @@ def findTimeFor(action):
         # print (avgViewTimeOnIgnoredItem)
         count += 1
         helpers.printProgress(count,total)
+
     print ()
     print (globalTot/(count-zeroC))
     print (wtf)
     print (zeroC)
     print (count)
     print (globalTot)
+    # e.close()
+    return avgTimeForUser
+
+def getActionFile(action):
+    e = open(folder + "/" + action + '.csv','r')
+    line = e.readlines()
+    e.close()
+    userAverages = []
+    for ua in line[0].split(','):
+        try:
+            userAverages.append(float(ua))
+        except:
+            print ('lol')
+    return userAverages
+
+def writeUserAverages(avg,name):
+    e = open(folder + '/' + name + '.csv','w')
+    for av in avg:
+        e.write(str(av) + ", ")
     e.close()
 
-    # 6062.000959310428
-    # 623
-    # 1656
-    # 6262046.990967672
-
-    # purchsedList = col.find({'event_id':'product_purchase_intended'})
-    # wantedList = col.find({'event_id':'product_wanted'})
 if __name__ == "__main__":
     main()

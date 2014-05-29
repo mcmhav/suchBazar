@@ -159,6 +159,87 @@ def getKGroupsWithEventIdDistr(ks,k,sessDB):
     )
     return groups
 
+def plotAverageSomething(
+        avgs,
+        action,
+        title='tmptitle',
+        ylabel='tmplabel',
+        xlabel='tmplabel',
+        show=False,
+        grid=True,
+        steps=10,
+        labelTime=1000,
+        capAtEnd=False,
+        bucTuner=4,
+        capVal=0,
+        addCapped=False
+    ):
+    '''
+    '''
+    if capAtEnd:
+        avgs = capIt(avgs,capVal,addCapped)
+
+    buckets,xTicks = makeBuckets(avgs,steps=steps,labelTime=labelTime,bucTuner=bucTuner)
+    ks = np.arange(0,len(buckets))
+    helpers.makePlot(
+        action,
+        ks,
+        buckets,
+        title=title,
+        ylabel=ylabel,
+        xlabel=xlabel,
+        show=show,
+        grid=grid,
+        xticks=xTicks
+    )
+
+def capIt(avgs,capVal,addCapped=False):
+    avgs_sorted = sorted(avgs)
+    underC,overC = findCountOverAndUnderAVG(avgs)
+    testur = 1 - overC/underC
+    tmps = int((len(avgs)-capVal))
+    tmp = avgs_sorted[:tmps]
+    if addCapped:
+        for x in range(0,capVal):
+            tmp.append(tmp[tmps-1])
+    return tmp
+
+def findCountOverAndUnderAVG(avgs):
+    avg = sum(avgs)/len(avgs)
+    underC = 0
+    overC = 0
+    for ua in avgs:
+        if ua < avg:
+            underC += 1
+        else:
+            overC += 1
+    return underC,overC
+
+def makeBuckets(avgs,bucTuner=4,steps=20,labelTime=1000):
+    '''
+    '''
+    maxTime = max(avgs)
+    avg = sum(avgs)/len(avgs)
+    bc = (math.ceil(maxTime/avg)*bucTuner)
+    buckets = [0] * bc
+    for ua in avgs:
+        place = math.floor(ua/(avg/bucTuner))
+        buckets[place] += 1
+
+    xticks = helpers.makeTicks(0,bc,steps=steps)
+    xticksLabels = helpers.makeTicks(0,int(maxTime/labelTime),steps=steps)
+    xTicks = []
+    xTicks.append(xticks)
+    xTicks.append(xticksLabels)
+    buckets = removeTrailing0Buckets(buckets)
+    return buckets,xTicks
+
+def removeTrailing0Buckets(buckets):
+    if buckets[-1]==0:
+        buckets = removeTrailing0Buckets(buckets[:len(buckets)-1])
+    return buckets
+
+
 if __name__ == "__main__":
     main()
 

@@ -18,9 +18,9 @@ if not os.path.exists(folder):
 def main(sessDB='sessionsNew'):
     col = helpers.getCollection(sessDB)
     actionTime('product_purchase_intended',col,"before purchase")
-    # actionTime('product_wanted',col,"before want")
+    actionTime('product_wanted',col,"before want",capVal=8)
 
-def actionTime(action,col,name,makeNew=False):
+def actionTime(action,col,name,makeNew=False,capVal=0):
     cap = 2000
     maxBucket = 50
 
@@ -34,7 +34,17 @@ def actionTime(action,col,name,makeNew=False):
     # print (buckets)
     # print (action)
     # plotFromUserAverages(userAverages)
-    plotFromUserAverages(userAverages,action,cap,name,maxBucket)
+
+    helpers.plotAverageSomething(
+        userAverages,
+        action,
+        title='Time looked at item ' + name,
+        ylabel='Amount of Users',
+        xlabel='View time',
+        show=True,
+        capAtEnd=True,
+        capVal=capVal
+    )
 
 def makeUserAverage(action,cap,maxBucket,col):
     buckets = [0] * maxBucket
@@ -56,63 +66,10 @@ def makeUserAverage(action,cap,maxBucket,col):
     return userAverages,buckets
 
 def writeUserAverages(userAverages,action):
-    e = open(action + '.csv','w')
+    e = open(folder + '/' + action + '.csv','w')
     for av in userAverages:
         e.write(str(av) + ", ")
     e.close()
-
-def plotUserAverages(userAverages):
-    '''
-    '''
-    print (userAverages)
-    print (sorted(userAverages))
-
-def plotFromUserAverages(userAverages,action,cap,name,maxBucket):
-    '''
-    '''
-    bucket = math.floor(max(userAverages)/cap)
-    print (bucket)
-    maxTime = cap*maxBucket
-    print (maxTime)
-
-    print (max(userAverages))
-
-    ua_sorted = sorted(userAverages)
-
-    buckets,xTicks = makeBuckets(userAverages)
-
-    # sys.exit()
-
-    ks = np.arange(0,len(buckets))
-    helpers.makePlot(
-        action,
-        ks,
-        buckets,
-        title='Time looked at item ' + name,
-        ylabel='Amount of Users',
-        xlabel='View time',
-        show=True,
-        grid=True,
-        xticks=xTicks
-    )
-
-def makeBuckets(userAverages):
-    '''
-    '''
-    maxTime = max(userAverages)
-    avg = sum(userAverages)/len(userAverages)
-    bc = (math.ceil(maxTime/avg)*2)
-    buckets = [0] * bc
-    for ua in userAverages:
-        place = math.floor(ua/(avg/2))
-        buckets[place] += 1
-
-    xticks = helpers.makeTicks(0,bc,steps=10)
-    xticksLabels = helpers.makeTicks(0,int(maxTime/1000),steps=10)
-    xTicks = []
-    xTicks.append(xticks)
-    xTicks.append(xticksLabels)
-    return buckets,xTicks
 
 def findCountOverAndUnderAVG(userAverages):
     avg = sum(userAverages)/len(userAverages)

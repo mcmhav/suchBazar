@@ -2,6 +2,8 @@
 from collections import defaultdict
 import argparse
 import os
+import math
+from scipy.stats import norm
 
 def is_valid(inputs):
   for inp in inputs:
@@ -76,6 +78,10 @@ if __name__ == '__main__':
   users = read_events(args.infile)
 
   # Iterate through the product ids.
+  glob_ratios = []
+  glob_clicks = []
+  print "%s\t%s\t%s\t%s" % ("i", "clicks", "buys", "ratio")
+  print "-----------------------------"
   for i in range(1,10):
     tot_clicks = 0.0
     tot_buys = 0.0
@@ -83,4 +89,22 @@ if __name__ == '__main__':
       clicks, buys = get_user_ratio(i, u_products)
       tot_clicks += clicks
       tot_buys += buys
-    print "%d\t& %d\t& %d\t& %.2f \\\\" % (i, int(tot_clicks), int(tot_buys), tot_buys/tot_clicks)
+    glob_ratios.append(tot_buys/tot_clicks)
+    glob_clicks.append(int(tot_clicks))
+    print "%d\t%d\t%d\t%.2f" % (i, int(tot_clicks), int(tot_buys), tot_buys/tot_clicks)
+
+  print ""
+  print "%s\t%s\t%s\t   %s\t\t%s" % ("base", "alt", "   Z", "   P", "Significant")
+  print "-------------------------------------------"
+  for i in range(1, len(glob_ratios)):
+    r_baseline = glob_ratios[i-1]
+    r_alternative = glob_ratios[i]
+
+    error_baseline = math.sqrt(r_baseline * (1 - r_baseline) / glob_clicks[i-1])
+    error_alternative  = math.sqrt(r_alternative * (1 - r_alternative) / glob_clicks[i])
+
+    cum_sd = math.sqrt(math.pow(error_baseline,2) + math.pow(error_alternative, 2))
+    diff = r_baseline - r_alternative
+    Z_score = diff / cum_sd
+    P_value = norm.cdf(Z_score)
+    print "%d\t%d\t%.4f\t   %.4f\t%s" % (i, i+1, Z_score, P_value, P_value < 0.05)

@@ -11,8 +11,6 @@ from statsMakers import eventCountDistributions
 
 def main():
     print ("start")
-    # statsMakers.helpers
-    # statsMakers.helpers
     priceDistibution.main()
     eventPerDay.main()
     simpleGeoPlotter.main()

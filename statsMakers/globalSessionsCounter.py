@@ -8,8 +8,47 @@ from bson import Binary, Code
 
 def main(sessDB='sessionsNew'):
     # sessionCountGroups()
-    xaxis,yaxis = handle_appStarted(sessDB)
-    makePlot(xaxis,yaxis)
+    # ks,counts,xticks = sessionCountDistrCum(sessDB)
+    # helpers.makePlot(
+    #     'sessionsCount',
+    #     ks,
+    #     counts,
+    #     title='Global Sessions Count',
+    #     ylabel='Count of Users',
+    #     xlabel='Count of Sessions',
+    #     show=True,
+    #     grid=True,
+    #     xticks=[xticks,xticks]
+    # )
+    # sys.exit()
+    xaxis,yaxis,xticks = handle_appStarted(sessDB)
+    helpers.makePlot(
+        'sessionsCount',
+        yaxis,
+        xaxis,
+        title='Global Sessions Count',
+        ylabel='Amount of Users',
+        xlabel='Session count',
+        show=True,
+        grid=True,
+        xticks=[xticks,xticks]
+    )
+
+def sessionCountDistrCum(sessDB):
+    groups = helpers.getKGroups('session',sessDB)
+    groups_sorted = sorted(groups, key=lambda k: k['count'],reverse=True)
+    ks = [int(x['session']) for x in groups_sorted]
+    counts = [int(x['count']) for x in groups_sorted]
+    # for c in counts:
+    #     print (c)
+
+    # sys.exit()
+    print (ks)
+    print ()
+    print (counts_sorted)
+    xticks = helpers.makeTicks(yMax=max(ks))
+    return ks,counts,xticks
+
 
 def handle_appStarted(sessDB):
     col = helpers.getCollection(sessDB)
@@ -32,11 +71,14 @@ def handle_appStarted(sessDB):
         prevSessionCount = sessionCount
         # print ("%s - %s" % (sessionCount, userCount), end='\r')
         sessionCount += 1
+        print ((sessionCount/1144)*100)
     # print (userCounts)
     # print (sessionCounts)
     # userCounts.append(1000)
     # sessionCounts.append(838)
-    return userCounts[2:],sessionCounts[1:]
+    xticks = helpers.makeTicks(yMax=sessionCount,steps=10)
+    print (xticks)
+    return userCounts[2:],sessionCounts[1:],xticks
 
 def sessionCountGroups():
     reducer = Code("""
@@ -49,7 +91,7 @@ def sessionCountGroups():
        condition={},
        reduce=reducer,
        initial={'count':0}
-   )
+    )
     print (groups)
     sys.exit()
 
@@ -63,14 +105,13 @@ def makePlot(xaxis,yaxis):
     # ax.set_xticklabels(yaxis_labels)
     # fig.autofmt_xdate()
     # fig = plt.figure(figsize=(4, 5), dpi=100)
-    plt.title('Global Sessions Count')
-    plt.ylabel('Count of Users')
-    plt.xlabel('Count of Sessions')
+
     plt.grid(True)
 
 
     location = os.path.dirname(os.path.abspath(__file__)) + "/../../muchBazar/src/image/sessionsCount.png"
     plt.savefig(location)
+    plt.show()
     print ("Sessions count written to: %s" % location)
 
 if __name__ == "__main__":

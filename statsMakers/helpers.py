@@ -7,6 +7,7 @@ import helpers
 from bson import Binary, Code
 import numpy as np
 import matplotlib.pyplot as plt
+import math
 
 f = ""
 
@@ -48,7 +49,7 @@ def closeF():
     f.close()
 
 def update_progress(count,total):
-    print ('\r[{0}] {1}%'.format('#'*(progress/10), progress))
+    print ('\r[{0}] {1}%'.format('#'*(count), total))
 
 def makePlot(
                 k,ks,counts,
@@ -101,7 +102,14 @@ def makePlot(
     plt.savefig(location)
     if show:
         plt.show()
-    print ('Price distribution written to: %s' % location)
+    print ('Distribution written to: %s' % location)
+
+def makeTicks(yMin=0,yMax=100,steps=5):
+    '''
+    '''
+    stepSize = math.ceil(yMax/steps)
+    index = np.arange(yMin,yMax+stepSize,stepSize)
+    return index
 
 def getKGroups(k,sessDB):
     col = helpers.getCollection(sessDB)
@@ -121,6 +129,34 @@ def getKGroups(k,sessDB):
                            reduce=reducer,
                            initial={'count':0}
                        )
+    return groups
+
+def getKGroupsWithEventIdDistr(ks,k,sessDB):
+    col = helpers.getCollection(sessDB)
+    reducer = Code("""
+                    function (cur,result) {
+                        result.count += 1;
+                        tmp = result.storeCount;
+                        currentEventId = cur.storefront_name;
+                        hasProp = (tmp.hasOwnProperty(currentEventId));
+                        if (hasProp) {
+                            result.storeCount[cur.storefront_name] += 1;
+                        }
+                    }
+                   """)
+    groups = col.group(
+        key={'event_id':1},
+        condition={'$and':[
+            {k:{'$ne':'NULL'}},
+            {k:{'$ne':'N/A'}},
+            {k:{'$ne':''}},
+        ]},
+        reduce=reducer,
+        initial={
+            'count':0,
+            'storeCount':ks
+        }
+    )
     return groups
 
 if __name__ == "__main__":

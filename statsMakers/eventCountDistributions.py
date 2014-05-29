@@ -39,6 +39,8 @@ def main(sessDB='sessionsNew'):
                      xticks=[]
                      )
 
+    # eventsOnStorDistr(k,ks,counts,sessDB)
+
     k = 'retailer_brand'
     groups = helpers.getKGroups(k,sessDB)
     ks, counts = preprocessGroups(k,groups)
@@ -79,8 +81,8 @@ def main(sessDB='sessionsNew'):
                         k,
                         ks,
                         ks,
-                        title='Cumulative distribution of events for users',
-                        ylabel='Amount of users',
+                        title='Distribution of events for users',
+                        ylabel='User count',
                         xlabel='Event count',
                         show=show,
                         grid=True,
@@ -98,7 +100,7 @@ def main(sessDB='sessionsNew'):
                         k + 'cum',
                         ks,
                         ks,
-                        title='Distribution of events for users',
+                        title='Cumulative distribution of events for users',
                         ylabel='Percentage of users',
                         xlabel='Event count',
                         show=show,
@@ -109,10 +111,74 @@ def main(sessDB='sessionsNew'):
                         # ticks=[[1,5,10],[1,5,10]]
                     )
 
-def preprocessGroups(k,groups):
+    k = 'session'
+    maximum = 100
+    groups = helpers.getKGroups(k,sessDB)
+    groups[:] = [d for d in groups if d.get('session') != 0.0]
+    ks, counts = preprocessGroups(k,groups,True)
+    ks,counts = sortCountOnKS(counts,ks,maximum)
+    xTicks = makeTicks(yMax=maximum)
+    yTicks = []
+    yTicksSteps = makeTicks(yMax=max(ks),steps=10)
+    yTicksLabes = makeTicks(yMax=100,steps=10)
+    yTicks.append(yTicksSteps)
+    yTicks.append(yTicksLabes)
+    helpers.makePlot(
+                        k + 'cum',
+                        ks,
+                        ks,
+                        title='Cumulative distribution of sessions for users',
+                        ylabel='Percentage of users',
+                        xlabel='Session count',
+                        show=show,
+                        grid=True,
+                        xticks=[xTicks,xTicks],
+                        yticks=yTicks
+                        # labels=[1,5,10],
+                        # ticks=[[1,5,10],[1,5,10]]
+                    )
+
+
+def coloMapper(node):
+    return {
+        'storefront_clicked': 'blue',
+        'product_detail_clicked': 'red',
+        'featured_storefront_clicked': 'green',
+        'product_wanted': 'yellow',
+        'product_purchase_intended': 'purple',
+        'collection_viewed': 'cyan',
+        'A': 'blue',
+        'B': 'red',
+        'C': 'green',
+        'D': 'black',
+        'E': 'yellow',
+        'F': 'brown',
+        'G': 'purple',
+        'H': 'pink',
+        'I': 'orange',
+        'J': 'gold',
+        'K': 'cyan',
+        'L': 'gray',
+        'M': 'indigo',
+        'N': 'violet',
+        'S': 'orchid',
+    }.get(node, 'gold')
+
+
+def convertListToDict(listItems,val=0):
+    tmpList = {}
+    for l in listItems:
+        tmpList[l] = val
+    return tmpList
+
+def preprocessGroups(k,groups,ksToString=False):
     '''
     '''
-    ks = [str(x[k]) for x in groups]
+    if (ksToString):
+        ks = [int(x[k]) for x in groups]
+    else:
+        ks = [str(x[k]) for x in groups]
+
     counts = [int(x['count']) for x in groups]
 
     return ks,counts
@@ -158,14 +224,26 @@ def sortHours(k,ks,counts):
     ks_sorted = sorted(ks)
     return ks_sorted,counts_sorted
 
-def sortUsersOnEvenCount(ks,counts,cap):
+def sortCountOnKS(ks,counts,cap):
+    ks = sorted(ks,reverse=True)
+    counts = sorted(counts)
+    tmp_count = []
+    for c in counts:
+        if c > cap:
+            continue
+        tmp_count.append(c)
+    ks = ks[:len(tmp_count)]
+
+    return ks,tmp_count
+
+def sortUsersOnEvenCount(ks,counts,cap,reverse=False):
     i = 0
     for c in counts:
         if c > cap:
             counts[i] = cap
         i += 1
 
-    counts_sorted = sorted(counts)
+    counts_sorted = sorted(counts,reverse=reverse)
     i = 0
     ks = [0] * ((max(counts))+1)
     for c in counts_sorted:
@@ -183,6 +261,9 @@ def sortUsersOnEvenCountCum(ks,counts,cap):
         i += 1
         cum_ks[i] = cum_ks[i-1] - k
 
+    # print (counts)
+    # print (ks)
+    # sys.exit()
     yTicks = []
     yTicksSteps = makeTicks(yMax=total)
     yTicksLabes = makeTicks(yMax=100)
@@ -209,6 +290,50 @@ def makeTicks(yMin=0,yMax=100,steps=5):
     stepSize = math.ceil(yMax/steps)
     index = np.arange(yMin,yMax+stepSize,stepSize)
     return index
+
+def eventsOnStorDistr(k,ks,counts,sessDB):
+    dicKs = convertListToDict(ks)
+    groups = helpers.getKGroupsWithEventIdDistr(dicKs,k,sessDB)
+
+    ks = []
+    for g in groups[0]['storeCount']:
+        ks.append(g)
+    plots = []
+    prev = ''
+    index = np.arange(len(ks))
+    width = 0.8
+    fig, ax = plt.subplots()
+    figsize=[14.0,8.0]
+    fig.set_size_inches(figsize[0],figsize[1])
+
+    events = []
+    maximum = 0
+    for g in groups:
+        values = g['storeCount'].values()
+        if prev:
+            pt = plt.bar(index, values, width, color=coloMapper(g['event_id']),bottom=prev)
+            tmp = []
+            for v in values:
+                tmp.append(v)
+            c = 0
+            for p in prev:
+                tmp[c] += p
+                c += 1
+            prev = tmp
+        else:
+            pt = plt.bar(index, values, width, color=coloMapper(g['event_id']))
+            prev = values
+        plots.append(pt)
+        events.append(g['event_id'])
+    plt.legend(plots, events) #, loc=2, borderaxespad=0., bbox_to_anchor=(1.02, 1))
+    plt.xticks(index+width/2., ks)
+    fig.autofmt_xdate()
+    plt.axis([0, len(ks), 0, max(counts) + (max(counts)/100)])
+    plt.grid(True)
+    location = os.path.dirname(os.path.abspath(__file__)) + "/../../muchBazar/src/image/" + k + 'andEvent' + "distribution.png"
+    plt.savefig(location)
+    # plt.show()
+    print ('Distribution written to: %s' % location)
 
 def getTotalCount(counts):
     total = 0

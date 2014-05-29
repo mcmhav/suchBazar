@@ -13,6 +13,21 @@ import math
 def main(sessDB='sessionsNew'):
     show = False
 
+    k = 'product_id'
+    groups = helpers.getKGroups(k,sessDB)
+    ks, counts = preprocessGroups(k,groups)
+    ks,xss,xticks = groupProductsOnCounts(ks,counts,cap=50)
+    helpers.makePlot(k,
+                     xss,
+                     ks,
+                     title='Event count on products distribution',
+                     ylabel='Product count',
+                     xlabel='Event count',
+                     show=True,
+                     xticks=[xticks,xticks],
+                     )
+    sys.exit()
+
     k = 'event_id'
     groups = helpers.getKGroups(k,sessDB)
     ks, counts = preprocessGroups(k,groups)
@@ -22,7 +37,8 @@ def main(sessDB='sessionsNew'):
                      title='Event id distribution',
                      ylabel='Event id count',
                      xlabel='Event id',
-                     show=show)
+                     show=show,
+                     )
 
     k = 'storefront_name'
     groups = helpers.getKGroups(k,sessDB)
@@ -138,6 +154,22 @@ def main(sessDB='sessionsNew'):
                         # ticks=[[1,5,10],[1,5,10]]
                     )
 
+def groupProductsOnCounts(ks,counts,cap=80):
+    '''
+    '''
+
+    values = min(max(counts),cap)+1
+    tmp = [0] * (values)
+
+    for c in counts:
+        if (c > cap):
+            tmp[cap-1] += 1
+        else:
+            tmp[c-1] += 1
+    xss = helpers.makeTicks(1,values,len(tmp))
+
+    xticks = helpers.makeTicks(0,values)
+    return tmp,xss,xticks
 
 def coloMapper(node):
     return {

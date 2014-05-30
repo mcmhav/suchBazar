@@ -12,28 +12,30 @@ import operator
 def main(sessDB='sessionsNew', writeLocation='data/stats/priceDistribution'):
     priceCounts = findPriceForItems(sessDB)
     buckets = 51
-    maxPrice = 3000
+    maxPrice = 4000
     priceBuckets = [0] * buckets
 
     for price in priceCounts:
-        if int(price['price']) >= maxPrice:
-            price['price'] = maxPrice
-            priceBuckets[buckets - 1] += int(price['count'])
+        if int(price) >= maxPrice:
+            priceBuckets[buckets - 1] += int(priceCounts[price])
+            price = maxPrice
         else:
-            priceBuckets[math.floor((price['price']/(maxPrice/buckets)))] += price['count']
+            bucket = math.floor((price/(maxPrice/buckets)))
+            priceBuckets[bucket] += priceCounts[price]
             # priceBuckets[int(price['price'])] = int(price['count'])
 
-    test = [x['price'] for x in priceCounts]
     maxCount = max(priceBuckets)
-    w = helpers.getCSVWriter(writeLocation)
+    # w = helpers.getCSVWriter(writeLocation)
     c = 0
     yaxis = []
     for price in priceBuckets:
-        w.writerow([c,price])
+        # w.writerow([c,price])
         yaxis.append(c)
         c += 1
-    helpers.closeF()
-    print (yaxis)
+    # helpers.closeF()
+    # print (yaxis)
+    # print (priceBuckets)
+    # sys.exit()
     plotIt(priceBuckets,yaxis,buckets,maxCount,maxPrice)
 
 def plotIt(priceBuckets,yaxis,buckets,maxCount,maxPrice):
@@ -62,7 +64,10 @@ def findPriceForItems(sessDB):
         }
     """)
     eventGoups = col.group(
-        key={'price':1},
+        key={
+            'product_id':1,
+            'price':1
+        },
         condition={'$and':[
             {'price':{'$ne':'NULL'}},
             {'price':{'$ne':'N/A'}}
@@ -71,7 +76,14 @@ def findPriceForItems(sessDB):
         initial={'count':0}
     )
 
-    return eventGoups
+    priceCounts = {}
+    for g in eventGoups:
+        price = g['price']
+        if price not in priceCounts:
+            priceCounts[price] = 0
+        priceCounts[price] += 1
+
+    return priceCounts
 
 if __name__ == "__main__":
     main()

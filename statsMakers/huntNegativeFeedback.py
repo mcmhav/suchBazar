@@ -35,7 +35,7 @@ def findTimeFor(action,col):
         show=True,
         capAtEnd=True,
         capVal=60,
-        addCapped=True
+        # addCapped=True
     )
 
 def findUserAVGS(action,col):

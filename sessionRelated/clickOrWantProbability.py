@@ -18,9 +18,10 @@ def all_exists(nums):
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description = 'Get ratio between purchases and clicks')
   parser.add_argument('-i', dest='infile', help="Input file with events from session log", required=True)
+  parser.add_argument('-l', dest='limit', default=0, type=int, help="Filter events, using only newer than given interval")
   args = parser.parse_args()
 
-  users = read_events(args.infile)
+  users = read_events(args.infile, newer_than=args.limit)
 
   tot_events = 0.0
   tot_products = 0.0

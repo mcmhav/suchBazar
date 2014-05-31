@@ -11,6 +11,7 @@ from statsMakers import eventCountDistributions
 from statsMakers import huntNegativeFeedback
 from statsMakers import itemTimeSpan
 from statsMakers import timeSpentOnItemBeforeAction
+from statsMakers import ratingsForUser
 
 def main():
     print ("start")
@@ -22,6 +23,7 @@ def main():
     huntNegativeFeedback.main()
     itemTimeSpan.main()
     timeSpentOnItemBeforeAction.main()
+    ratingsForUser.main()
     print ("Done!")
 
 

@@ -243,6 +243,9 @@ def removeTrailing0Buckets(buckets):
     return buckets
 
 
+def getAvgOfCount(counts):
+    return sum(counts)/len(counts)
+
 if __name__ == "__main__":
     main()
 

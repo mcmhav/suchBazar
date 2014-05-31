@@ -89,8 +89,6 @@ def handle_appStarted(sessDB):
     # userCounts.append(1000)
     # sessionCounts.append(838)
     xticks = helpers.makeTicks(yMax=sessionCount)
-    print ()
-    print (xticks)
     return userCounts[2:],sessionCounts[1:],xticks
 
 def sessionCountGroups():

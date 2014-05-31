@@ -50,7 +50,7 @@ def doublePlotLol(timeSpans,counts):
 
     location = os.path.dirname(os.path.abspath(__file__)) + "/../../muchBazar/src/image/itemTimeSpansortedoneventcount.png"
     plt.savefig(location)
-    plt.show()
+    # plt.show()
     print ('Distribution written to: %s' % location)
 
     # plt.plot(counts, 'bo', markersize=4)

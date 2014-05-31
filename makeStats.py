@@ -8,6 +8,9 @@ from statsMakers import eventPerDay
 from statsMakers import simpleGeoPlotter
 from statsMakers import globalSessionsCounter
 from statsMakers import eventCountDistributions
+from statsMakers import huntNegativeFeedback
+from statsMakers import itemTimeSpan
+from statsMakers import timeSpentOnItemBeforeAction
 
 def main():
     print ("start")
@@ -16,7 +19,9 @@ def main():
     simpleGeoPlotter.main()
     globalSessionsCounter.main()
     eventCountDistributions.main()
-
+    huntNegativeFeedback.main()
+    itemTimeSpan.main()
+    timeSpentOnItemBeforeAction.main()
     print ("Done!")
 
 

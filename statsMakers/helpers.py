@@ -11,6 +11,9 @@ import math
 
 f = ""
 
+SCRIPT_FOLDER = os.path.dirname(os.path.realpath(__file__))
+ROOT_FOLDER = os.path.dirname(SCRIPT_FOLDER)
+
 def main():
     '''
     Helper functions
@@ -55,7 +58,7 @@ def makePlot(
                 k,ks,counts,
                 width=0.8,
                 figsize=[14.0,8.0],
-                title="tmp",
+                title="",
                 ylabel='tmpylabel',
                 xlabel='tmpxlabel',
                 labels=[],
@@ -98,7 +101,7 @@ def makePlot(
 
     plt.axis([0, len(ks), 0, max(counts) + (max(counts)/100)])
     plt.grid(grid)
-    location = os.path.dirname(os.path.abspath(__file__)) + "/../../muchBazar/src/image/" + k + "distribution.png"
+    location = ROOT_FOLDER + "/../muchBazar/src/image/" + k + "distribution.png"
     plt.savefig(location)
     if show:
         plt.show()
@@ -162,7 +165,7 @@ def getKGroupsWithEventIdDistr(ks,k,sessDB):
 def plotAverageSomething(
         avgs,
         action,
-        title='tmptitle',
+        title='',
         ylabel='tmplabel',
         xlabel='tmplabel',
         show=False,

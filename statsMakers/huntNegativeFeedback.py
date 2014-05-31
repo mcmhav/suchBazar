@@ -29,10 +29,10 @@ def findTimeFor(action,col):
     helpers.plotAverageSomething(
         avgTimeForUser,
         action,
-        title='Bounce rate',
+        # title='Bounce rate',
         ylabel='Amount of Users',
         xlabel='View time',
-        show=True,
+        show=False,
         capAtEnd=True,
         capVal=60,
         # addCapped=True

@@ -30,6 +30,7 @@ def main(sessDB='sessionsNew'):
     # # sys.exit()
     # yaxis = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 50, 51, 53, 54, 55, 56, 58, 60, 65, 67, 68, 70, 71, 75, 79, 80, 87, 88, 92, 94, 99, 100, 110, 111, 115, 116, 118, 119, 125, 126, 128, 134, 141, 144, 147, 150, 156, 163, 187, 206, 322, 388, 523, 573, 695, 1142]
     # xaxis = [404, 231, 215, 153, 151, 110, 90, 78, 59, 49, 45, 45, 23, 26, 28, 13, 25, 24, 16, 8, 20, 10, 14, 12, 3, 12, 11, 7, 7, 6, 11, 3, 4, 3, 2, 2, 6, 5, 3, 7, 3, 4, 1, 3, 2, 4, 3, 2, 4, 1, 1, 1, 2, 1, 1, 2, 2, 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    # xticks = [0, 100, 300, 400, 1000]
 
     # print (len(xaxis))
     xaxis,yaxis,xticks = handle_appStarted(sessDB)
@@ -37,10 +38,10 @@ def main(sessDB='sessionsNew'):
         'sessionsCount',
         yaxis,
         xaxis,
-        title='Global Sessions Count',
+        # title='Global Sessions Count',
         ylabel='Amount of Users',
         xlabel='Session count',
-        show=True,
+        show=False,
         grid=True,
         xticks=[helpers.makeTicks(yMax=len(xaxis)),xticks]
     )
@@ -106,25 +107,6 @@ def sessionCountGroups():
     )
     print (groups)
     sys.exit()
-
-def makePlot(xaxis,yaxis):
-    width = 0.6
-    fig, ax = plt.subplots()
-    fig.set_size_inches(14.0,8.0)
-    # plt.axis([0, count, 0, 2500])
-    ax.bar(yaxis, xaxis, width=width)
-    # ax.set_xticks(yaxis)
-    # ax.set_xticklabels(yaxis_labels)
-    # fig.autofmt_xdate()
-    # fig = plt.figure(figsize=(4, 5), dpi=100)
-
-    plt.grid(True)
-
-
-    location = os.path.dirname(os.path.abspath(__file__)) + "/../../muchBazar/src/image/sessionsCount.png"
-    plt.savefig(location)
-    plt.show()
-    print ("Sessions count written to: %s" % location)
 
 if __name__ == "__main__":
     main()

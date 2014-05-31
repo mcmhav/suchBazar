@@ -38,10 +38,10 @@ def actionTime(action,col,name,makeNew=False,capVal=0):
     helpers.plotAverageSomething(
         userAverages,
         action,
-        title='Time looked at item ' + name,
+        # title='Time looked at item ' + name,
         ylabel='Amount of Users',
         xlabel='View time',
-        show=True,
+        show=False,
         capAtEnd=True,
         capVal=capVal
     )

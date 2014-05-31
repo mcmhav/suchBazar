@@ -42,7 +42,7 @@ def plotIt(priceBuckets,yaxis,buckets,maxCount,maxPrice):
     fig, ax = plt.subplots()
     fig.set_size_inches(14.0,8.0)
     plt.bar(yaxis, priceBuckets)
-    plt.title('Price Distribution')
+    # plt.title('Price Distribution')
     labels = []
     for l in range(0,6):
         tmp = math.floor(l * (maxPrice/5))

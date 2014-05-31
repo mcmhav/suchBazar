@@ -74,7 +74,7 @@ def plotItemTimeSpans(timeSpans):
         'itemTimespans',
         ks,
         buckets,
-        title='Time between first event on item till the last',
+        # title='Time between first event on item till the last',
         ylabel='Amount of items',
         xlabel='Time in weeks',
         show=False,

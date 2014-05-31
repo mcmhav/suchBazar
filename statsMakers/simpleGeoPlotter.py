@@ -9,7 +9,7 @@ def main(sessDB='sessionsNew'):
     plotOnMap(m,sessDB)
     location = os.path.dirname(os.path.abspath(__file__)) + "/../../muchBazar/src/image/simpleGeoPlot.png"
     plt.savefig(location)
-    print ("Simple geo plot written to: %s" + location)
+    print ("Simple geo plot written to: %s" % location)
 
 def plotOnMap(m,sessDB):
     sessCol = helpers.getCollection(sessDB)

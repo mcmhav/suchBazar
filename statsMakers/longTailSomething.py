@@ -16,10 +16,21 @@ def main(sessDB='sessionsNew'):
     coverage = findCoverage(iut,cut,len(countsOnItems))
     ratingsPercentage = findRatingsPercentage(cut,countsOnItems)
     print (len(countsOnItems))
-    print (len(cut))
-    print (avgRC)
-    print (coverage)
-    print (ratingsPercentage)
+
+    print ('Average count of ratings: %s' % avgRC)
+    print ('Coverage: %s' % coverage)
+    print ('Account for ratings: %s' % ratingsPercentage)
+    print ()
+    print ('Long tail')
+    print ('Threshold \t& Cut at \t& Account for ratings \\\\')
+    print ("- \t& \t %s \t&\t %s \\\\" % (len(countsOnItems)-len(cut),ratingsPercentage))
+
+    # 6027
+    # 4194
+    # 6.594159615065538
+    # 69.58685913389746
+    # 28.540875122663113
+    # [Finished in 1.3s]
 
 def findItemsUnder50Treshhold(countsOnItems):
     '''
@@ -35,12 +46,13 @@ def findItemsUnder50Treshhold(countsOnItems):
         if avgRC < c:
             break
         i += 1
+
     return avgRC,items[:i],counts[:i]
 
 def findAverageRatingCount(countsOnItems):
     '''
     '''
-    counts = [(int(x['count'])-1) for x in countsOnItems]
+    counts = [(int(x['count'])) for x in countsOnItems]
     avgRC = sum(counts)/len(counts)
     return avgRC
 
@@ -52,7 +64,7 @@ def findCoverage(iut,cut,total):
 def findRatingsPercentage(cut,countsOnItems):
     '''
     '''
-    counts = [int(x['count']) for x in countsOnItems]
+    counts = [(int(x['count'])) for x in countsOnItems]
     return (sum(cut)/sum(counts)*100)
 
 if __name__ == "__main__":

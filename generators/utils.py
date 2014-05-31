@@ -11,6 +11,8 @@ import numpy as np
 # for user i.
 last_event = defaultdict(lambda: datetime.min)
 oldest_event = defaultdict(lambda: datetime.max)
+oldest_event_globally = datetime.max
+most_recent_globally = datetime.min
 ignored = 0
 
 def normalize(score,xmax=100,xmin=0,a=0,b=5):
@@ -37,7 +39,7 @@ def sigmoid(k, **kwargs):
   if "ratio" in kwargs and "c" in kwargs:
     return sigmoid_c(k, kwargs["ratio"], kwargs["c"])
   if "constant" in kwargs:
-    return 1 / (1 + math.exp(-0.2*(k-kwargs["constant"])))
+    return 1 / (1 + math.exp(-0.15*(k-kwargs["constant"])))
 
 def sigmoid_c(k, ratio, c):
   # http://fooplot.com/#W3sidHlwZSI6MCwiZXEiOiIxLygxK2VeKCgtKDIqNCkvMSkqKHgtKDEvMikpKSkiLCJjb2xvciI6IiMwMDAwMDAifSx7InR5cGUiOjEwMDAsIndpbmRvdyI6WyIwIiwiMSIsIjAiLCIxIl19XQ--
@@ -84,6 +86,12 @@ def parse_eventline(row, users, config):
 
     # Save the oldest event for this user as well.
     oldest_event[user_id] = t if t < oldest_event[user_id] else oldest_event[user_id]
+
+    global oldest_event_globally
+    oldest_event_globally = t if t < oldest_event_globally else oldest_event_globally
+
+    global most_recent_globally
+    most_recent_globally = t if t > most_recent_globally else most_recent_globally
 
 def parse_mongo(users, config):
   client = pymongo.MongoClient()
@@ -161,7 +169,7 @@ def write_ratings_to_file(user_id, ratings, f, config):
       continue
     f.write("%s\n" % base)
 
-def get_penalization(n, num, config, average=0.0):
+def get_penalization(n, num, config, average=0.0, median=None):
   p = 0
 
   if num < 2:
@@ -170,6 +178,8 @@ def get_penalization(n, num, config, average=0.0):
   # Get penalization from various function schemes
   if config["fx"] == "sigmoid_fixed":
     p = sigmoid(n, ratio=config["sigmoid_ratio"], c=num/2)
+  elif config["fx"] and median:
+    p = sigmoid(n, constant=median)
   elif config["fx"] == "sigmoid_constant":
     p = sigmoid(n, constant=config["sigmoid_constant"])
   elif config["fx"] == "norm_dist":
@@ -202,7 +212,7 @@ def get_without_neg_multipliers():
     # 'product_purchased': [80,100]
   }
 
-def fx_recentness(events, oldest_event, config, rating=0):
+def fx_recentness(events, oldest, config, rating=0, median=None):
   today = datetime.now()
   # Get multipliers and valid events
   if config["infile"] == "mongo":
@@ -233,9 +243,9 @@ def fx_recentness(events, oldest_event, config, rating=0):
 
     # The number of days this event is from the latest event for this user.
     diff_event = (today - t).days
-    diff_oldest = (today - oldest_event).days
 
-    penalization = get_penalization(diff_event, diff_oldest, config, average=avg)
+    penalization = get_penalization(diff_event, oldest, config, average=avg, median=median)
+    # print diff_event, median, penalization
 
     # Get the scores for this event type.
     scores = multipliers.get(event['event_id'])
@@ -313,11 +323,24 @@ def get_ratings_from_user(user_id, events, f, config):
     avg = np.mean([len(e) for e in events.items()])
     return fx_count([e for product_id, evt in events.items() for e in evt], config, avg)
   else:
+
+    median = None
+    if config.get("sigmoid_constant_average", None):
+      today = datetime.now()
+      day_diffs = [(today - e["timestamp"]).days for pid, evts in events.iteritems() for e in evts]
+      #median = np.median(day_diffs)
+      median = np.average(day_diffs)
+
     for product_id, evts in events.items():
       rating = None
       # Get the rating from one of the different calculation schemes.
       if config["method"] == 'recentness':
-        rating = fx_recentness(evts, oldest_event[user_id], config)
+        if config["minmax"] == "user":
+          rating = fx_recentness(evts, oldest_event[user_id], config, median=median)
+        else:
+          diff = (most_recent_globally - oldest_event_globally).days
+          rating = fx_recentness(evts, diff, config, median=median)
+
       elif config["method"] == 'naive':
         rating = fx_naive(evts)
       if rating:

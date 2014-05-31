@@ -27,6 +27,7 @@ def main():
   # Method and curve options.
   parser.add_argument('-m', dest='method', help="Choose which method to use")
   parser.add_argument('-fx', dest='fx', help="Choose which function type to use")
+  parser.add_argument('-mx', dest='minmax', default="user", help="Calculate score based on user recentness or globally?")
 
   # Linear options
   parser.add_argument('-lg', dest='lg', help="Choose growth of linear function")
@@ -37,6 +38,7 @@ def main():
   # Sigmoid options
   parser.add_argument('-sr', dest='sigmoid_ratio', help="Choose ratio between steepness and increase, for sigmoid")
   parser.add_argument('-sc', dest='sigmoid_constant', help="Choose X for steepest point in sigmoid")
+  parser.add_argument('-sm', dest='sigmoid_constant_average', action='store_true', help="Select the sigmoid constant automatically by average")
   args = parser.parse_args()
 
   # Set method.
@@ -60,11 +62,13 @@ def main():
   if args.fx and 'sigmoid' in args.fx:
     if args.sigmoid_ratio: config["sigmoid_ratio"] = float(args.sigmoid_ratio)
     if args.sigmoid_constant: config["sigmoid_constant"] = float(args.sigmoid_constant)
+    if args.sigmoid_constant_average: config["sigmoid_constant_average"] = True
+
     if "fixed" in config["fx"] and not config.get("sigmoid_ratio", None):
         print ("[WARN] Sigmoid ratio not set. Defaulting to 4. Set with -sr")
         config["sigmoid_ratio"] = 4
-    if "constant" in config["fx"] and not config.get("sigmoid_constant", None):
-        print ("[WARN] Sigmoid constant not set. Defaulting to 30. Set with -sc")
+    if "constant" in config["fx"] and not config.get("sigmoid_constant", None) and not config.get("sigmoid_constant_average", None):
+        print ("[WARN] Sigmoid constant not set. Defaulting to 30. Set with -sc or use average with -sm")
         config["sigmoid_constant"] = 30
 
   # Standard deviation options in normal distribution
@@ -81,6 +85,8 @@ def main():
       params = "_sc-" + str(config["sigmoid_constant"]) if config.get("sigmoid_constant", None) else "_sr-" + str(config["sigmoid_ratio"])
     if config.get("norm_standard_dev", None):
       params = "_sd-" + args.sd
+    if config.get("sigmoid_constant_average"):
+      params = "_sc-average"
 
     if args.fx:
       args.outputfile = config["method"] + "_" + config["fx"] + params + '.txt'
@@ -102,6 +108,9 @@ def main():
 
   # Check if we want timestamps in output
   config["timestamps"] = args.timestamps
+
+  # Which method to do minmax.
+  config["minmax"] = args.minmax if args.minmax == 'user' else 'global'
 
   # Check if we want a minimum date
   if args.min_date:

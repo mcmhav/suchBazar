@@ -3,10 +3,12 @@ Filterbots: Sobazar
 
 '''
 
-
 from collections import Counter
 from collections import OrderedDict
+from operator import itemgetter
+import datetime
 
+import helpers
 import csv
 import random
 import time
@@ -22,7 +24,25 @@ folder = ROOT_FOLDER + '/' + GENERATED_LOCATION + '/' + SAVE_FOLDER + '/'
 if not os.path.exists(folder):
     os.makedirs(folder)
 
-def criticBot(ratings, num_critics=20):
+def filterOutOldRatings(ratings, num_weeks=4):
+    '''
+    Removes ratings given num_weeks before the last
+    added rating.
+    '''
+    filteredRatings = []    
+    ratings = sorted(ratings, key=itemgetter(3), reverse=True)
+    newest = datetime.datetime.fromtimestamp(ratings[0][3])
+    limit = newest - datetime.timedelta(days=7*num_weeks)
+    limit = int(limit.strftime('%s'))
+    
+    for rating in ratings:
+        if rating[3] >= limit:
+            filteredRatings.append(rating)
+    print('Filtered out %d old ratings' %(len(ratings)-len(filteredRatings)))
+    return filteredRatings
+
+
+def criticBot(ratings, num_critics=20, recentness=False):
     '''
     Select a set of critics among the most active users
     inject their average ratings directly into the user-item matrix
@@ -37,6 +57,10 @@ def criticBot(ratings, num_critics=20):
     criticBotRatings = []
     i = 0
 
+    
+    if recentness:
+        ratings = filterOutOldRatings(ratings, 8)
+    
     for rating in ratings:
         if not rating[0] in userRatings:
             userRatings[rating[0]] = list()
@@ -90,7 +114,7 @@ def brandBot(ratings, item_attributes):
 
     for rating in ratings:
         if not uniqueItemsD.get(rating[1], None):
-          uniqueItemsD[rating[1]] = 1
+            uniqueItemsD[rating[1]] = 1
 
         if rating[1] in itemBrands:
             brand = itemBrands[rating[1]]
@@ -142,14 +166,20 @@ def averageBot(ratings):
     print('averageBot used %d seconds to generate %d ratings' %(time.time()-start, len(averageItemRatings)))
     return averageItemRatings
 
+           
+    
+def popularityBot(ratings, max_rating, rating_limit=3, recentness=False):
 
-def popularityBot(ratings, max_rating, rating_limit=10):
     '''
     Rates all items based on their popularity,
     u(i) = V_i * normalization factor that caps the rating at 5
     '''
     start = time.time()
     print('Generating popularityBot Ratings...')
+    
+    if recentness:
+        ratings = filterOutOldRatings(ratings,4)
+    
 
     VTBotId = 1338
     itemCounter = Counter()
@@ -161,7 +191,8 @@ def popularityBot(ratings, max_rating, rating_limit=10):
     mostPopularCount = itemCounter.most_common()[0][1]
 
     for key, value in itemCounter.most_common():
-        if not value < rating_limit:
+
+        if value > rating_limit: 
             rating = (value/mostPopularCount)*(2)+3
             VTBotRatings.append([VTBotId, key, rating])
 
@@ -192,14 +223,6 @@ def conformityBot(ratings, threshold=4.5):
     print('conformityBot used %d seconds to generate %d ratings' %(time.time()-start, len(botRatings)))
     return botRatings
 
-def windowshoppingBot(ratings):
-    '''
-    '''
-
-
-def shopaholicBot(ratings):
-    '''
-    '''
 
 def readRatings(path):
     ratings = []
@@ -207,9 +230,10 @@ def readRatings(path):
         dialect = csv.Sniffer().sniff(file.read(1024))
         reader =  csv.reader(file, delimiter=dialect.delimiter)
         for rating in reader:
-            if len(rating) >= 3:
-                if rating[0] != '' and rating[1] != '' and rating[2] != '':
-                    ratings.append([int(rating[0]), int(rating[1]), float(rating[2])])
+            #if len(rating) >= 3:
+            #    if rating[0] != '' and rating[1] != '' and rating[2] != '':
+            #       ratings.append([int(rating[0]), int(rating[1]), float(rating[2])])
+            ratings.append(rating)
     return ratings
 
 def writeRatingsToFile(fileName, data, delimiter=','):
@@ -288,14 +312,21 @@ def testur(fbRatings, bot, *args):
     '''
     fbRatings.extend(bot(*args))
 
+
+
+### TESTING ###   
+#ratings = helpers.readRatingsFromFile('../generators/ratings/count_linear.txt', True)[1:]
+
 ### TESTING ###
 #ratings = readRatings('../../datasets/blend.txt')
+
 #ratings = readRatings('Data/user_train3.txt')
 #item_attributes = readItemAttributes('./Data/product_features.txt')
 #createSplit(ratings, item_attributes, 0.1)
 #createSplit(ratings, item_attributes, 0.1, False)
 #brandBot(ratings, item_attributes)
 #averageItemBot(ratings)
+#popularityBot(ratings, 5, 10)
 #VTBot(ratings, 5)
 
 

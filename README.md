@@ -7,7 +7,7 @@ Data handlers atm
 
 ### Remove all non-prod lines
 
-`$ cat sobazar_events_reff_external.tab | awk '{if ($4 ~ /prod/) { print $0; }}' > outputfile.tab`
+`$ cat sobazar_events_reff_external.tab | awk '{if ($20 ~ /prod/) { print $0; }}' > outputfile.tab`
 
 ### Create valid JSON
 

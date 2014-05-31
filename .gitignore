@@ -1,7 +1,6 @@
 *.tab
 *.json
 *.dot
-*.csv
 cvsProd/
 .project
 .pydevproject
@@ -11,8 +10,6 @@ rest/venv
 *.pyc
 *.class
 *.ratings
-generators/ratings
-generators/dists
 mahout/jars/*
 */.idea/*
 *.iml
@@ -21,3 +18,8 @@ mahout/jars/*
 *.gv
 *.pdf
 *.predictions
+*.prediction
+*.score
+*.tmptex
+*.csv
+*.conf

@@ -5,22 +5,64 @@ import helpers
 import matplotlib.pyplot as plt
 import os
 from bson import Binary, Code
+import numpy as np
 
-parser = argparse.ArgumentParser(description='Constructs overview of how many sessions users have.')
-parser.add_argument('-c',type=str, default="sessions")
-parser.add_argument('-d',type=str, default="stats")
-args = parser.parse_args()
-
-print ("Collection used: %s" % args.c)
-
-col = helpers.getCollection(args.c)
-
-def main():
+def main(sessDB='sessionsNew'):
     # sessionCountGroups()
-    xaxis,yaxis = handle_appStarted()
-    makePlot(xaxis,yaxis)
+    # ks,counts,xticks = sessionCountDistrCum(sessDB)
+    # helpers.makePlot(
+    #     'sessionsCount',
+    #     ks,
+    #     counts,
+    #     title='Global Sessions Count',
+    #     ylabel='Count of Users',
+    #     xlabel='Count of Sessions',
+    #     show=True,
+    #     grid=True,
+    #     xticks=[xticks,xticks]
+    # )
+    # sys.exit()
+    # xticks = helpers.makeTicks(yMax=1140)
+    # print (list(xticks))
+    # print ([xticks,xticks])
+    # tm = np.array([xticks,xticks])
+    # print (tm)
+    # # sys.exit()
+    # yaxis = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 50, 51, 53, 54, 55, 56, 58, 60, 65, 67, 68, 70, 71, 75, 79, 80, 87, 88, 92, 94, 99, 100, 110, 111, 115, 116, 118, 119, 125, 126, 128, 134, 141, 144, 147, 150, 156, 163, 187, 206, 322, 388, 523, 573, 695, 1142]
+    # xaxis = [404, 231, 215, 153, 151, 110, 90, 78, 59, 49, 45, 45, 23, 26, 28, 13, 25, 24, 16, 8, 20, 10, 14, 12, 3, 12, 11, 7, 7, 6, 11, 3, 4, 3, 2, 2, 6, 5, 3, 7, 3, 4, 1, 3, 2, 4, 3, 2, 4, 1, 1, 1, 2, 1, 1, 2, 2, 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 
-def handle_appStarted():
+    # print (len(xaxis))
+    xaxis,yaxis,xticks = handle_appStarted(sessDB)
+    helpers.makePlot(
+        'sessionsCount',
+        yaxis,
+        xaxis,
+        title='Global Sessions Count',
+        ylabel='Amount of Users',
+        xlabel='Session count',
+        show=True,
+        grid=True,
+        xticks=[helpers.makeTicks(yMax=len(xaxis)),xticks]
+    )
+
+def sessionCountDistrCum(sessDB):
+    groups = helpers.getKGroups('session',sessDB)
+    groups_sorted = sorted(groups, key=lambda k: k['count'],reverse=True)
+    ks = [int(x['session']) for x in groups_sorted]
+    counts = [int(x['count']) for x in groups_sorted]
+    # for c in counts:
+    #     print (c)
+
+    # sys.exit()
+    print (ks)
+    print ()
+    print (counts_sorted)
+    xticks = helpers.makeTicks(yMax=max(ks))
+    return ks,counts,xticks
+
+
+def handle_appStarted(sessDB):
+    col = helpers.getCollection(sessDB)
     userCount = -1
     sessionCount = 0
     prevSessionCount = 0
@@ -40,11 +82,15 @@ def handle_appStarted():
         prevSessionCount = sessionCount
         # print ("%s - %s" % (sessionCount, userCount), end='\r')
         sessionCount += 1
+        helpers.printProgress(sessionCount,1144)
     # print (userCounts)
     # print (sessionCounts)
     # userCounts.append(1000)
     # sessionCounts.append(838)
-    return userCounts[2:],sessionCounts[1:]
+    xticks = helpers.makeTicks(yMax=sessionCount)
+    print ()
+    print (xticks)
+    return userCounts[2:],sessionCounts[1:],xticks
 
 def sessionCountGroups():
     reducer = Code("""
@@ -57,7 +103,7 @@ def sessionCountGroups():
        condition={},
        reduce=reducer,
        initial={'count':0}
-   )
+    )
     print (groups)
     sys.exit()
 
@@ -71,14 +117,13 @@ def makePlot(xaxis,yaxis):
     # ax.set_xticklabels(yaxis_labels)
     # fig.autofmt_xdate()
     # fig = plt.figure(figsize=(4, 5), dpi=100)
-    plt.title('Global Sessions Count')
-    plt.ylabel('Count of Users')
-    plt.xlabel('Count of Sessions')
+
     plt.grid(True)
 
 
     location = os.path.dirname(os.path.abspath(__file__)) + "/../../muchBazar/src/image/sessionsCount.png"
     plt.savefig(location)
+    plt.show()
     print ("Sessions count written to: %s" % location)
 
 if __name__ == "__main__":

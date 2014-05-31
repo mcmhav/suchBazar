@@ -43,17 +43,17 @@ def main():
   if args.method:
     if args.method in valid_methods: config["method"] = args.method
   if not config.get("method", None):
-    print ("Wrong method '%s', please choose between %s with '-m' flag") % (args.method, valid_methods)
+    print ("Wrong method '%s', please choose between %s with '-m' flag" % (args.method, valid_methods))
     sys.exit(1)
 
   # Define how the curve will look.
   if args.fx:
     if args.fx in valid_functions: config["fx"] = args.fx
   if args.fx and 'naive' in args.method:
-    print "It does not make sense to define fx when using naive methods."
+    print ("It does not make sense to define fx when using naive methods.")
     sys.exit(1)
   if not config.get("fx", None) and args.method != "naive":
-    print "Wrong function type '%s', please choose between %s with '-fx' flag" % (args.fx, valid_functions)
+    print ("Wrong function type '%s', please choose between %s with '-fx' flag" % (args.fx, valid_functions))
     sys.exit(1)
 
   # Set the sigmoid options, if the method is in use.
@@ -61,17 +61,17 @@ def main():
     if args.sigmoid_ratio: config["sigmoid_ratio"] = float(args.sigmoid_ratio)
     if args.sigmoid_constant: config["sigmoid_constant"] = float(args.sigmoid_constant)
     if "fixed" in config["fx"] and not config.get("sigmoid_ratio", None):
-        print "[WARN] Sigmoid ratio not set. Defaulting to 4. Set with -sr"
+        print ("[WARN] Sigmoid ratio not set. Defaulting to 4. Set with -sr")
         config["sigmoid_ratio"] = 4
     if "constant" in config["fx"] and not config.get("sigmoid_constant", None):
-        print "[WARN] Sigmoid constant not set. Defaulting to 30. Set with -sc"
+        print ("[WARN] Sigmoid constant not set. Defaulting to 30. Set with -sc")
         config["sigmoid_constant"] = 30
 
   # Standard deviation options in normal distribution
   if args.fx and 'norm_dist' in args.fx:
     if args.sd: config["norm_standard_dev"] = float(args.sd)
     else:
-      print "[WARN] Standard deviation not set. Defaulting to 5.0"
+      print ("[WARN] Standard deviation not set. Defaulting to 5.0")
       config["norm_standard_dev"] = 5
 
   # Guess filename if not provided.
@@ -86,7 +86,19 @@ def main():
       args.outputfile = config["method"] + "_" + config["fx"] + params + '.txt'
     else:
       args.outputfile = config["method"] + '.txt'
-  config["outfile"] = args.outputfolder + '/' + args.outputfile
+  base_dir = os.path.dirname(os.path.realpath(__file__))
+
+  # Check if the outfolder is relative
+  config["outfile"] = args.outputfolder
+  if args.outputfolder[0] != '/':
+    config["outfile"] = "%s/%s" % (base_dir, config["outfile"])
+
+  # Ensure the folder exists.
+  if not os.path.exists(config["outfile"]):
+    os.makedirs(config["outfile"])
+
+  # Make it absolute (add the filename to folder)
+  config["outfile"] = "%s/%s" % (config["outfile"], args.outputfile)
 
   # Check if we want timestamps in output
   config["timestamps"] = args.timestamps
@@ -106,7 +118,7 @@ def main():
   elif args.inputfile == 'mongo':
     config["infile"] = args.inputfile
   if not config.get("infile", None):
-    print "Could not find file: %s. Ensure you have provided correct file with -i option" % args.inputfile
+    print ("Could not find file: %s. Ensure you have provided correct file with -i option") % args.inputfile
     sys.exit(1)
 
   # Check if we want to skip first line in csv
@@ -117,15 +129,15 @@ def main():
   if not args.force:
     # Check if the output file already exist.
     if os.path.isfile(config["outfile"]):
-      print "File '%s' already exists. Skipping. Enable force-mode with -f if you want to continue." % args.outputfile
+      print ("File '%s' already exists. Skipping. Enable force-mode with -f if you want to continue." % args.outputfile)
       sys.exit(0)
 
   # Give some useful info to the user.
-  print "----------------------------------------------------------------------"
-  print "Using following config to generate rankings to %s" % (args.outputfile)
-  for k, i in config.iteritems():
-    print "%s => %s" % (k,i)
-  print "----------------------------------------------------------------------"
+  print ("----------------------------------------------------------------------")
+  print ("Using following config to generate rankings to %s" % args.outputfile)
+  for k, i in config.items():
+    print ("%s => %s" % (k,i))
+  print ("----------------------------------------------------------------------")
 
   if args.debug:
     # event_id, timestamp, product_id, user_id
@@ -153,7 +165,7 @@ def main():
   # Then write our contents to the output file.
   ratings = []
   with open(config["outfile"], 'a') as output:
-    for user_id, products in users.iteritems():
+    for user_id, products in users.items():
       # Get rating for user_id and events connected to this user.
       r = utils.get_ratings_from_user(user_id, products, output, config)
       utils.write_ratings_to_file(user_id, r, output, config)

@@ -2,22 +2,18 @@ import datetime
 import sys
 import argparse
 import pymongo
-# import helpers
+import helpers
 from bson import Binary, Code
 
-# col = helpers.getCollection("sessions")
-client = pymongo.MongoClient()
-db = client.mydb
-col = db['sessions']
 
-client = pymongo.MongoClient()
-db = client.mydb
-colWithNeg = db['negValues']
+def main(sessionsDB='sessionsNew',negDB='negValuesNew'):
+    print ("Adding negative events")
+    col = helpers.getCollection(sessionsDB)
+    colWithNeg = helpers.getCollection(negDB,True)
+    findTimeFor("product_detail_clicked",col,colWithNeg)
+    print ("Done adding negative events")
 
-def main():
-    findTimeFor("product_detail_clicked")
-
-def findTimeFor(action):
+def findTimeFor(action,col,colWithNeg):
     users = col.distinct('user_id')
     total = len(users)
     count = 0
@@ -71,8 +67,7 @@ def findTimeFor(action):
             zeroC += 1
         # print (avgViewTimeOnIgnoredItem)
         count += 1
-        print ((count/total)*100)
-        # helpers.printProgress(count,total)
+        helpers.printProgress(count,total)
     print ()
     print (globalTot/(count-zeroC))
     print (wtf)

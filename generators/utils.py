@@ -88,7 +88,7 @@ def parse_eventline(row, users, config):
 def parse_mongo(users, config):
   client = pymongo.MongoClient()
   db = client.mydb
-  col = db['negValues']
+  col = db['negValuesNew']
   mongoDB = col.find()
   for instance in mongoDB:
     row = [''] * 17
@@ -118,6 +118,7 @@ def create_usermatrix(config):
 def fx_naive(events):
   # A list of events.
   multipliers = {
+    'negative_event': [10],
     'featured_product_clicked': [30, 40, 50, 60, 70],
     'product_detail_clicked': [30, 40, 50, 60, 70],
     'product_wanted': [80],
@@ -184,27 +185,30 @@ def get_penalization(n, num, config, average=0.0):
 
 def get_multipliers():
   return {
-    'negative_event': [0,20],
-    'featured_product_clicked': [20,60],
-    'product_detail_clicked': [20,60],
-    'product_wanted': [60,80],
-    'product_purchase_intended': [80,100],
-    'product_purchased': [80,100]
+    'negative_event': [0,4],
+    # 'featured_product_clicked': [20,60],
+    'product_detail_clicked': [4,62],
+    'product_wanted': [62,95],
+    'product_purchase_intended': [95,100],
+    # 'product_purchased': [80,100]
   }
 
 def get_without_neg_multipliers():
   return {
-    'featured_product_clicked': [10,60],
-    'product_detail_clicked': [10,60],
-    'product_wanted': [60,80],
-    'product_purchase_intended': [80,100],
-    'product_purchased': [80,100]
+    # 'featured_product_clicked': [0,60],
+    'product_detail_clicked': [0,62],
+    'product_wanted': [62,95],
+    'product_purchase_intended': [95,100],
+    # 'product_purchased': [80,100]
   }
 
 def fx_recentness(events, oldest_event, config, rating=0):
   today = datetime.now()
   # Get multipliers and valid events
-  multipliers = get_without_neg_multipliers()
+  if config["infile"] == "mongo":
+    multipliers = get_multipliers()
+  else:
+    multipliers = get_without_neg_multipliers()
 
   # Remove events which we dont care about.
   events[:] = [d for d in events if d.get('event_id') in multipliers]
@@ -239,8 +243,19 @@ def fx_recentness(events, oldest_event, config, rating=0):
     # Calculate the diff between the scores, and multiply with penalization.
     score = scores[1] - ((scores[1] - scores[0]) * penalization)
 
-    rating = max(rating, normalize(score=score, a=1, b=5.0, xmin=10))
+    # Get the min multiplier in the multiplier set
+    xmin = findMinMultiplier(multipliers)
+
+    rating = max(rating, normalize(score=score, a=1, b=5.0, xmin=xmin))
   return rating
+
+def findMinMultiplier(multipliers):
+  '''
+  Find the minimum value of all the multipliers
+  '''
+  mV = min(multipliers, key=multipliers.get)
+  m = multipliers[mV][0]
+  return m
 
 def fx_count(events, config, avg_num_events):
   """
@@ -250,7 +265,10 @@ def fx_count(events, config, avg_num_events):
   """
   today = datetime.now()
   # Get multipliers and valid events
-  multipliers = get_without_neg_multipliers()
+  if config["infile"] == "mongo":
+    multipliers = get_multipliers()
+  else:
+    multipliers = get_without_neg_multipliers()
 
   # Remove events which we dont care about.
   events[:] = [d for d in events if d.get('event_id') in multipliers]
@@ -271,7 +289,8 @@ def fx_count(events, config, avg_num_events):
 
     scores = multipliers.get(event['event_id'])
     score = scores[1] - ((scores[1] - scores[0]) * product_penalization)
-    norm_score = normalize(score, a=1, b=5.0, xmin=10)
+    xmin = findMinMultiplier(multipliers)
+    norm_score = normalize(score, a=1, b=5.0, xmin=xmin)
     r = max(ratings.get(event['product_id'], 0.0), norm_score)
     ratings[event['product_id']] = r
   return ratings
@@ -291,10 +310,10 @@ def get_ratings_from_user(user_id, events, f, config):
     # This method needs to work on all events for all items that this user has
     # interacted on, and not one and one product_id. Thus, handle all events in
     # one array.
-    avg = np.mean([len(e) for e in events.iteritems()])
-    return fx_count([e for product_id, evt in events.iteritems() for e in evt], config, avg)
+    avg = np.mean([len(e) for e in events.items()])
+    return fx_count([e for product_id, evt in events.items() for e in evt], config, avg)
   else:
-    for product_id, evts in events.iteritems():
+    for product_id, evts in events.items():
       rating = None
       # Get the rating from one of the different calculation schemes.
       if config["method"] == 'recentness':

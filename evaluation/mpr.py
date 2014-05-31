@@ -47,7 +47,8 @@ def compute(recommenderSystem):
 
     totalRank = 0
     rankCount = 0
-    for event in purchases.batch_size(15):
+
+    for event in purchases.batch_size(10):
         user = event['user_id']
         product = event['product_id']
         print ("User: {} Product: {}".format(str(user), str(product)))

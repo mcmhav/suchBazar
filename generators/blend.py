@@ -1,5 +1,16 @@
 #!/usr/bin/env python
-import sys
+#
+# Blending-tool for Sobazar and master thesis 2014
+# Input: a config-file (list of files) and optionally their ratios
+# Output: a linear blend of the average ratings weighted by ratio, of all files.
+#
+# Rating files should be on the following format:
+# user_id \t product_id \t rating [ \t timestamp]
+#
+# That is a tab-seperated list of (user, product, rating) and optionally the
+# timestamp of the rating.
+####
+import sys, os
 import argparse
 from collections import defaultdict
 import numpy as np
@@ -7,12 +18,13 @@ import numpy as np
 def read_config(fname, rfolder):
   config = { 'files' : []}
   f = open(fname)
+  rel_path = os.path.dirname(f.name)
 
   lines = list(line for line in (l.strip() for l in f) if line)
 
   # Ensure we have more than 1 file to blend.
   if len(lines) < 2:
-    print "Error: we need more than one file in the config file to blend"
+    print ("Error: we need more than one file in the config file to blend")
     sys.exit(1)
   f.seek(0)
 
@@ -25,7 +37,7 @@ def read_config(fname, rfolder):
   # Read the config and open the file handlers
   for i, l in enumerate(lines):
     args = l.split()
-    fh = open("%s/%s" % (rfolder, args[0]))
+    fh = open("%s/%s/%s" % (rel_path, rfolder, args[0]))
     ratio = float(args[1]) if not auto else 1/float(num_files)
     config['files'].append({ 'fh': fh, 'ratio': ratio })
   f.seek(0)
@@ -35,7 +47,7 @@ def read_config(fname, rfolder):
   for rfile in config['files']:
     s += rfile['ratio']
   if abs(s - 1.0) > 0.000000001:
-    print "Error: ratios does not add up to 1.0"
+    print ("Error: ratios does not add up to 1.0")
     sys.exit(1)
   f.seek(0)
 
@@ -43,7 +55,7 @@ def read_config(fname, rfolder):
   r = len(config["files"][0]["fh"].readlines())
   for rfile in config["files"][1:]:
     if len(rfile["fh"].readlines()) != r:
-      print "Line numbers in various files does not match"
+      print ("Line numbers in various files does not match")
       sys.exit(1)
 
   # Reset filehandles for all rating files
@@ -63,8 +75,8 @@ def blend(users, f, ratio):
     product_id = args[1].strip()
     rating = float(args[2].strip())
 
-    timestamp = None
-    if len(args) > 2:
+    timestamp = ""
+    if len(args) > 3:
       timestamp = args[3].strip()
 
     # A linear blend, so we calculate the part for this rating.
@@ -84,9 +96,12 @@ if __name__ == '__main__':
   parser.add_argument('-i', dest='rfolder', default="ratings", help="Where to find all files defined in conf file")
   parser.add_argument('-o', dest='filename', default='blend.txt', help="Filename for the blended result. Default to: 'blend.txt'")
   args = parser.parse_args()
+  abs_path = os.path.dirname(os.path.realpath(__file__))
 
   # Add the directory + filename
-  args.dest = args.dest + '/' + args.filename
+  if args.dest[0] != '/':
+    args.dest = abs_path + '/' + args.dest
+  args.dest += '/' + args.filename
 
   conf = read_config(args.conf, args.rfolder)
 
@@ -103,17 +118,17 @@ if __name__ == '__main__':
 
   # Write the output-file.
   out = open(args.dest, "w+")
-  for user_id, product in users.iteritems():
-    for product_id, u_p_obj in product.iteritems():
+  for user_id, product in users.items():
+    for product_id, u_p_obj in product.items():
       rating = u_p_obj["rating"]
-      timestamp = u_p_obj.get("timestamp", None)
+      timestamp = u_p_obj.get("timestamp", "")
 
       # Create the output string
       s = "%s\t%s\t%s" % (user_id, product_id, rating)
       if timestamp:
         s += "\t%s" % timestamp
 
-      # Write to file 
+      # Write to file
       out.write("%s\n" % s)
 
       # Save for statistics
@@ -125,4 +140,4 @@ if __name__ == '__main__':
     rfile["fh"].close()
 
   # Write back to the user
-  print "Wrote %d ratings to %s. Average: %.4f,  Median: %.4f" % (num_ratings, args.dest, np.average(ratings), np.median(ratings))
+  print ("Wrote %d ratings to %s. Average: %.4f,  Median: %.4f" % (num_ratings, args.dest, np.average(ratings), np.median(ratings)))

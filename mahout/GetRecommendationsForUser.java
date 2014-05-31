@@ -22,7 +22,7 @@ import java.util.*;
 
 public class GetRecommendationsForUser {
     static String dataPath = "../generators/ratings";
-    /* static String[] files = { "naive.txt", "sigmoid_count.txt", "sigmoid_recent.txt", "blend.txt" }; */c
+    /* static String[] files = { "naive.txt", "sigmoid_count.txt", "sigmoid_recent.txt", "blend.txt" }; */
     String[] files = { "blend.txt" };
   /* static String recommender = "itembased"; */
 
@@ -30,7 +30,7 @@ public class GetRecommendationsForUser {
         System.out.println("Using recommender-engine: " + recommender);
         long startTime = System.currentTimeMillis();
 
-        DataModel model = new FileDataModel(new File("../generators/ratings" + "/" + filename));
+        DataModel model = new FileDataModel(new File("../generated/ratings" + "/" + filename));
         RecommenderBuilder builder = new RecommenderBuilder() {
             public Recommender buildRecommender(DataModel model) throws TasteException {
                 if (recommender.equals("itembased")) {

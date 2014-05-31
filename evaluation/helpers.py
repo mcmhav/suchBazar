@@ -6,6 +6,8 @@ import re
 from datetime import datetime
 import time
 from operator import itemgetter
+import os
+import sys
 
 f = ""
 
@@ -13,6 +15,36 @@ def main():
     '''
     Helper functions
     '''
+
+def prepareEvauationScoreToLaTeX(filename,us_coverage,is_coverage,auc,mapk,ndcg,hlu,k,l,beta):
+    '''
+    Make latex structure
+    AUC - nDCG - MAP - HLU - is coverage - us coverage
+    '''
+
+    SCRIPT_FOLDER = os.path.dirname(os.path.realpath(__file__))
+    ROOT_FOLDER = os.path.dirname(SCRIPT_FOLDER)
+    GENERATED_LOCATION = 'generated'
+    SAVE_FOLDER = 'evaluationScore'
+    folder = ROOT_FOLDER + '/' + GENERATED_LOCATION + '/' + SAVE_FOLDER + '/'
+
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
+    saveName = folder + k  + "-" + l + "-" + beta + '-' + filename + ".score"
+    f = open(saveName, 'w')
+    f.write('1auc:' + auc + "\n")
+    f.write('2ndcg:' + ndcg + "\n")
+    f.write('3map:' + mapk + "\n")
+    f.write('4hlu:' + hlu + "\n")
+    f.write('5us_coverage:' + us_coverage + "\n")
+    f.write('6is_coverage:' + is_coverage + "\n")
+    f.write('beta:' + beta + "\n")
+    f.write('k:' + k + "\n")
+    f.write('l:' + l + "\n")
+    f.close()
+
+    print ("wrote to %s" % saveName)
 
 def printProgress(count,total):
     progress = (count/total)*100
@@ -46,10 +78,10 @@ def readPredictionsFromFile(path):
     predictions = []
     f = open(path, 'r+')
     lines = f.readlines()
+    f.close()
     for line in lines:
         tmp = line.split(',')
         predictions.append([int(tmp[0]), int(tmp[1]), float(tmp[2])])
-    f.close()
     return predictions
 
 def closeF():
@@ -57,23 +89,49 @@ def closeF():
     f.close()
 
 def readRatingsFromFile(path, convert=False):
+    ratings = []
+    f = open(path, 'r+')
+    reader = f.readlines()
+    f.close()
+    for line in reader:
+        rating = line.split('\t')
+        if len(rating) == 3:
+            if rating[0] != '' and rating[1] != '' and rating[2] != '':
+                tmp_rating = float(rating[2])
+                ratings.append([int(rating[0]), int(rating[1]), tmp_rating])
+        if len(rating) > 3:
+            if rating[0] != '' and rating[1] != '' and rating[2] != '' and rating[3] != '':
+                if convert:
+                    t = datetime.strptime(rating[3],"%Y-%m-%d %H:%M:%S")
+                    ratings.append([int(rating[0]), int(rating[1]), float(rating[2]), int(time.mktime(t.timetuple()))])
+                else:
+                    ratings.append([int(rating[0]), int(rating[1]), float(rating[2]), int(rating[3])])
+    return ratings
 
+def readRatingsFromFileSmart(path, convert=False):
     ratings = []
     with open(path, 'r') as file:
 
         dialect = csv.Sniffer().sniff(file.read(1024))
         reader =  csv.reader(file, delimiter=dialect.delimiter)
+
         for rating in reader:
-            if len(rating) == 3:
-                if rating[0] != '' and rating[1] != '' and rating[2] != '':
-                    ratings.append([int(rating[0]), int(rating[1]), float(rating[2])])
-            if len(rating) > 3:
-                if rating[0] != '' and rating[1] != '' and rating[2] != '' and rating[3] != '':
-                    if convert:
-                        t = datetime.strptime(rating[3],"%Y-%m-%d %H:%M:%S")
-                        ratings.append([int(rating[0]), int(rating[1]), float(rating[2]), int(time.mktime(t.timetuple()))])
-                    else:
-                        ratings.append([int(rating[0]), int(rating[1]), float(rating[2]), int(rating[3])])
+            try:
+                if len(rating) == 3:
+                    if rating[0] != '' and rating[1] != '' and rating[2] != '':
+                        tmp_rating = float(rating[2])
+                        ratings.append([int(rating[0]), int(rating[1]), tmp_rating])
+                if len(rating) > 3:
+                    if rating[0] != '' and rating[1] != '' and rating[2] != '' and rating[3] != '':
+                        if convert:
+                            t = datetime.strptime(rating[3],"%Y-%m-%d %H:%M:%S")
+                            ratings.append([int(rating[0]), int(rating[1]), float(rating[2]), int(time.mktime(t.timetuple()))])
+                        else:
+                            ratings.append([int(rating[0]), int(rating[1]), float(rating[2]), int(rating[3])])
+            except:
+                print (rating)
+                print ("readRatingsFromFileSmart")
+                sys.exit()
     return ratings
 
 def readRatings(path, timestamps):
@@ -102,12 +160,19 @@ def readMyMediaLitePredictions(path):
             s = line.split()
             s[1] = s[1].replace('[', '')
             s[1] = s[1].replace(']', '')
+            if not s[1]:
+                continue
             items = s[1].split(',')
             for item in items:
                 i = item.split(':')
-                rating = [int(s[0]), int(i[0]), float(i[1])]
-                ratings.append(rating)
-
+                try:
+                    userID = int(s[0])
+                    itemID = int(i[0])
+                    rating = float(i[1])
+                    ratingTriple = [userID, itemID, rating]
+                    ratings.append(ratingTriple)
+                except:
+                    print (item)
     return ratings
 
 def readMyMediaLitePredictionsForMPR(path):
@@ -199,11 +264,11 @@ def appendZeroRatings(user, predictions, candidateItems):
 def preprocessMAP(actual, predictions, k):
     '''
     Preprocessing nMAP calculations
-    
+
     Extracts the top k list of item-ids from each user
-    
+
     '''
-    
+
     a = buildDictByIndex(actual, 0)
     p = buildDictByIndex(predictions, 0)
     pred = []
@@ -216,19 +281,20 @@ def preprocessMAP(actual, predictions, k):
         if user in p:
             upred = []
             p[user] = sorted(p[user], key=itemgetter(2), reverse=True)
-            for j in range(k):
-                upred.append(p[user][j][1])
+            if len(p[user]) >= k:
+                for j in range(k):
+                    upred.append(p[user][j][1])
             pred.append(upred)
     return test, pred
 
 def preprocessDCG(actual, predictions, k):
     '''
     Preprocessing nDCG calculations
-    
+
     Extracts the top k list of item-ids from each user
-    
+
     '''
-    
+
     a = buildDictByIndex(actual, 0)
     p = buildDictByIndex(predictions, 0)
     pred = []
@@ -244,13 +310,13 @@ def preprocessDCG(actual, predictions, k):
             for j in range(k):
                 upred.append([p[user][j][1], p[user][j][2]])
             pred.append(upred)
-    return test, pred 
+    return test, pred
 
 def determineLatexHeaderNumber(trainFile):
-    
+
     #-1 in case the original rating file contains numbers
     split_num = int(re.findall(r'\d', trainFile)[-1])
-    
+
     if 'system' in trainFile:
         if split_num == 1:
             return 40
@@ -265,11 +331,12 @@ def determineLatexHeaderNumber(trainFile):
             return 40
         else:
             return 75
-    
+    return -1
+
 
 if __name__ == "__main__":
     main()
     print(determineLatexHeaderNumber('../data/itemtrain1'))
-    
+
 
 

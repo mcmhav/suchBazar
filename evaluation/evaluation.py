@@ -19,14 +19,16 @@ import hlu
 import ndcg
 import itemAverage
 import filterbots as fb
+import ntpath
+import sys
+from multiprocessing import Process
 
 
-
-def evaluation():    
+def evaluation():
     '''
     Run Evaluation of the different cold-start splits
     '''
-    
+
     #evaluate('../data/system_train1.txt', '../data/system_test.txt', '../mahout/testikus.txt')
     #evaluate('../data/system_train2.txt', '../data/system_test.txt', '../mahout/testikus.txt')
     #evaluate('../data/system_train3.txt', '../data/system_test.txt', '../mahout/testikus.txt')
@@ -36,27 +38,27 @@ def evaluation():
     #evaluate('../data/item_train1.txt', '../data/item_test1.txt', '../mahout/testikus.txt')
     #evaluate('../data/item_train2.txt', '../data/item_test2.txt', '../mahout/testikus.txt')
     #evaluate('../data/item_train3.txt', '../data/item_test3.txt', '../mahout/testikus.txt')
-    
+
     #evaluate('../data/ftrain.txt', '../data/user_test3.txt', '../data/predictions.txt')
     #evaluate('../generators/train.csv', '../generators/test.csv', '../mahout/testikus.txt')
     #evaluate('../generators/train.csv', '../generators/test.csv', '../generators/predictions.txt')
-    
+
 def testCases():
     '''
     Runs the testcases for the various evaluation metrics
     '''
 
     #runTestCases()
-    
+
 def coldStartSplits():
     '''
     Functions for creating cold-start evaluation dataset splits
     '''
-    
+
     #Settings
     filterBotSettings = [0,0,0,0,0]
     timeStamps = True
-    
+
     createColdStartSplits('../generators/ratings/count_sigmoid_fixed_sr-3.5.txt', timeStamps, filterBotSettings)
     #createColdStartSplits('../generators/ratings/count_linear.txt', timeStamps, filterBotSettings)
     #createColdStartSplits('../generators/ratings/count_sigmoid_constant_sc-30.0.txt', timeStamps, filterBotSettings)
@@ -65,27 +67,27 @@ def coldStartSplits():
     #createColdStartSplits('../generators/ratings/recentness_linear.txt', timeStamps, filterBotSettings)
     #createColdStartSplits('../generators/ratings/recentness_sigmoid_constant_sc-30.0.txt', timeStamps, filterBotSettings)
     #createColdStartSplits('../generators/ratings/recentness_sigmoid_fixed_sr-4.5.txt', timeStamps, filterBotSettings)
-      
+
 
 
 def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
-
-    
     #train = helpers.readRatingsFromFile(trainFile)
     train = helpers.readRatings(trainFile, True)
     test = helpers.readRatingsFromFile(testFile)
-    
+
     if not predictionFile:
         train = fb.addFilterBotRatings(train, [1, 1, 1, 1, 0])
         #predictions = itemAverage.itemAverage(train, test)
         predictions = itemAverage.mostPopular(train, test)
-        
+
     else:
         if m:
             predictions = helpers.readMyMediaLitePredictions(predictionFile)
         else:
-            predictions = helpers.readRatingsFromFile(predictionFile)
-      
+            predictions = helpers.readRatingsFromFileSmart(predictionFile)
+    # print (predictions)
+    # sys.exit()
+
     us_coverage, is_coverage = coverage.compute(train, predictions)
     roc_auc = auc.compute(train, test, predictions)
     t, p = helpers.preprocessMAP(test, predictions, k)
@@ -100,20 +102,44 @@ def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
     print('MAP%d: %.4f' %(k, mapk))
     print('nDCG%d: %.4f' %(l, nDCG))
     print('HLU%d: %.4f' %(beta, hluB))
+    helpers.prepareEvauationScoreToLaTeX(
+        ntpath.basename(predictionFile),
+        str(us_coverage),
+        str(is_coverage),
+        str(roc_auc),
+        str(mapk),
+        str(nDCG),
+        str(hluB),
+        str(k),
+        str(l),
+        str(beta)
+    )
 
+def createColdStartSplits(ratingFile, timestamps, featurefile, fbConfig):
 
-def createColdStartSplits(ratingFile, timestamps, fbConfig):
-
-    ratings = helpers.readRatingsFromFile(ratingFile, True)
+    ratings = helpers.readRatingsFromFileSmart(ratingFile, True)
     filename = ratingFile.split('/')[-1].split('.')[0]
-    
+    procs = []
+
     print('Generating cold-start user dataset splits...')
-    coldStart.generateColdStartSplits(filename, ratings, 'user', 0.1, 20, [0.10, 0.40, 0.75], timestamps, fbConfig)
+    addToParallelRun(procs, coldStart.generateColdStartSplits, filename, ratings, 'user', 0.1, 20, featurefile, [0.10, 0.40, 0.75], timestamps, fbConfig)
     print('Generating cold-start item dataset splits...')
-    coldStart.generateColdStartSplits(filename, ratings, 'item', 0.05, 15, [0.10, 0.40, 0.75], timestamps, fbConfig)
+    addToParallelRun(procs, coldStart.generateColdStartSplits, filename, ratings, 'item', 0.05, 15, featurefile, [0.10, 0.40, 0.75], timestamps, fbConfig)
     print('Generating cold-start system dataset splits...')
-    coldStart.generateColdStartSystemSplits(filename, ratings, 0.20, [0.4, 0.6, 0.8], timestamps, fbConfig)
+    addToParallelRun(procs, coldStart.generateColdStartSystemSplits, filename, ratings, 0.20, featurefile, [0.4, 0.6, 0.8], timestamps, fbConfig)
+
+    # combine jobs
+    for p in procs:
+        p.join()
     print('Done!')
+
+def addToParallelRun(procs, method, *args):
+    '''
+    Run procs parallel
+    '''
+    p = Process(target=method, args=args)
+    p.start()
+    procs.append(p)
 
 def runTestCases():
     '''
@@ -159,7 +185,7 @@ def runTestCases():
         print('nDCG - Test case 1: %.2f' %ndcg.compute(actual, pred, 0))
         print('Spearman - Test case 2: %.2f' %stats.spearmanr(actual, pred)[0])
         print('Kendall - Test case 2: %.2f' %stats.kendalltau(actual, pred)[0])
-        
+
 
 
 parser = argparse.ArgumentParser(description='Evaluate Recommender Systems')
@@ -171,6 +197,7 @@ parser.add_argument('-t', dest='timestamps', default=False, action="store_true",
 parser.add_argument('--test-file', dest='test', type=str, help="Defaulting to ...")
 parser.add_argument('--training-file', dest='train', type=str, help="Defaulting to ...")
 parser.add_argument('--prediction-file', dest='pred', type=str, help="Defaulting to ...")
+parser.add_argument('--feature-file', dest='featurefile', type=str, help="Defaulting to ...")
 parser.add_argument('-k', dest='k', type=int, default=20, help='Defaulting to...')
 parser.add_argument('-l', dest='l', type=int, default=20, help='Defaulting to...')
 parser.add_argument('-b', dest='beta', type=int, default=2, help='Defaulting to...')
@@ -179,18 +206,14 @@ parser.add_argument('-m', dest='m', default=False, action="store_true", help="De
 args = parser.parse_args()
 
 if args.coldstart:
+    fb = [0,0,0,0,0]
     if args.fbConfig:
         fb = args.fbConfig.split(',')
         fb = [int(x) for x in fb]
         if(len(fb) < 5):
             print('Five arguments must be given, defaulting to [0,0,0,0,0]')
-            fb = [0,0,0,0,0]     
-    else:
-        fb = [0,0,0,0,0]
-    createColdStartSplits(args.coldstart, args.timestamps, fb)
-    
+            fb = [0,0,0,0,0]
+    createColdStartSplits(args.coldstart, args.timestamps, args.featurefile, fb)
+
 if args.test:
     evaluate(args.train, args.test, args.pred, args.k, args.l, args.beta, args.m)
-    
-
-    

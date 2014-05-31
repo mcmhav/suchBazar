@@ -3,27 +3,16 @@ import argparse
 import sys
 import helpers
 
-parser = argparse.ArgumentParser(description='Convert tab and insert to mongoDB.')
-parser.add_argument('-f', type=str, default="../data/sobazar.tab")
-parser.add_argument('-c', type=str, default="prod")
-args = parser.parse_args()
-
-col = helpers.getCollection(args.c,True)
-
-print ("File used: ", args.f)
-print ("Collection used: ", args.c)
-print ("")
-
-def main(dbLocation):
-    if dbLocation != "":
-        args.f = dbLocation
-    f = open(args.f)
+def main(dataFile='../data/sobazar.tab',prodDB='prod'):
+    print ('Adding events from file')
+    col = helpers.getCollection(prodDB,True)
+    f = open(dataFile)
     # head = f.readline().strip().split('\t')
     head = getHead()
 
     headJson = {}
     headJson["head"] = head
-    col.insert(headJson)
+    # col.insert(headJson)
 
     lines = f.readlines()
     f.close()
@@ -59,8 +48,7 @@ def main(dbLocation):
         helpers.printProgress(count,total)
 
     print ()
-    print ((count/total)*100)
-    print ("Done lol")
+    print ("Done adding events from file")
 
 def isTestEvent(tmpJson):
     if 'serverEnvironment' in tmpJson['event_data']:
@@ -173,4 +161,4 @@ def getHead():
             # }
 
 if __name__ == "__main__":
-    main("")
+    main()

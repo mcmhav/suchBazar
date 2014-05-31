@@ -29,6 +29,7 @@ total = 0
 usersOver19 =0
 
 PERCENTAGE_MATCH=100
+makeNew = False
 
 def main(sessDB='sessionsNew'):
     '''
@@ -76,18 +77,22 @@ def main(sessDB='sessionsNew'):
     '''
     col = helpers.getCollection(sessDB)
 
-    uniqueSessions = []
-    makeNew = True
-    if os.path.isfile(folder + '/' + filename) and not makeNew:
-        uniqueSessions = getFromFile(filename)
-    else:
-        groupSessions(uniqueSessions,col)
-        writeToFile(uniqueSessions,filename)
+    uniqueSessions = makeUniqueSessions(col,makeNew)
+
+
     drawCirclesAndStuff(uniqueSessions,True)
     drawCirclesAndStuff(uniqueSessions,False)
     # pydottestur(uniqueSessions)
     # allInOneWithFlow(uniqueSessions)
     # drawTopSessions(uniqueSessions)
+
+def makeUniqueSessions(col,makeNew):
+    if os.path.isfile(folder + '/' + filename) and not makeNew:
+        uniqueSessions = getFromFile(filename)
+    else:
+        uniqueSessions = groupSessions(col)
+        writeToFile(uniqueSessions,filename)
+    return uniqueSessions
 
 def writeToFile(uniqueSessions,filename):
     '''
@@ -108,19 +113,19 @@ def getFromFile(filename):
     e.close()
     uniqueSessions = []
     for ua in line:
-        ua_json_ready = ua.replace('\'','"')
-        print (ua)
-        uniqueSessions.append(json.loads(ua_json_ready))
-        # try:
-        # except:
-        #     print ('lol')
+        try:
+            ua_json_ready = ua.replace('\'','"')
+            uniqueSessions.append(json.loads(ua_json_ready))
+        except:
+            print ('lol')
 
     return uniqueSessions
 
-def groupSessions(uniqueSessions,col):
+def groupSessions(col):
     users = col.distinct('user_id')
     total = len(users)
     count = 0
+    uniqueSessions = []
     for user in users:
         sessions = groupSessionsForUsers(col,user)
         for session in sessions:
@@ -128,6 +133,7 @@ def groupSessions(uniqueSessions,col):
             checkIfSessionMatchWithSessions([x[1] for x in sorted_events],uniqueSessions)
         count += 1
         helpers.printProgress(count,total)
+    return uniqueSessions
 
 def drawTopSessions(uniqueSessions):
     uniqueSessions_sorted = sorted(uniqueSessions, key=lambda k: k['count'], reverse=True)
@@ -224,29 +230,29 @@ def drawSeparateSession(session,sid):
 
 def drawCirclesAndStuff(uniqueSessions,reduced):
     dot = Digraph(comment='Session-pattern')
-    dot.node('Start')
-    dot.node('app_started')
-    dot.node('user_logged_in')
+    dot.node('A', 'Start')
+    dot.node('B', 'app_started')
+    dot.node('C', 'user_logged_in')
 
     if reduced:
-        dot.node('store_accessed')
+        dot.node('S', 'store_accessed')
     else:
-        dot.node('storefront_clicked')
-        dot.node('store_clicked')
-        dot.node('featured_storefront_clicked')
-        dot.node('featured_collection_clicked')
+        dot.node('D', 'storefront_clicked')
+        dot.node('M', 'store_clicked')
+        dot.node('I', 'featured_storefront_clicked')
+        dot.node('N', 'featured_collection_clicked')
 
-    dot.node('product_detail_clicked')
-    dot.node('product_purchase_intended')
-    dot.node('product_wanted')
+    dot.node('E', 'product_detail_clicked')
+    dot.node('L', 'product_purchase_intended')
+    dot.node('F', 'product_wanted')
 
     if reduced:
-        dot.node('others')
+        dot.node('O', 'others')
     else:
-        dot.node('activity_clicked')
-        dot.node('around_me_clicked')
-        dot.node('friend_invited')
-        dot.node('stores_map_clicked')
+        dot.node('G', 'activity_clicked')
+        dot.node('H', 'around_me_clicked')
+        dot.node('J', 'friend_invited')
+        dot.node('K', 'stores_map_clicked')
 
 
     edges = {}
@@ -254,7 +260,7 @@ def drawCirclesAndStuff(uniqueSessions,reduced):
     for session in uniqueSessions:
         prevNode = ''
         for event in session['session']:
-            node = event
+            node = nodeMapper(event)
             if reduced:
                 node = reduceMapper(node)
             fromTo = ''
@@ -263,7 +269,7 @@ def drawCirclesAndStuff(uniqueSessions,reduced):
             else:
                 fromTo = prevNode + node
             addEdgeToEdges(fromTo,edges,session['count'])
-            prevNode = event
+            prevNode = nodeMapper(event)
             if reduced:
                 prevNode = reduceMapper(prevNode)
 
@@ -300,15 +306,15 @@ def addEdgeToEdges(fromTo,edges,count):
 
 def reduceMapper(event):
     return {
-        'storefront_clicked': 'store_accessed',
-        'store_clicked': 'store_accessed',
-        'featured_storefront_clicked': 'store_accessed',
-        'featured_collection_clicked': 'store_accessed',
+        'D': 'S',
+        'M': 'S',
+        'I': 'S',
+        'N': 'S',
 
-        'activity_clicked': 'other',
-        'around_me_clicked': 'other',
-        'friend_invited': 'other',
-        'stores_map_clicked': 'other',
+        'G': 'O',
+        'H': 'O',
+        'J': 'O',
+        'K': 'O',
     }.get(event, event)
 
 def coloMapper(node):
@@ -346,7 +352,7 @@ def nodeMapper(event):
         'product_purchase_intended':'L',
         'store_clicked':'M',
         'featured_collection_clicked':'N',
-    }.get(node, 'O')
+    }.get(event, 'O')
 
 [
         "activity_clicked",

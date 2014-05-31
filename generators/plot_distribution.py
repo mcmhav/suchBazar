@@ -51,11 +51,15 @@ for f in rfiles:
   num_bins = 150
 
   # the histogram of the data
-  n, bins, patches = plt.hist(x, num_bins, range=(1.0, 5.0), normed=False, facecolor='green', alpha=0.5)
+  fig, ax = plt.subplots()
+  n, bins, patches = ax.hist(x, num_bins, facecolor='green', alpha=0.5)
+
+  # We manually set the x-lim.
+  ax.set_xlim((0.9, 5.1))
 
   plt.xlabel('Rating')
   plt.ylabel('Number of ratings')
-  plt.title(f["fname"][:-4])
+  #plt.title(f["fname"][:-4])
 
   plt.savefig("%s/%s.png" % (args.dest, f["fname"][:-4]))
   plt.clf()

@@ -36,8 +36,8 @@ def main(sessDB='sessionsNew'):
     xaxis,yaxis,xticks = handle_appStarted(sessDB)
     helpers.makePlot(
         'sessionsCount',
-        yaxis,
         xaxis,
+        yaxis=yaxis,
         # title='Global Sessions Count',
         ylabel='Amount of Users',
         xlabel='Session count',

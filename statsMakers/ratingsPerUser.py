@@ -10,32 +10,75 @@ import os
 def main(sessDB='sessionsNew'):
     '''
     '''
-    ueic = getUserEventOnItemCounts(sessDB)
-    print (ueic)
-
-    counts = [int(x['count']) for x in ueic]
+    cap = 150
+    counts = getCounts(sessDB)
     avgCount = helpers.getAvgOfCount(counts)
-    print (avgCount)
+
+    xaxis = groupEventCountsOnCount(counts,cap)
+
+    plotRatingCounts(xaxis,'ratingsPerUser',ylabel='Amount of Users',xlabel='Amount of implicit ratings')
+
+    xaxis = groupEventCountsOnCountCum(counts,len(xaxis))
+    yticks = [helpers.makeTicks(yMax=max(xaxis),steps=10),helpers.makeTicks(yMax=100,steps=10)]
+    plotRatingCounts(xaxis,'ratingsPerUsercum',ylabel='Percentage of Users',xlabel='Amount of implicit ratings',yticks=yticks)
+
+def getCounts(sessDB):
+    ueic = getUserEventOnItemCounts(sessDB)
 
     ueic_sorted = sorted(ueic, key=lambda k: k['count'],reverse=True)
-    print (ueic_sorted)
+    counts = [int(x['count']) for x in ueic_sorted]
 
+    return counts
 
-    plotRatingCounts(yaxis,xaxis,xticks,show=True)
+def getRatingAmountAverage(sessDB='sessionsNew'):
+    counts = getCounts(sessDB)
+    avg = helpers.getAvgOfCount(counts)
 
-def plotRatingCounts(yaxis,xaxis,xticks,show=False):
+    return avg
+
+def groupEventCountsOnCountCum(counts,cap):
+    '''
+    '''
+    ratingCounts = groupEventCountsOnCount(counts,0)
+
+    tmp = [0] * (len(ratingCounts) + 1)
+    i = 1
+    for c in reversed(ratingCounts):
+        tmp[i] = c + tmp[i-1]
+        i += 1
+    test = tmp[::-1][:cap]
+    return test
+
+def groupEventCountsOnCount(counts,cap):
+    counts = counts[cap:]
+    ratingCounts = [0] * (max(counts) + 1)
+
+    for c in reversed(counts):
+        ratingCounts[c] += 1
+    return ratingCounts
+
+def plotRatingCounts(
+        xaxis,
+        name,
+        show=False,
+        ylabel='',
+        xlabel='',
+        yticks=[]
+    ):
     '''
     '''
     helpers.makePlot(
-        'ratingsPerUser',
-        yaxis,
+        name,
+        # yaxis,
         xaxis,
         # title='Global Sessions Count',
-        ylabel='Amount of Users',
-        xlabel='Session count',
+        ylabel=ylabel,
+        xlabel=xlabel,
         show=show,
         grid=True,
-        xticks=xticks
+        xticks=[],
+        yticks=yticks
+        # xticks=xticks
     )
 
 def getUserEventOnItemCounts(sessDB):

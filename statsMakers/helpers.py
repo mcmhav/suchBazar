@@ -55,7 +55,9 @@ def update_progress(count,total):
     print ('\r[{0}] {1}%'.format('#'*(count), total))
 
 def makePlot(
-                k,ks,counts,
+                k,
+                counts,
+                yaxis=[],
                 width=0.8,
                 figsize=[14.0,8.0],
                 title="",
@@ -69,9 +71,11 @@ def makePlot(
             ):
     '''
     '''
+    if not list(yaxis):
+        yaxis = np.arange(len(counts))
     if not labels:
-        labels = ks
-    index = np.arange(len(ks))
+        labels = yaxis
+    index = np.arange(len(yaxis))
 
     fig, ax = plt.subplots()
     fig.set_size_inches(figsize[0],figsize[1])
@@ -80,8 +84,9 @@ def makePlot(
     plt.title(title)
     if not xticks:
         print ('Making xticks')
-        xticks.append(index+width/2.)
-        xticks.append(labels)
+        ticks = makeTicks(yMax=len(yaxis))
+        xticks.append(ticks+math.floor(width/2.))
+        xticks.append(ticks)
         print ('Done making xticks')
 
     if yticks:
@@ -99,7 +104,7 @@ def makePlot(
     fig.autofmt_xdate()
     # ax.set_xticklabels(ks)
 
-    plt.axis([0, len(ks), 0, max(counts) + (max(counts)/100)])
+    plt.axis([0, len(yaxis), 0, max(counts) + (max(counts)/100)])
     plt.grid(grid)
     location = ROOT_FOLDER + "/../muchBazar/src/image/" + k + "distribution.png"
     plt.savefig(location)
@@ -133,6 +138,7 @@ def getKGroups(k,sessDB):
                            initial={'count':0}
                        )
     return groups
+
 
 def getKGroupsWithEventIdDistr(ks,k,sessDB):
     col = helpers.getCollection(sessDB)

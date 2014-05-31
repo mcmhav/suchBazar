@@ -3,34 +3,8 @@ from collections import defaultdict
 import argparse
 import os
 import math
+from utils import read_events
 from scipy.stats import norm
-
-def is_valid(inputs):
-  for inp in inputs:
-    if not inp or inp in ('N/A', '-1', 'NULL', 'null', 'testimplementation'):
-      return False
-  return True
-
-def parse_eventline(line):
-  row = line.split("\t")
-  event_id = row[1]
-  product_id = row[12]
-  user_id = row[16]
-  if is_valid([event_id, product_id, user_id]):
-    return {"product_id": product_id, "event_id": event_id, "user_id": user_id}
-
-def read_events(filename):
-  # Dictionary holding users. All users has a dictionary with products.
-  users = defaultdict(lambda: defaultdict(list))
-
-  f = open(filename, "r")
-  for line in f.readlines():
-    event = parse_eventline(line)
-    if event:
-      u = event["user_id"]
-      p = event["product_id"]
-      users[u][p].append(event)
-  return users
 
 def get_abs_path(path):
   if path[0] != '/':

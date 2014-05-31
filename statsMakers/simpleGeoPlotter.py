@@ -4,34 +4,30 @@ import helpers
 import argparse
 import os
 
-parser = argparse.ArgumentParser(description='Plot geolocations from data on map.')
-parser.add_argument('-sc', type=str, default="sessions")
-args = parser.parse_args()
-
-sessCol = helpers.getCollection(args.sc)
-
-print ("Collection used: ", args.sc)
-print ("")
-
-def main():
+def main(sessDB='sessionsNew'):
     m = makeMap()
-    plotOnMap(m)
-    # plt.show()
+    plotOnMap(m,sessDB)
     location = os.path.dirname(os.path.abspath(__file__)) + "/../../muchBazar/src/image/simpleGeoPlot.png"
     plt.savefig(location)
-    print ("Simple geo plot written to: %s" + location)
+    print ("Simple geo plot written to: %s" % location)
 
-def plotOnMap(m):
+def plotOnMap(m,sessDB):
+    sessCol = helpers.getCollection(sessDB)
     locations = sessCol.distinct('event_data.location')
     c = 0
+    newC = 0
     for location in locations:
-        latlon = location.split(',')
-        if len(latlon) == 2:
-            lat = latlon[0]
-            lon = latlon[1]
-            x,y = m(lon,lat)
-            m.plot(x, y, 'bo', markersize=4)
-        c = c + 1
+        try:
+            latlon = location.split(',')
+            if len(latlon) == 2:
+                lat = latlon[0]
+                lon = latlon[1]
+                x,y = m(lon,lat)
+                m.plot(x, y, 'bo', markersize=4)
+        except:
+            newC += 1
+        c += 1
+    print (newC)
 
 def makeMap():
     m = Basemap(width=3000000,height=2700000,projection='lcc',

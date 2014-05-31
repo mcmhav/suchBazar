@@ -1,7 +1,5 @@
-import json
 import pymongo
 import csv
-import argparse
 import os
 import sys
 from bson import Binary, Code
@@ -17,24 +15,22 @@ def main(sessDB='sessionsNew'):
     groups = helpers.getKGroups(k,sessDB)
     ks, counts = preprocessGroups(k,groups)
     ks,xss,xticks = groupProductsOnCounts(ks,counts,cap=50)
-    helpers.makePlot(k,
+    helpers.makePlot(k + 'cum',
                      xss,
                      ks,
-                     title='Event count on products distribution',
+                     # title='Cumulative distribution of events on products',
                      ylabel='Product count',
                      xlabel='Event count',
-                     show=True,
+                     show=show,
                      xticks=[xticks,xticks],
                      )
-    sys.exit()
-
     k = 'event_id'
     groups = helpers.getKGroups(k,sessDB)
     ks, counts = preprocessGroups(k,groups)
     helpers.makePlot(k,
                      ks,
                      counts,
-                     title='Event id distribution',
+                     # title='Event id distribution',
                      ylabel='Event id count',
                      xlabel='Event id',
                      show=show,
@@ -47,7 +43,7 @@ def main(sessDB='sessionsNew'):
     helpers.makePlot(k,
                      ks,
                      counts,
-                     title='Distribution of events on stores',
+                     # title='Distribution of events on stores',
                      ylabel='Event count',
                      xlabel='Store name',
                      show=show,
@@ -55,7 +51,7 @@ def main(sessDB='sessionsNew'):
                      xticks=[]
                      )
 
-    # eventsOnStorDistr(k,ks,counts,sessDB)
+    eventsOnStorDistr(k,ks,counts,sessDB)
 
     k = 'retailer_brand'
     groups = helpers.getKGroups(k,sessDB)
@@ -64,7 +60,7 @@ def main(sessDB='sessionsNew'):
     helpers.makePlot(k,
                      ks,
                      counts,
-                     title='Distribution of events on retailer brands',
+                     # title='Distribution of events on retailer brands',
                      ylabel='Event count',
                      xlabel='Brand name',
                      labels=labels,
@@ -79,7 +75,7 @@ def main(sessDB='sessionsNew'):
     helpers.makePlot(k,
                      ks,
                      counts,
-                     title='Distribution of events on hours',
+                     # title='Distribution of events on hours',
                      ylabel='Event count',
                      xlabel='Time of day',
                      labels=ks,
@@ -97,7 +93,7 @@ def main(sessDB='sessionsNew'):
                         k,
                         ks,
                         ks,
-                        title='Distribution of events for users',
+                        # title='Distribution of events for users',
                         ylabel='User count',
                         xlabel='Event count',
                         show=show,
@@ -116,7 +112,7 @@ def main(sessDB='sessionsNew'):
                         k + 'cum',
                         ks,
                         ks,
-                        title='Cumulative distribution of events for users',
+                        # title='Cumulative distribution of events for users',
                         ylabel='Percentage of users',
                         xlabel='Event count',
                         show=show,
@@ -143,7 +139,7 @@ def main(sessDB='sessionsNew'):
                         k + 'cum',
                         ks,
                         ks,
-                        title='Cumulative distribution of sessions for users',
+                        # title='Cumulative distribution of sessions for users',
                         ylabel='Percentage of users',
                         xlabel='Session count',
                         show=show,
@@ -157,19 +153,25 @@ def main(sessDB='sessionsNew'):
 def groupProductsOnCounts(ks,counts,cap=80):
     '''
     '''
-
-    values = min(max(counts),cap)+1
+    values = max(counts)+1
     tmp = [0] * (values)
 
     for c in counts:
-        if (c > cap):
-            tmp[cap-1] += 1
-        else:
-            tmp[c-1] += 1
-    xss = helpers.makeTicks(1,values,len(tmp))
+        tmp[c-1] += 1
 
-    xticks = helpers.makeTicks(0,values)
-    return tmp,xss,xticks
+
+    te = [0] * (len(tmp) +1)
+    c = len(tmp) -1
+    for t in reversed(tmp):
+        te[c] = t + te[c+1]
+        c -= 1
+        # if (c > cap):
+        #     tmp[cap-1] += 1
+        # else:
+    te = te[:cap]
+    xss = helpers.makeTicks(1,len(te),len(te))
+    xticks = helpers.makeTicks(0,min(te))
+    return te,xss,xticks
 
 def coloMapper(node):
     return {

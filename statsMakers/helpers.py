@@ -67,7 +67,8 @@ def makePlot(
                 show=False,
                 grid=True,
                 xticks=[],
-                yticks=[]
+                yticks=[],
+                steps=5
             ):
     '''
     '''
@@ -84,9 +85,9 @@ def makePlot(
     plt.title(title)
     if not xticks:
         print ('Making xticks')
-        ticks = makeTicks(yMax=len(yaxis))
-        xticks.append(ticks+math.floor(width/2.))
-        xticks.append(ticks)
+        ticks = makeTicks(yMax=len(yaxis),steps=steps)
+        xticks.append(ticks+width/2.)
+        xticks.append(labels)
         print ('Done making xticks')
 
     if yticks:
@@ -189,11 +190,13 @@ def plotAverageSomething(
         avgs = capIt(avgs,capVal,addCapped)
 
     buckets,xTicks = makeBuckets(avgs,steps=steps,labelTime=labelTime,bucTuner=bucTuner)
+    print (buckets)
+    print (xTicks)
     ks = np.arange(0,len(buckets))
     helpers.makePlot(
         action,
-        ks,
         buckets,
+        yaxis=ks,
         title=title,
         ylabel=ylabel,
         xlabel=xlabel,

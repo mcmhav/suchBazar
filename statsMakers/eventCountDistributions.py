@@ -34,6 +34,7 @@ def main(sessDB='sessionsNew'):
                      ylabel='Event id count',
                      xlabel='Event id',
                      show=show,
+                     steps=len(ks)
                      )
 
     k = 'storefront_name'
@@ -65,7 +66,8 @@ def main(sessDB='sessionsNew'):
                      xlabel='Brand name',
                      labels=labels,
                      show=show,
-                     xticks=[]
+                     xticks=[],
+                     steps=len(ks)
                      )
 
     k = 'hr'

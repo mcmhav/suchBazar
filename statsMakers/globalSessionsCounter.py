@@ -7,33 +7,23 @@ import os
 from bson import Binary, Code
 import numpy as np
 
-def main(sessDB='sessionsNew'):
-    # sessionCountGroups()
-    # ks,counts,xticks = sessionCountDistrCum(sessDB)
-    # helpers.makePlot(
-    #     'sessionsCount',
-    #     ks,
-    #     counts,
-    #     title='Global Sessions Count',
-    #     ylabel='Count of Users',
-    #     xlabel='Count of Sessions',
-    #     show=True,
-    #     grid=True,
-    #     xticks=[xticks,xticks]
-    # )
-    # sys.exit()
-    # xticks = helpers.makeTicks(yMax=1140)
-    # print (list(xticks))
-    # print ([xticks,xticks])
-    # tm = np.array([xticks,xticks])
-    # print (tm)
-    # # sys.exit()
-    # yaxis = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 50, 51, 53, 54, 55, 56, 58, 60, 65, 67, 68, 70, 71, 75, 79, 80, 87, 88, 92, 94, 99, 100, 110, 111, 115, 116, 118, 119, 125, 126, 128, 134, 141, 144, 147, 150, 156, 163, 187, 206, 322, 388, 523, 573, 695, 1142]
-    # xaxis = [404, 231, 215, 153, 151, 110, 90, 78, 59, 49, 45, 45, 23, 26, 28, 13, 25, 24, 16, 8, 20, 10, 14, 12, 3, 12, 11, 7, 7, 6, 11, 3, 4, 3, 2, 2, 6, 5, 3, 7, 3, 4, 1, 3, 2, 4, 3, 2, 4, 1, 1, 1, 2, 1, 1, 2, 2, 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-    # xticks = [0, 100, 300, 400, 1000]
+SCRIPT_FOLDER = os.path.dirname(os.path.realpath(__file__))
+ROOT_FOLDER = os.path.dirname(SCRIPT_FOLDER)
+DATA_FOLDER = 'data'
+folder = SCRIPT_FOLDER + '/' + DATA_FOLDER
 
-    # print (len(xaxis))
-    xaxis,yaxis,xticks = handle_appStarted(sessDB)
+if not os.path.exists(folder):
+        os.makedirs(folder)
+
+filename = 'sessionxyNticks.csv'
+
+def main(sessDB='sessionsNew'):
+    if os.path.isfile(folder + '/' + filename):
+        xaxis,yaxis,xticks = getFromFile(filename)
+    else:
+        xaxis,yaxis,xticks = handle_appStarted(sessDB)
+        writeToFile(xaxis,yaxis,xticks,filename)
+
     helpers.makePlot(
         'sessionsCount',
         xaxis,
@@ -45,6 +35,43 @@ def main(sessDB='sessionsNew'):
         grid=True,
         xticks=[helpers.makeTicks(yMax=len(xaxis)),xticks]
     )
+
+def getFromFile(filename):
+    e = open(folder + "/" + filename,'r')
+    line = e.readlines()
+    e.close()
+    xaxis = []
+    yaxis = []
+    ticks = []
+    for ua in line[0].split(','):
+        try:
+            xaxis.append(int(ua))
+        except:
+            print ('lol')
+    for ua in line[1].split(','):
+        try:
+            yaxis.append(int(ua))
+        except:
+            print ('lol')
+    for ua in line[1].split(','):
+        try:
+            ticks.append(int(ua))
+        except:
+            print ('lol')
+
+    return xaxis,yaxis,ticks
+
+def writeToFile(xaxis,yaxis,xticks,name):
+    e = open(folder + '/' + filename,'w')
+    for x in xaxis:
+        e.write(str(x) + ", ")
+    e.write("\n")
+    for y in yaxis:
+        e.write(str(y) + ", ")
+    e.write("\n")
+    for t in xticks:
+        e.write(str(t) + ", ")
+    e.close()
 
 def sessionCountDistrCum(sessDB):
     groups = helpers.getKGroups('session',sessDB)

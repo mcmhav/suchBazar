@@ -12,7 +12,7 @@ from statsMakers import huntNegativeFeedback
 from statsMakers import itemTimeSpan
 from statsMakers import timeSpentOnItemBeforeAction
 from statsMakers import ratingsPerUser
-from statsMakers import makeSimpleStats
+# from statsMakers import makeSimpleStats
 
 def main():
     print ("start")
@@ -25,7 +25,7 @@ def main():
     itemTimeSpan.main()
     timeSpentOnItemBeforeAction.main()
     ratingsPerUser.main()
-    makeSimpleStats.main()
+    # makeSimpleStats.main()
     print ("Done!")
 
 

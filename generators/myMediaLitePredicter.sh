@@ -26,9 +26,13 @@ MYMEDIAITEM=0
 MYMEDIARANK=0
 RECOMMENDER=""
 QUIET=0
+DIR=""
 
 while getopts "t:irqp:" o; do
   case "${o}" in
+    d)
+      DIR="${OPTARG}"
+      ;;
     t)
       TTT=("${OPTARG}")
       ;;
@@ -71,8 +75,8 @@ if [ $MYMEDIAITEM -eq 1 ] || [ $MYMEDIARANK -eq 1 ]; then
       set -- "$ttt"
       IFS=":"; declare -a Array=($*)
 
-      OPT=(--training-file "$ROOT/generated/splits/${Array[0]}");
-      OPT+=(--test-file "$ROOT/generated/splits/${Array[1]}");
+      OPT=(--training-file "$DIR/${Array[0]}");
+      OPT+=(--test-file "$DIR/${Array[1]}");
       OPT+=(--recommender $RECOMMENDER);
 
       # Do item predictions
@@ -89,7 +93,7 @@ if [ $MYMEDIAITEM -eq 1 ] || [ $MYMEDIARANK -eq 1 ]; then
 
       # Do rank predictions
       if [ $MYMEDIARANK -eq 1 ]; then
-        OPT+=(--prediction-file "$ROOT/generated/predictions/${Array[0]}-${Array[1]}--r-$RECOMMENDER.predictions");
+        OPT+=(--prediction-file "$DIR/${Array[0]}-${Array[1]}--r-$RECOMMENDER.predictions");
         if [ $QUIET -eq 1 ]; then
           rating_prediction ${OPT[@]} >/dev/null 2>/dev/null &
         else

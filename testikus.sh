@@ -70,7 +70,7 @@ TRAINFILE=""
 trainTestTuples="blend_itemtrain1.txt:blend_itemtest1.txt blend_itemtrain2.txt:blend_itemtest2.txt blend_itemtrain3.txt:blend_itemtest3.txt blend_systemtrain1.txt:blend_systemtest.txt blend_systemtrain2.txt:blend_systemtest.txt blend_systemtrain3.txt:blend_systemtest.txt blend_usertrain1.txt:blend_usertest1.txt blend_usertrain2.txt:blend_usertest2.txt blend_usertrain3.txt:blend_usertest3.txt"
 
 # Generate ratings (blending and timestamps enabled by default)
-/bin/bash $ROOT/generators/generate_implicit.sh -b -t $OPTS;
+# /bin/bash $ROOT/generators/generate_implicit.sh -b -t $OPTS;
 
 trainTestTuples=""
 if [ -n "$SPLIT" ]; then

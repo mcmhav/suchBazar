@@ -26,13 +26,9 @@ MYMEDIAITEM=0
 MYMEDIARANK=0
 RECOMMENDER=""
 QUIET=0
-DIR=""
 
 while getopts "t:irqp:" o; do
   case "${o}" in
-    d)
-      DIR="${OPTARG}"
-      ;;
     t)
       TTT=("${OPTARG}")
       ;;
@@ -68,15 +64,15 @@ if [ "$TTT" == "" ]; then
   echo "Need to specify Train-Test-Tuples with -t";
   exit 1;
 fi
-
+echo $TTT
 if [ $MYMEDIAITEM -eq 1 ] || [ $MYMEDIARANK -eq 1 ]; then
     echo "Making MyMediaLite rating predictions with $RECOMMENDER";
     for ttt in $TTT; do
       set -- "$ttt"
       IFS=":"; declare -a Array=($*)
-
-      OPT=(--training-file "$DIR/${Array[0]}");
-      OPT+=(--test-file "$DIR/${Array[1]}");
+      echo "${Array[0]}"
+      OPT=(--training-file "$ROOT/generated/ratings/${Array[0]}");
+      OPT+=(--test-file "$ROOT/generated/ratings/${Array[1]}");
       OPT+=(--recommender $RECOMMENDER);
 
       # Do item predictions
@@ -93,7 +89,7 @@ if [ $MYMEDIAITEM -eq 1 ] || [ $MYMEDIARANK -eq 1 ]; then
 
       # Do rank predictions
       if [ $MYMEDIARANK -eq 1 ]; then
-        OPT+=(--prediction-file "$DIR/${Array[0]}-${Array[1]}--r-$RECOMMENDER.predictions");
+        OPT+=(--prediction-file "$ROOT/generated/predictions/${Array[0]}-${Array[1]}--r-$RECOMMENDER.predictions");
         if [ $QUIET -eq 1 ]; then
           rating_prediction ${OPT[@]} >/dev/null 2>/dev/null &
         else

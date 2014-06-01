@@ -16,13 +16,9 @@ MMLITEMRATINGSTYLE=""
 RECOMMENDERSYS=""
 RECOMMENDER=""
 FEATUREFILE="$ROOT/generated/itemFeatures.txt"
-DIR=""
 
-while getopts "d:t:p:r:m" o; do
+while getopts "t:p:r:m" o; do
   case "${o}" in
-    d)
-      DIR="${OPTARG}"
-      ;;
     m)
       MMLITEMRATINGSTYLE="-m"
       ;;
@@ -48,8 +44,8 @@ do
     set -- "$ttt"
     IFS=":"; declare -a Array=($*)
 
-    TRAIN_FILE="$DIR/${Array[0]}";
-    TEST_FILE="$DIR/${Array[1]}";
+    TRAIN_FILE="$ROOT/generated/ratings/${Array[0]}";
+    TEST_FILE="$ROOT/generated/ratings/${Array[1]}";
     PRED_FILE="$ROOT/generated/predictions/${Array[0]}-${Array[1]}-$RECOMMENDERSYS-$RECOMMENDER.predictions";
     F_FILE="$FEATUREFILE";
 

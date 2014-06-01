@@ -16,10 +16,10 @@ def main():
     Helper functions
     '''
 
-def prepareEvauationScoreToLaTeX(filename,us_coverage,is_coverage,auc,mapk,ndcg,hlu,k,l,beta):
+def prepareEvauationScoreToLaTeX(filename,us_coverage,is_coverage,auc,mapk,eStats,k):
     '''
     Make latex structure
-    AUC - nDCG - MAP - HLU - is coverage - us coverage
+    AUC - MAP - T_c - T_w - T_p - P_c - P_w - P_p - R_c - R_w - R_p - MAP_c - MAP_w - MAP_p - IS_c - IS_c
     '''
 
     SCRIPT_FOLDER = os.path.dirname(os.path.realpath(__file__))
@@ -31,17 +31,25 @@ def prepareEvauationScoreToLaTeX(filename,us_coverage,is_coverage,auc,mapk,ndcg,
     if not os.path.exists(folder):
         os.makedirs(folder)
 
-    saveName = folder + k  + "-" + l + "-" + beta + '-' + filename + ".score"
+    saveName = folder + k  + "-" + filename + ".score"
     f = open(saveName, 'w')
-    f.write('1auc:' + auc + "\n")
-    f.write('2ndcg:' + ndcg + "\n")
-    f.write('3map:' + mapk + "\n")
-    f.write('4hlu:' + hlu + "\n")
-    f.write('5us_coverage:' + us_coverage + "\n")
-    f.write('6is_coverage:' + is_coverage + "\n")
-    f.write('beta:' + beta + "\n")
+    f.write('01auc:' + auc + "\n")
+    f.write('02map:' + mapk + "\n")
+    f.write('03T_c:' + eStats[0] + "\n")
+    f.write('04T_w:' + eStats[1] + "\n")
+    f.write('05T_p:' + eStats[2] + "\n")
+    f.write('06P_c:' + eStats[3] + "\n")
+    f.write('07P_w:' + eStats[4] + "\n")
+    f.write('08P_p:' + eStats[5] + "\n")
+    f.write('09R_c:' + eStats[6] + "\n")
+    f.write('10R_w:' + eStats[7] + "\n")
+    f.write('11R_p:' + eStats[8] + "\n")
+    f.write('12MAP_c:' + eStats[9] + "\n")
+    f.write('13MAP_w:' + eStats[10] + "\n")
+    f.write('14MAP_p:' + eStats[11] + "\n")
+    f.write('15us_coverage:' + us_coverage + "\n")
+    f.write('16is_coverage:' + is_coverage + "\n")
     f.write('k:' + k + "\n")
-    f.write('l:' + l + "\n")
     f.close()
 
     print ("wrote to %s" % saveName)
@@ -286,6 +294,7 @@ def preprocessMAP(actual, predictions, k):
                     upred.append(p[user][j][1])
             pred.append(upred)
     return test, pred
+   
 
 def preprocessDCG(actual, predictions, k):
     '''

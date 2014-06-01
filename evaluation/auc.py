@@ -13,8 +13,6 @@ def appendZeroRatings(train, predictions, itemIds):
     random.shuffle(itemIds)
     count = 0
     keyError = 0
-    print(predictions)
-    print(train)
     for user in predictions:
         for item in itemIds:
             try:
@@ -36,7 +34,7 @@ def compute(train, test, predictions):
     For Java implementation see:
     https://github.com/jcnewell/MyMediaLiteJava/blob/master/src/org/mymedialite/eval/Items.java
     '''
-    
+
     train_users = helpers.buildDictByIndex(train, 0)
     test_users = helpers.buildDictByIndex(test, 0)
     predictions = helpers.buildDictByIndex(predictions, 0)

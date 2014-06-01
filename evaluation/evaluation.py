@@ -95,7 +95,6 @@ def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
     #t, p = helpers.preprocessDCG(test, predictions, l)
     #nDCG = ndcg.compute(t, p, 1, l)
     #hluB = hlu.compute(t, p, beta)
-    sys.exit()
     eStats = es.compute(test, predictions, k)
 
     print('*** RESULTS ***')

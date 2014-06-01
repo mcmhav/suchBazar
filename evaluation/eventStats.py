@@ -175,10 +175,10 @@ def compute(actual, predicted, k):
     
 ### TESTING ### 
         
-import itemAverage
+#import itemAverage
         
-train = helpers.readRatingsFromFile('../data/count_linear.txt.1.txt')
-test = helpers.readRatingsFromFile('../data/count_linear.txt.1.txt')
-predictions = itemAverage.mostPopular(train, test)
+#train = helpers.readRatingsFromFile('../data/count_linear.txt.1.txt')
+#test = helpers.readRatingsFromFile('../data/count_linear.txt.1.txt')
+#predictions = itemAverage.mostPopular(train, test)
 
-compute(test, predictions, 100)
+#compute(test, predictions, 100)

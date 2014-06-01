@@ -11,8 +11,8 @@ import numpy as np
 # for user i.
 last_event = defaultdict(lambda: datetime.min)
 oldest_event = defaultdict(lambda: datetime.max)
-oldest_event_globally = datetime.max
-most_recent_globally = datetime.min
+oldest_event_globally = defaultdict(lambda: datetime.max)
+most_recent_globally = defaultdict(lambda: datetime.min)
 ignored = 0
 
 def normalize(score,xmax=100,xmin=0,a=0,b=5):
@@ -94,11 +94,11 @@ def parse_eventline(row, users, config):
     # Save the oldest event for this user as well.
     oldest_event[user_id] = t if t < oldest_event[user_id] else oldest_event[user_id]
 
-    global oldest_event_globally
-    oldest_event_globally = t if t < oldest_event_globally else oldest_event_globally
+    # global oldest_event_globally
+    oldest_event_globally[event_id] = t if t < oldest_event_globally[event_id] else oldest_event_globally[event_id]
 
-    global most_recent_globally
-    most_recent_globally = t if t > most_recent_globally else most_recent_globally
+    # global most_recent_globally
+    most_recent_globally[event_id] = t if t > most_recent_globally[event_id] else most_recent_globally[event_id]
 
 def parse_mongo(users, config):
   client = pymongo.MongoClient()
@@ -185,7 +185,7 @@ def get_penalization(n, num, config, average=0.0, median=None):
 
   # Get penalization from various function schemes
   if config["fx"] == "sigmoid_fixed":
-    p = sigmoid(n, ratio=config["sigmoid_ratio"], c=num/2)
+    p = sigmoid(n, ratio=config["sigmoid_ratio"], c=num/2.0)
   elif config["fx"] and median:
     p = sigmoid(n, constant=median)
   elif config["fx"] == "sigmoid_constant":
@@ -220,8 +220,8 @@ def get_without_neg_multipliers():
     # 'product_purchased': [80,100]
   }
 
-def fx_recentness(events, oldest, config, rating=0, median=None):
-  today = datetime.now()
+def fx_recentness(events, config, rating=0, median=None):
+  # today = datetime.now()
   # Get multipliers and valid events
   if config["infile"] == "mongo":
     multipliers = get_multipliers()
@@ -248,12 +248,17 @@ def fx_recentness(events, oldest, config, rating=0, median=None):
 
   for event in events:
     t = event['timestamp']
+    most_recent_global = most_recent_globally[event["event_id"]]
+    oldest_global = oldest_event_globally[event["event_id"]]
+    oldest_user = oldest_event[event["user_id"]]
 
     # The number of days this event is from the latest event for this user.
-    diff_event = (today - t).days
+    oldest = (most_recent_global - oldest_user).days
+    diff_event = (most_recent_global - t).days
+    if config["minmax"] != "user":
+      oldest = (most_recent_global - oldest_global).days
 
     penalization = get_penalization(diff_event, oldest, config, average=avg, median=median)
-    # print diff_event, median, penalization
 
     # Get the scores for this event type.
     scores = multipliers.get(event['event_id'])
@@ -343,12 +348,7 @@ def get_ratings_from_user(user_id, events, f, config):
       rating = None
       # Get the rating from one of the different calculation schemes.
       if config["method"] == 'recentness':
-        if config["minmax"] == "user":
-          rating = fx_recentness(evts, (today - oldest_event[user_id]).days, config, median=median)
-        else:
-          diff = (most_recent_globally - oldest_event_globally).days
-          rating = fx_recentness(evts, diff, config, median=median)
-
+        rating = fx_recentness(evts, config, median=median)
       elif config["method"] == 'naive':
         rating = fx_naive(evts)
       if rating:

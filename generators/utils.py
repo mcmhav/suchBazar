@@ -109,6 +109,7 @@ def parse_mongo(users, config):
     row = [''] * 17
     row[1] = instance['event_id']
     row[3] = instance['server_time_stamp']
+    row[10] = instance['price']
     row[12] = instance['product_id']
     row[16] = instance['user_id'] # 2014-02-03T18:59+0100
     parse_eventline(row, users, config)

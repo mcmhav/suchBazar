@@ -12,6 +12,8 @@ import json
 SCRIPT_FOLDER = os.path.dirname(os.path.realpath(__file__))
 ROOT_FOLDER = os.path.dirname(SCRIPT_FOLDER)
 savePath = ROOT_FOLDER + "/../muchBazar/src/image/"
+# savePath = ROOT_FOLDER + "/../../tmp/"
+
 DATA_FOLDER = 'data'
 folder = SCRIPT_FOLDER + '/' + DATA_FOLDER
 
@@ -79,12 +81,16 @@ def main(sessDB='sessionsNew'):
 
     uniqueSessions = makeUniqueSessions(col,makeNew)
 
-
     drawCirclesAndStuff(uniqueSessions,True)
     drawCirclesAndStuff(uniqueSessions,False)
     # pydottestur(uniqueSessions)
     # allInOneWithFlow(uniqueSessions)
-    # drawTopSessions(uniqueSessions)
+    # drawTopSessions(
+    #     uniqueSessions,
+    #     mostPopularCap=len(uniqueSessions),
+    #     minCap=7,
+    #     maxCap=10
+    # )
 
 def makeUniqueSessions(col,makeNew):
     if os.path.isfile(folder + '/' + filename) and not makeNew:
@@ -135,28 +141,28 @@ def groupSessions(col):
         helpers.printProgress(count,total)
     return uniqueSessions
 
-def drawTopSessions(uniqueSessions):
+def drawTopSessions(uniqueSessions,mostPopularCap=6000,minCap=12,maxCap=14):
     uniqueSessions_sorted = sorted(uniqueSessions, key=lambda k: k['count'], reverse=True)
-    tmp = uniqueSessions_sorted[2:102]
+    tmp = uniqueSessions_sorted[:mostPopularCap]
+    # tmp = uniqueSessions_sorted[2:1002]
 
+    c = 0
+    total = len(tmp)
     for session in tmp:
-        drawSeparateSession(session['session'],session['count'])
+        if len(session['session']) > minCap and len(session['session']) < maxCap:
+            drawSeparateSession(session['session'],session['count'],c)
+        c += 1
+        helpers.printProgress(c,total)
 
 def allInOneWithFlow(uniqueSessions):
     topSessions = []
-    # print (uniqueSessions)
-    # sorted_events = sorted(uniqueSessions.items(),reverse=False)
-    # for session in uniqueSessions:
-    #     print (session)
     uniqueSessions_sorted = sorted(uniqueSessions, key=lambda k: k['count'], reverse=True)
-    # print (uniqueSessions_sorted[:20])
     tmp = uniqueSessions_sorted[2:32]
     dot = Digraph(comment='Session-pattern')
 
     count = 0
     # dot.node('1', 'Start')
     # dot.node('2', 'app_started/user_logged_in')
-
 
     states = []
     states.append('Start')
@@ -173,7 +179,6 @@ def allInOneWithFlow(uniqueSessions):
                 states.append(event)
                 # dot.node(str(count), event)
                 count += 1
-
 
             edge = prevNode + '->' + thisNode
             if edge not in diagram:
@@ -198,7 +203,6 @@ def allInOneWithFlow(uniqueSessions):
 
     renderDot(dot, "allInOneFlow")
 
-
     # for session in uniqueSessions_sorted[:20]:
     #     print (uniqueSessions_sorted)
         # count += 1
@@ -208,7 +212,7 @@ def allInOneWithFlow(uniqueSessions):
 def renderDot(dotSource, name):
     dotSource.render(savePath + name + '-gvfile', view=False)
 
-def drawSeparateSession(session,sid):
+def drawSeparateSession(session,sid,lol):
     dot = Digraph(comment='Session' + str(sid))
     dot.node('1', 'Start')
     count = 2
@@ -226,13 +230,17 @@ def drawSeparateSession(session,sid):
         )
         count += 1
         prevNode = thisNode
-    renderDot(dot, 'session-' + str(sid))
+    renderDot(dot, str(lol) + 'session-' + str(sid))
 
 def drawCirclesAndStuff(uniqueSessions,reduced):
     dot = Digraph(comment='Session-pattern')
-    dot.node('A', 'Start')
-    dot.node('B', 'app_started')
-    dot.node('C', 'user_logged_in')
+
+    dot.node('A', 'Init')
+    if reduced:
+        dot.node('I', 'Start')
+    else:
+        dot.node('B', 'app_started')
+        dot.node('C', 'user_logged_in')
 
     if reduced:
         dot.node('S', 'store_accessed')
@@ -265,7 +273,7 @@ def drawCirclesAndStuff(uniqueSessions,reduced):
                 node = reduceMapper(node)
             fromTo = ''
             if prevNode == '':
-                fromTo = 'Start' + node
+                fromTo = 'A' + node
             else:
                 fromTo = prevNode + node
             addEdgeToEdges(fromTo,edges,session['count'])
@@ -275,26 +283,21 @@ def drawCirclesAndStuff(uniqueSessions,reduced):
 
     edges_sorted = sorted(edges.items(), key=operator.itemgetter(1),reverse=True)
 
-    # for edge in edges_sorted:
-    #     print (edge)
-    i = 0
-
-    # skipNodes = {'J', 'H', 'G', 'K'}
+    nextFromInit = {'I', 'B', 'C'}
     for edge in edges:
         nodeFrom = edge[0]
+        nodeTo = edge[1]
+        if nodeFrom == 'A' and nodeTo not in nextFromInit:
+            continue
         color = coloMapper(nodeFrom)
-
-        # if (nodeFrom in skipNodes) or (edge[1] in skipNodes):
-        #     continue
         dot.edge(
             nodeFrom,
-            edge[1],
+            nodeTo,
             constraint='true',
             label=str(edges[edge]),
             color=color,
             weight=str(edges[edge]),
         )
-        i += 1
 
     renderDot(dot, "statesInteraction" + str(reduced))
 
@@ -306,6 +309,9 @@ def addEdgeToEdges(fromTo,edges,count):
 
 def reduceMapper(event):
     return {
+        'B': 'I',
+        'C': 'I',
+
         'D': 'S',
         'M': 'S',
         'I': 'S',
@@ -352,37 +358,38 @@ def nodeMapper(event):
         'product_purchase_intended':'L',
         'store_clicked':'M',
         'featured_collection_clicked':'N',
+        'other':'O',
     }.get(event, 'O')
 
-[
-        "activity_clicked",
-        "storefront_clicked",
-        "product_detail_clicked",
-        "user_logged_in",
-        "featured_collection_clicked",
-        "app_started",
-        "featured_storefront_clicked",
-        "product_wanted",
-        "around_me_clicked",
-        "stores_map_clicked",
-        "store_clicked",
-        "product_purchase_intended",
-        "friend_invited",
+# [
+#         "activity_clicked",
+#         "storefront_clicked",
+#         "product_detail_clicked",
+#         "user_logged_in",
+#         "featured_collection_clicked",
+#         "app_started",
+#         "featured_storefront_clicked",
+#         "product_wanted",
+#         "around_me_clicked",
+#         "stores_map_clicked",
+#         "store_clicked",
+#         "product_purchase_intended",
+#         "friend_invited",
 
-        "menu_opened",
-        "end:app_backgrounded",
-        "app_became_active",
-        "wantlist_menu_entry_clicked",
-        "content:interact:item_scroll",
-        "navigation:paging_triggered",
-        "content:explore:user_logo_clicked",
-        "collection_viewed",
-        "facebook_login_failed",
-        "end:app_closed",
-        "content:explore:search",
-        "navigation:navbar:sobazaar_icon",
-        "app_first_started"
-]
+#         "menu_opened",
+#         "end:app_backgrounded",
+#         "app_became_active",
+#         "wantlist_menu_entry_clicked",
+#         "content:interact:item_scroll",
+#         "navigation:paging_triggered",
+#         "content:explore:user_logo_clicked",
+#         "collection_viewed",
+#         "facebook_login_failed",
+#         "end:app_closed",
+#         "content:explore:search",
+#         "navigation:navbar:sobazaar_icon",
+#         "app_first_started"
+# ]
 
 
 def checkIfSessionMatchWithSessions(session,uniqueSessions):

@@ -13,47 +13,76 @@ def main(sessDB='sessionsNew'):
 
     timeSpans = [int(x['timespan']) for x in groups]
     counts = [int(x['count']) for x in groups]
-    # plotItemTimeSpans(timeSpans)
+    plotItemTimeSpans(timeSpans)
     plotItemTimeSpansSortedOnCount(groups)
 
 def plotItemTimeSpansSortedOnCount(groups):
     '''
     '''
-    groups_sorted = sorted(groups, key=lambda k: k['count'],reverse=True)
+    doublePlotLol(groups)
+    doublePlotAVG(groups)
+
+def doublePlotAVG(groups):
+    '''
+    '''
+    counts = [int(x['count']) for x in groups]
+    maxikus = max(counts) + 1
+    tot = [0] * maxikus
+    ccount = [0] * maxikus
+    for g in groups:
+        tmp = int(g['count'])
+        tot[tmp] += (g['max'] - g['min'])
+        ccount[tmp] += 1
+
+    bars = []
+    for x in range(0,maxikus):
+        if ccount[x] != 0:
+            tmp = (tot[x]/ccount[x])/(1000*60*60*24*7)
+            bars.append(tmp)
+
+    helpers.makePlot(
+        'avglifetimeoncount',
+        bars[::-1],
+        xticks=[helpers.makeTicks(yMax=len(bars)),list(helpers.makeTicks(yMax=maxikus))[::-1]],
+        ylabel='Average lifetime in weeks',
+        xlabel='Count of event'
+    )
+
+
+def doublePlotLol(groups):
+    '''
+    '''
+    groups_sorted = sorted(groups, key=lambda k: k['timespan'],reverse=True)
+    groups_sorted = sorted(groups_sorted, key=lambda k: k['count'],reverse=True)
     timeSpans = [int(x['timespan']) for x in groups_sorted]
     counts = [int(x['count']) for x in groups_sorted]
-    doublePlotLol(timeSpans,counts)
 
-def doublePlotLol(timeSpans,counts):
-    '''
-    '''
-
-    print(counts)
-    fig, ax = plt.subplots()
+    cap = 4724
+    timeSpans = timeSpans[:cap]
+    counts = counts[:cap]
+    timeSpans = [x/(1000*60*60*24*7) for x in timeSpans]
+    fig, ax1 = plt.subplots()
     figsize=[14.0,8.0]
     fig.set_size_inches(figsize[0],figsize[1])
     width = 0.8
     index = np.arange(len(counts))
-    # helpers.makePlot(
-    #     'itemTimespans',
-    #     ks,
-    #     timeSpans,
-    #     title='Time between first event on item till the last',
-    #     ylabel='Amount of items',
-    #     xlabel='Time in weeks',
-    #     show=False,
-    #     grid=False,
-    #     xticks=makeCountsXticks(counts)
-    # )
-    ptt = plt.bar(index, timeSpans, width, color='b')
-    ptc = plt.plot(index, counts, '|', color='b',markersize=4)
+
+    ax1.bar(index, timeSpans, width)
+    ax1.set_ylabel('Timespan of item in weeks')
+    ax1.axis([0, len(timeSpans), 0, max(timeSpans)])
+
+    ax2 = ax1.twinx()
+    ax2.set_ylabel('Event count on items', color='b')
+    ax2.plot(index, counts, '|', color='b',markersize=4)
+    ax2.axis([0, len(counts), 0, max(counts)])
+    for tl in ax2.get_yticklabels():
+            tl.set_color('b')
+
+    plt.xticks([])
 
     location = os.path.dirname(os.path.abspath(__file__)) + "/../../muchBazar/src/image/itemTimeSpansortedoneventcount.png"
     plt.savefig(location)
-    # plt.show()
     print ('Distribution written to: %s' % location)
-
-    # plt.plot(counts, 'bo', markersize=4)
 
     # plt.show()
 

@@ -71,8 +71,8 @@ if [ $MYMEDIAITEM -eq 1 ] || [ $MYMEDIARANK -eq 1 ]; then
       set -- "$ttt"
       IFS=":"; declare -a Array=($*)
       echo "${Array[0]}"
-      OPT=(--training-file "$ROOT/generated/ratings/${Array[0]}");
-      OPT+=(--test-file "$ROOT/generated/ratings/${Array[1]}");
+      OPT=(--training-file "$ROOT/generated/splits/${Array[0]}");
+      OPT+=(--test-file "$ROOT/generated/splits/${Array[1]}");
       OPT+=(--recommender $RECOMMENDER);
 
       # Do item predictions

@@ -44,8 +44,8 @@ do
     set -- "$ttt"
     IFS=":"; declare -a Array=($*)
 
-    TRAIN_FILE="$ROOT/generated/ratings/${Array[0]}";
-    TEST_FILE="$ROOT/generated/ratings/${Array[1]}";
+    TRAIN_FILE="$ROOT/generated/splits/${Array[0]}";
+    TEST_FILE="$ROOT/generated/splits/${Array[1]}";
     PRED_FILE="$ROOT/generated/predictions/${Array[0]}-${Array[1]}-$RECOMMENDERSYS-$RECOMMENDER.predictions";
     F_FILE="$FEATUREFILE";
 

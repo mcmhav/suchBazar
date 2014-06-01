@@ -73,7 +73,7 @@ def coldStartSplits():
 
 def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
     #train = helpers.readRatingsFromFile(trainFile)
-    train = helpers.readRatings(trainFile, True)
+    train = helpers.readRatingsFromFile(trainFile, True)
     test = helpers.readRatingsFromFile(testFile)
 
     if not predictionFile:

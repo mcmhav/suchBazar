@@ -68,13 +68,13 @@ done
 OPTS="-i $INFILE $CLEAN"
 
 # Generate ratings (blending and timestamps enabled by default)
-# /bin/bash $ROOT/generators/generate_implicit.sh -b -t $OPTS;
+/bin/bash $ROOT/generators/generate_implicit.sh -t $OPTS;
 
 # Check if we want binary ratings instead, making all ratings 1.
 if [ $BINARY -eq 1 ]; then
   for FILE in "$GENERATED"/ratings/*; do
     FILENAME=$(basename "$FILE")
-    cat "$FILE" | awk '{$3=1;print $0}' > /tmp/"$FILENAME"
+    cat "$FILE" | awk '{$3=1;print}' FS='\t' OFS='\t' > /tmp/"$FILENAME"
     mv /tmp/"$FILENAME" $FILE
   done
 fi
@@ -109,7 +109,9 @@ if [ "$ITEMRECOMMENDERS" != "" ]; then
     /bin/bash $ROOT/generators/myMediaLitePredicter.sh -t "$trainTestTuples" -i -p $ir $QUIET;
 
     # evaluate predicted values
+    set -x
     /bin/bash $ROOT/evaluation/evaluate.sh -t "$trainTestTuples" -r -i -p $ir -m;
+    set +x
   done
 fi
 

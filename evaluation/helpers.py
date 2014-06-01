@@ -114,15 +114,15 @@ def readRatingsFromFile(path, convert=False):
                         t = datetime.strptime(rating[3].strip(),"%Y-%m-%d %H:%M:%S")
                     except Exception:
                         print (rating[3])
-                        print traceback.format_exc()
+                        print (traceback.format_exc())
                     ratings.append([int(rating[0]), int(rating[1]), float(rating[2]), int(time.mktime(t.timetuple()))])
                 else:
                     try:
                         ratings.append([int(rating[0]), int(rating[1]), float(rating[2]), int(rating[3])])
                     except Exception:
                         print (rating[3])
-                        print traceback.format_exc()
-                    
+                        print (traceback.format_exc())
+
     return ratings
 
 def readRatingsFromFileSmart(path, convert=False):
@@ -148,7 +148,6 @@ def readRatingsFromFileSmart(path, convert=False):
             except:
                 print (rating)
                 print ("readRatingsFromFileSmart")
-                sys.exit()
     return ratings
 
 def readRatings(path, timestamps):
@@ -190,6 +189,7 @@ def readMyMediaLitePredictions(path):
                     ratings.append(ratingTriple)
                 except:
                     print (item)
+                    print ('wtf')
     return ratings
 
 def readMyMediaLitePredictionsForMPR(path):
@@ -303,7 +303,7 @@ def preprocessMAP(actual, predictions, k):
                     upred.append(p[user][j][1])
             pred.append(upred)
     return test, pred
-   
+
 
 def preprocessDCG(actual, predictions, k):
     '''

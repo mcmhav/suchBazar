@@ -15,7 +15,8 @@ ROOT=$( cd "$( dirname "$0" )" && pwd );
 # Some parameters changable in the opts.
 INFILE="../datasets/v3/sobazar_events_prod_cleaned_formatted.tab"
 CLEAN=""
-SPLIT=0
+SPLIT=""
+BINARY=0
 
 # Available Item Recommenders:
 # 'BPRMF' 'ItemAttributeKNN' 'ItemKNN' 'MostPopular' 'Random' 'UserAttributeKNN' 'UserKNN' 'WRMF' 'Zero' 'MultiCoreBPRMF' 'SoftMarginRankingMF' 'WeightedBPRMF' 'BPRLinear' 'MostPopularByAttributes' 'BPRSLIM' 'LeastSquareSLIM'
@@ -32,7 +33,7 @@ MAHOUTRECOMMENDERS="svd"
 QUIET=''
 GENERATED="$ROOT/generated"
 
-while getopts "i:cp:s:r:m:q" o; do
+while getopts "i:cp:s:r:m:qb" o; do
   case "${o}" in
     i)
       INFILE="${OPTARG}"
@@ -52,6 +53,9 @@ while getopts "i:cp:s:r:m:q" o; do
     s)
       SPLIT="${OPTARG}"
       ;;
+    b)
+      BINARY=1
+      ;;
     q)
       QUIET="-q"
       ;;
@@ -63,14 +67,17 @@ done
 
 OPTS="-i $INFILE $CLEAN"
 
-TESTFILE=""
-TRAINFILE=""
-
-# Todo: can we avoid having such a long string which, to be honest, no one will change in near future anyways?
-trainTestTuples="blend_itemtrain1.txt:blend_itemtest1.txt blend_itemtrain2.txt:blend_itemtest2.txt blend_itemtrain3.txt:blend_itemtest3.txt blend_systemtrain1.txt:blend_systemtest.txt blend_systemtrain2.txt:blend_systemtest.txt blend_systemtrain3.txt:blend_systemtest.txt blend_usertrain1.txt:blend_usertest1.txt blend_usertrain2.txt:blend_usertest2.txt blend_usertrain3.txt:blend_usertest3.txt"
-
 # Generate ratings (blending and timestamps enabled by default)
 /bin/bash $ROOT/generators/generate_implicit.sh -b -t $OPTS;
+
+# Check if we want binary ratings instead, making all ratings 1.
+if [ $BINARY -eq 1 ]; then
+  for FILE in "$GENERATED"/ratings/*; do
+    FILENAME=$(basename "$FILE")
+    cat "$FILE" | awk '{$3=1;print $0}' > /tmp/"$FILENAME"
+    mv /tmp/"$FILENAME" $FILE
+  done
+fi
 
 trainTestTuples=""
 if [ -n "$SPLIT" ]; then

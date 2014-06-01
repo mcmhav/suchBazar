@@ -21,9 +21,13 @@ PREDICTIONS="$ROOT/generated/predictions"
 RECOMMENDER_LOCATION="$ROOT/mahout"
 
 QUIET=0
+DIR=""
 
-while getopts "t:hp:l:q" o; do
+while getopts "dt:hp:l:q" o; do
   case "${o}" in
+    d)
+      DIR="${OPTARG}"
+      ;;
     t)
       TTT=("${OPTARG}")
       ;;

@@ -29,12 +29,13 @@ TIMESTAMP=""
 MIN_DATE=""
 MAX_DATE=""
 INFILE="-i ../../datasets/v3/sobazar_events_prod_cleaned_formatted.tab"
+GLOBALMINMAX="-mx global"
 
 RATINGS="$GENERATED/ratings"
 RATING_DISTS="$GENERATED/rating_distributions"
 
 # Check options (basically if we want to clean and/or plot)
-while getopts "i:m:x:cpbtf" o; do
+while getopts "i:m:x:cupbtf" o; do
   case "${o}" in
     c)
       CLEAN=1
@@ -51,6 +52,9 @@ while getopts "i:m:x:cpbtf" o; do
     t)
       TIMESTAMP="-t"
       ;;
+    u)
+      GLOBALMINMAX=""
+      ;;
     i)
       INFILE="-i ${OPTARG}"
       ;;
@@ -65,7 +69,7 @@ while getopts "i:m:x:cpbtf" o; do
       ;;
   esac
 done
-OPTS="$INFILE $TIMESTAMP $MIN_DATE $MAX_DATE $FORCE -d $RATINGS"
+OPTS="$INFILE $TIMESTAMP $MIN_DATE $MAX_DATE $FORCE -d $RATINGS $GLOBALMINMAX"
 
 # If cleaning, then we delete everything in ratings/ and dists/
 if [ $CLEAN -eq 1 ]; then
@@ -95,9 +99,8 @@ SCRIPT="$CWD/ratings.py"
 ## A nice, example blend
 python $SCRIPT $OPTS -m count -fx linear &
 python $SCRIPT $OPTS -m count -fx sigmoid_fixed -sr 3.5 &
-python $SCRIPT $OPTS -m count -fx sigmoid_fixed -sr 4.5 &
-python $SCRIPT $OPTS -m recentness -fx sigmoid_constant -sc 15 &
-python $SCRIPT $OPTS -m recentness -fx sigmoid_fixed -sr 1.5 &
+python $SCRIPT $OPTS -m recentness -fx linear &
+python $SCRIPT $OPTS -m recentness -fx sigmoid_fixed -sr 3.5 &
 
 # Wait till the last backgorund process has completed.
 wait

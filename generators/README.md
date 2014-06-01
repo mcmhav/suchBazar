@@ -83,3 +83,8 @@ you find useful. Then run it and check the `ratings/`-folder.
     ./split.sh ratings.csv
     mv ratings.csv.90 train.csv
     mv ratings.csv.10 validation.csv
+    
+## Create Binary Ratings
+
+    cat recentness_linear.txt | awk '{$3=1;print $0}' > all_events_binary.txt
+

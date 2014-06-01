@@ -10,6 +10,7 @@ import argparse
 
 #Evaluation modules
 import coverage
+import eventStats as es
 import helpers
 import auc
 import map
@@ -92,27 +93,27 @@ def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
     roc_auc = auc.compute(train, test, predictions)
     t, p = helpers.preprocessMAP(test, predictions, k)
     mapk = map.mapk(t, p, k)
-    t, p = helpers.preprocessDCG(test, predictions, l)
-    nDCG = ndcg.compute(t, p, 1, l)
-    hluB = hlu.compute(t, p, beta)
+    #t, p = helpers.preprocessDCG(test, predictions, l)
+    #nDCG = ndcg.compute(t, p, 1, l)
+    #hluB = hlu.compute(t, p, beta)
+    eStats = es.compute(test, predictions, k)
 
     print('*** RESULTS ***')
     print('User-Space Coverage: %.4f\nItem-Space Coverage: %.4f' %(us_coverage, is_coverage))
     print('AUC: %.4f' %(roc_auc))
     print('MAP%d: %.4f' %(k, mapk))
-    print('nDCG%d: %.4f' %(l, nDCG))
-    print('HLU%d: %.4f' %(beta, hluB))
+    #print('nDCG%d: %.4f' %(l, nDCG))
+    #print('HLU%d: %.4f' %(beta, hluB))
+    
+    
     helpers.prepareEvauationScoreToLaTeX(
         ntpath.basename(predictionFile),
         str(us_coverage),
         str(is_coverage),
         str(roc_auc),
         str(mapk),
-        str(nDCG),
-        str(hluB),
+        str(eStats),
         str(k),
-        str(l),
-        str(beta)
     )
 
 def createColdStartSplits(ratingFile, timestamps, featurefile, fbConfig):
@@ -185,8 +186,6 @@ def runTestCases():
         print('nDCG - Test case 1: %.2f' %ndcg.compute(actual, pred, 0))
         print('Spearman - Test case 2: %.2f' %stats.spearmanr(actual, pred)[0])
         print('Kendall - Test case 2: %.2f' %stats.kendalltau(actual, pred)[0])
-
-
 
 parser = argparse.ArgumentParser(description='Evaluate Recommender Systems')
 parser.add_argument('--coldstart-split', dest='coldstart', type=str, help="Defaulting to ...")

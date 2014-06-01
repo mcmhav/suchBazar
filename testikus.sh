@@ -109,9 +109,7 @@ if [ "$ITEMRECOMMENDERS" != "" ]; then
     /bin/bash $ROOT/generators/myMediaLitePredicter.sh -t "$trainTestTuples" -i -p $ir $QUIET;
 
     # evaluate predicted values
-    set -x
-    /bin/bash $ROOT/evaluation/evaluate.sh -t "$trainTestTuples" -r -i -p $ir -m;
-    set +x
+    /bin/bash $ROOT/evaluation/evaluate.sh -t "$trainTestTuples" -r "-i" -p $ir -m;
   done
 fi
 
@@ -122,7 +120,7 @@ if [ "$RANKRECOMMENDERS" != "" ]; then
     /bin/bash $ROOT/generators/myMediaLitePredicter.sh -t "$trainTestTuples" -r -p $ir $QUIET;
 
     # evaluate predicted values
-    /bin/bash $ROOT/evaluation/evaluate.sh -t "$trainTestTuples" -r -p $ir;
+    /bin/bash $ROOT/evaluation/evaluate.sh -t "$trainTestTuples" -r "-p" -p $ir;
   done
 fi
 
@@ -133,7 +131,7 @@ if [ "$MAHOUTRECOMMENDERS" != "" ]; then
     /bin/bash $ROOT/generators/mahoutPredict.sh -t "$trainTestTuples" -h -p $ir $QUIET;
 
     # evaluate predicted values
-    /bin/bash $ROOT/evaluation/evaluate.sh -t "$trainTestTuples" -r -h -p $ir;
+    /bin/bash $ROOT/evaluation/evaluate.sh -t "$trainTestTuples" -r "-h" -p $ir;
   done
 fi
 

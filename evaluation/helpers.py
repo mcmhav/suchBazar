@@ -8,7 +8,7 @@ import time
 from operator import itemgetter
 import os
 import sys
-
+import traceback
 f = ""
 
 def main():
@@ -110,10 +110,19 @@ def readRatingsFromFile(path, convert=False):
         if len(rating) > 3:
             if rating[0] != '' and rating[1] != '' and rating[2] != '' and rating[3] != '':
                 if convert:
-                    t = datetime.strptime(rating[3],"%Y-%m-%d %H:%M:%S")
+                    try:
+                        t = datetime.strptime(rating[3].strip(),"%Y-%m-%d %H:%M:%S")
+                    except Exception:
+                        print (rating[3])
+                        print traceback.format_exc()
                     ratings.append([int(rating[0]), int(rating[1]), float(rating[2]), int(time.mktime(t.timetuple()))])
                 else:
-                    ratings.append([int(rating[0]), int(rating[1]), float(rating[2]), int(rating[3])])
+                    try:
+                        ratings.append([int(rating[0]), int(rating[1]), float(rating[2]), int(rating[3])])
+                    except Exception:
+                        print (rating[3])
+                        print traceback.format_exc()
+                    
     return ratings
 
 def readRatingsFromFileSmart(path, convert=False):

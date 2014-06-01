@@ -13,7 +13,7 @@ import map
 SCRIPT_FOLDER = os.path.dirname(os.path.realpath(__file__))
 ROOT_FOLDER = os.path.dirname(SCRIPT_FOLDER)
 
-def readEventTypeData(filePath='../generated/event_type.txt'):
+def readEventTypeData(filePath=ROOT_FOLDER + '/generated/event_type.txt'):
     
     eventData = []
     
@@ -130,10 +130,12 @@ def compute(actual, predicted, k):
     startTime = datetime.now()
     
     eventData = readEventTypeData()
-    predicted = filterNonTestUsersFromPredicted(actual, predicted)
+    predictions = filterNonTestUsersFromPredicted(actual, predicted)
     actualCounts = getActualStats(actual, eventData)
     predictedCounts = getPredictionStats(actual, predicted, eventData, k)
     
+    print (actualCounts)
+    print (predictedCounts)
     recall = [x/float(y) for x, y in zip(predictedCounts, actualCounts)]
     
     MAP_click_test = extractRatingsByEventType(actual, 1, eventData) 

@@ -74,7 +74,7 @@ def coldStartSplits():
 def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
     #train = helpers.readRatingsFromFile(trainFile)
     train = helpers.readRatingsFromFile(trainFile, True)
-    test = helpers.readRatingsFromFile(testFile)
+    test = helpers.readRatingsFromFile(testFile, True)
 
     if not predictionFile:
         train = fb.addFilterBotRatings(train, [1, 1, 1, 1, 0])

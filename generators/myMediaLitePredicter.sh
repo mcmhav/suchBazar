@@ -89,7 +89,7 @@ if [ $MYMEDIAITEM -eq 1 ] || [ $MYMEDIARANK -eq 1 ]; then
 
       # Do rank predictions
       if [ $MYMEDIARANK -eq 1 ]; then
-        OPT+=(--prediction-file "$ROOT/generated/predictions/${Array[0]}-${Array[1]}--r-$RECOMMENDER.predictions");
+        OPT+=(--prediction-file "$ROOT/generated/predictions/${Array[0]}-${Array[1]}--p-$RECOMMENDER.predictions");
         if [ $QUIET -eq 1 ]; then
           rating_prediction ${OPT[@]} >/dev/null 2>/dev/null &
         else

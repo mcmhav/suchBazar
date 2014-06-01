@@ -64,7 +64,6 @@ OPTS="$INFILE $CLEAN"
 
 # Generate ratings (blending and timestamps enabled by default)
 /bin/bash $ROOT/generators/generate_implicit.sh -b -t $OPTS;
-
 if [ $SPLIT -eq 1 ]; then
   # Cold start split
   echo "Splitting data into colstart splits"

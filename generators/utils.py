@@ -63,9 +63,10 @@ def is_valid(indata):
 def parse_eventline(row, users, config):
   event_id = row[1]
   timestamp = row[3]
+  price = row[10]
   product_id = row[12]
   user_id = row[16]
-  if is_valid(user_id) and is_valid(product_id) and is_valid(event_id):
+  if is_valid(user_id) and is_valid(product_id) and is_valid(event_id) and is_valid(price):
     # Parse timestamp
     t = parse_timestamp(timestamp)
 
@@ -78,7 +79,13 @@ def parse_eventline(row, users, config):
       if t > config["max_date"]:
         return
 
-    users[user_id][product_id].append({'event_id': event_id, 'timestamp': t, 'product_id': product_id, 'user_id': user_id})
+    users[user_id][product_id].append({
+      'event_id': event_id,
+      'timestamp': t,
+      'product_id': product_id,
+      'user_id': user_id,
+      'price': price
+    })
 
     # Most recent event on this item.
     k = "%s-%s" % (user_id, product_id)
@@ -316,6 +323,7 @@ def get_ratings_from_user(user_id, events, f, config):
     final average in the end of the program.
   """
   ratings = {}
+  today = datetime.now()
   if config["method"] == 'count':
     # This method needs to work on all events for all items that this user has
     # interacted on, and not one and one product_id. Thus, handle all events in
@@ -326,7 +334,6 @@ def get_ratings_from_user(user_id, events, f, config):
 
     median = None
     if config.get("sigmoid_constant_average", None):
-      today = datetime.now()
       day_diffs = [(today - e["timestamp"]).days for pid, evts in events.iteritems() for e in evts]
       #median = np.median(day_diffs)
       median = np.average(day_diffs)
@@ -336,7 +343,7 @@ def get_ratings_from_user(user_id, events, f, config):
       # Get the rating from one of the different calculation schemes.
       if config["method"] == 'recentness':
         if config["minmax"] == "user":
-          rating = fx_recentness(evts, oldest_event[user_id], config, median=median)
+          rating = fx_recentness(evts, (today - oldest_event[user_id]).days, config, median=median)
         else:
           diff = (most_recent_globally - oldest_event_globally).days
           rating = fx_recentness(evts, diff, config, median=median)

@@ -1,8 +1,8 @@
 import helpers
 import random
+import traceback
 
-
-def appendZeroRatings(predictions, itemIds):
+def appendZeroRatings(train, predictions, itemIds):
     '''
     Complete the prediction lists in order
     to successfully compute the AUC
@@ -12,12 +12,19 @@ def appendZeroRatings(predictions, itemIds):
     #Randomize the order missing items are added
     random.shuffle(itemIds)
     count = 0
-
+    keyError = 0
+    print(predictions)
+    print(train)
     for user in predictions:
         for item in itemIds:
-            if not any(x[1] == item for x in predictions[user]):
-                count += 1
-                predictions[user].append([user, item, 0.0])
+            try:
+                if not any(x[1] == item for x in predictions[user]) and not any(y[1] == item for y in train[user]):
+                    count += 1
+                    predictions[user].append([user, item, 0.0])
+            except Exception:
+                #print('Key Error')
+                keyError += 1
+    print(keyError)
     print('Done appending %d missing items' %count)
     return predictions
 
@@ -29,18 +36,13 @@ def compute(train, test, predictions):
     For Java implementation see:
     https://github.com/jcnewell/MyMediaLiteJava/blob/master/src/org/mymedialite/eval/Items.java
     '''
-
+    
     train_users = helpers.buildDictByIndex(train, 0)
     test_users = helpers.buildDictByIndex(test, 0)
     predictions = helpers.buildDictByIndex(predictions, 0)
     #sortDictByRatings(predictions)                                #The ratings usually comes pre sorted
-
-    #itemIds = helpers.getUniqueItemList(train)
-    #predictions = appendZeroRatings(predictions, itemIds)
-
-
     candidateItems = helpers.getUniqueItemList(train)
-
+    predictions = appendZeroRatings(train_users, predictions, candidateItems)
     numCandidateItems = len(candidateItems)                       #Number of unique items in training set
 
     AUC = 0

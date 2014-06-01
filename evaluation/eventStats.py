@@ -23,14 +23,15 @@ def readEventTypeData(filePath=ROOT_FOLDER + '/generated/event_type.txt'):
             eventData.append(row)
     return eventData
     
-def getEventType(itemId, eventData):
+def getEventType(itemId, userId, eventData):
     '''
     Return the eventType of an item
     '''
-    
+    print(itemId)
+    print(userId)
     for event in eventData:
-        if int(itemId) == int(event[0]):
-            return int(event[1])
+        if itemId == event[1] and userId == event[0]:
+            return int(event[2])
         
     print('Warning: event_type could not be determined')
     return 0
@@ -57,7 +58,7 @@ def getActualStats(actual, eventData):
     counts = [0,0,0]
     
     for rating in actual:
-        eventType = getEventType(rating[1], eventData)
+        eventType = getEventType(rating[1], rating[0], eventData)
         if eventType == 1:
             counts[0] += 1
         elif eventType == 2:
@@ -73,16 +74,17 @@ def getPredictionStats(actual, predicted, eventData, topk=20):
     clicks, wants and purchases of the top-k list of all users
     '''
     
-    #actual = [1,1,1]
-    
     counts = [0,0,0]
     users = helpers.buildDictByIndex(predicted, 0)
     
     for user in users:
         actualList = getActualItems(actual, int(user))
-        for i in range(topk):
+        m = len(users[user])
+        if m > topk:
+            m = topk
+        for i in range(m):
             if users[user][i][1] in actualList:
-                eventType = getEventType(users[user][i][1], eventData)
+                eventType = getEventType(users[user][i][1], user, eventData)
                 if eventType == 1:
                     counts[0] += 1
                 elif eventType == 2:
@@ -118,7 +120,7 @@ def extractRatingsByEventType(actual, event_type, eventData):
     new_list = []
     
     for rating in actual:
-        eventType = getEventType(rating[1], eventData)
+        eventType = getEventType(rating[1], rating[0], eventData)
         if eventType == event_type:
             new_list.append(rating)
        
@@ -134,7 +136,12 @@ def compute(actual, predicted, k):
     actualCounts = getActualStats(actual, eventData)
     predictedCounts = getPredictionStats(actual, predicted, eventData, k)
 
-    recall = [x/float(y) for x, y in zip(predictedCounts, actualCounts)]
+    recall = []
+    for x,y in zip(predictedCounts, actualCounts):
+        if x != 0 and y != 0:
+            recall.append(x/float(y))
+        else:
+            recall.append(0)
     
     MAP_click_test = extractRatingsByEventType(actual, 1, eventData) 
     MAP_want_test = extractRatingsByEventType(actual, 2, eventData) 

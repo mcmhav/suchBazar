@@ -133,9 +133,7 @@ def compute(actual, predicted, k):
     predictions = filterNonTestUsersFromPredicted(actual, predicted)
     actualCounts = getActualStats(actual, eventData)
     predictedCounts = getPredictionStats(actual, predicted, eventData, k)
-    
-    print (actualCounts)
-    print (predictedCounts)
+
     recall = [x/float(y) for x, y in zip(predictedCounts, actualCounts)]
     
     MAP_click_test = extractRatingsByEventType(actual, 1, eventData) 

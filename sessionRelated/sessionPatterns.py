@@ -1,5 +1,4 @@
 import sys
-import argparse
 import helpers
 from bson import Binary, Code
 import subprocess
@@ -7,18 +6,19 @@ import shlex
 from graphviz import Digraph
 import os
 import operator
+import json
 # import pydot
 
+SCRIPT_FOLDER = os.path.dirname(os.path.realpath(__file__))
+ROOT_FOLDER = os.path.dirname(SCRIPT_FOLDER)
+savePath = ROOT_FOLDER + "/../muchBazar/src/image/"
+DATA_FOLDER = 'data'
+folder = SCRIPT_FOLDER + '/' + DATA_FOLDER
 
-parser = argparse.ArgumentParser(description='Users sessions.')
-parser.add_argument('-sc', type=str, default="sessions")
-args = parser.parse_args()
+if not os.path.exists(folder):
+        os.makedirs(folder)
 
-col = helpers.getCollection(args.sc)
-savePath = "../../muchBazar/src/image/"
-
-print ("Collection used: ", args.sc)
-print ("")
+filename = 'uniqueSessions.csv'
 
 totalRatings = {
     'product_wanted':0,
@@ -29,8 +29,9 @@ total = 0
 usersOver19 =0
 
 PERCENTAGE_MATCH=100
+makeNew = False
 
-def main():
+def main(sessDB='sessionsNew'):
     '''
         Make easy to change from "product_purchase_intended" to "product_purchased"
 
@@ -74,21 +75,65 @@ def main():
         v.4 - Hypothesis: When a users first is buying, he or she buys a lot.
             Find pattern of massbuyers
     '''
+    col = helpers.getCollection(sessDB)
 
-    uniqueSessions = []
-    groupSessions(uniqueSessions)
+    uniqueSessions = makeUniqueSessions(col,makeNew)
+
+
     drawCirclesAndStuff(uniqueSessions,True)
     drawCirclesAndStuff(uniqueSessions,False)
     # pydottestur(uniqueSessions)
     # allInOneWithFlow(uniqueSessions)
     # drawTopSessions(uniqueSessions)
 
+def makeUniqueSessions(col,makeNew):
+    if os.path.isfile(folder + '/' + filename) and not makeNew:
+        uniqueSessions = getFromFile(filename)
+    else:
+        uniqueSessions = groupSessions(col)
+        writeToFile(uniqueSessions,filename)
+    return uniqueSessions
 
-def groupSessions(uniqueSessions):
-    sessions = groupSessionsForUsers()
-    for session in sessions:
-        sorted_events = sortEventsOnTimeStamp(session['events'])
-        checkIfSessionMatchWithSessions([x[1] for x in sorted_events],uniqueSessions)
+def writeToFile(uniqueSessions,filename):
+    '''
+    '''
+    print ("Writing to file")
+    e = open(folder + '/' + filename,'w')
+    for x in uniqueSessions:
+        e.write(json.dumps(x) + "\n")
+    e.close()
+    print ("Done writing")
+    sys.exit()
+
+def getFromFile(filename):
+    '''
+    '''
+    e = open(folder + "/" + filename,'r')
+    line = e.readlines()
+    e.close()
+    uniqueSessions = []
+    for ua in line:
+        try:
+            ua_json_ready = ua.replace('\'','"')
+            uniqueSessions.append(json.loads(ua_json_ready))
+        except:
+            print ('lol')
+
+    return uniqueSessions
+
+def groupSessions(col):
+    users = col.distinct('user_id')
+    total = len(users)
+    count = 0
+    uniqueSessions = []
+    for user in users:
+        sessions = groupSessionsForUsers(col,user)
+        for session in sessions:
+            sorted_events = sortEventsOnTimeStamp(session['events'])
+            checkIfSessionMatchWithSessions([x[1] for x in sorted_events],uniqueSessions)
+        count += 1
+        helpers.printProgress(count,total)
+    return uniqueSessions
 
 def drawTopSessions(uniqueSessions):
     uniqueSessions_sorted = sorted(uniqueSessions, key=lambda k: k['count'], reverse=True)
@@ -220,7 +265,7 @@ def drawCirclesAndStuff(uniqueSessions,reduced):
                 node = reduceMapper(node)
             fromTo = ''
             if prevNode == '':
-                fromTo = 'A' + node
+                fromTo = 'Start' + node
             else:
                 fromTo = prevNode + node
             addEdgeToEdges(fromTo,edges,session['count'])
@@ -307,7 +352,38 @@ def nodeMapper(event):
         'product_purchase_intended':'L',
         'store_clicked':'M',
         'featured_collection_clicked':'N',
-    }[event]
+    }.get(event, 'O')
+
+[
+        "activity_clicked",
+        "storefront_clicked",
+        "product_detail_clicked",
+        "user_logged_in",
+        "featured_collection_clicked",
+        "app_started",
+        "featured_storefront_clicked",
+        "product_wanted",
+        "around_me_clicked",
+        "stores_map_clicked",
+        "store_clicked",
+        "product_purchase_intended",
+        "friend_invited",
+
+        "menu_opened",
+        "end:app_backgrounded",
+        "app_became_active",
+        "wantlist_menu_entry_clicked",
+        "content:interact:item_scroll",
+        "navigation:paging_triggered",
+        "content:explore:user_logo_clicked",
+        "collection_viewed",
+        "facebook_login_failed",
+        "end:app_closed",
+        "content:explore:search",
+        "navigation:navbar:sobazaar_icon",
+        "app_first_started"
+]
+
 
 def checkIfSessionMatchWithSessions(session,uniqueSessions):
     # if session in uniqueSessions:
@@ -333,11 +409,11 @@ def sortEventsOnTimeStamp(events):
     sorted_events = sorted(events.items(),reverse=False)
     return sorted_events
 
-def groupSessionsForUsers():
+def groupSessionsForUsers(col,user):
             # result.events.push(event);
     gReducer = Code("""
         function (cur,result) {
-            tmpts = (cur.ts);
+            tmpts = cur.ts;
             tmpev = cur.event_id;
             event = {
                 ev:tmpev,
@@ -353,7 +429,7 @@ def groupSessionsForUsers():
             'session':1,
         },
         condition = {
-            # 'user_id':user,
+            'user_id':user,
         },
         reduce = gReducer,
         initial = {
@@ -364,8 +440,8 @@ def groupSessionsForUsers():
     return eventGoups
 
 
-def handle_appStarted():
-    users = sessCol.distinct('user_id')
+def handle_appStarted(col):
+    users = col.distinct('user_id')
 
     global total
     total = len(users)
@@ -398,7 +474,7 @@ def hadndleUser(user):
 
     # userRatings = findRatingAmountForUser(user)
 
-def findStoreCount(user):
+def findStoreCount(user,col):
     print ("Finding access count for the different stores")
     reducer = Code("""
                     function (cur,result) {
@@ -406,7 +482,7 @@ def findStoreCount(user):
                     }
                    """)
 
-    groups = sessCol.group(
+    groups = col.group(
                            key={'storefront_name':1},
                            condition={'user_id':user,'storefront_name':{'$ne':'NULL'},'storefront_name':{'$ne':''}},
                            reduce=reducer,
@@ -424,12 +500,12 @@ def findMax(userEvents,field):
 def findMinMax(userEvents,val,field):
     return userEvents.sort(field,val)[0][field]
 
-def avgSessionsTime(user):
+def avgSessionsTime(user,col):
     print ("Finding average sessions time")
-    sessions = sessCol.find({'user_id':user}).distinct('session')
+    sessions = col.find({'user_id':user}).distinct('session')
     total = 0
     for session in sessions:
-        sessionEvents = sessCol.find({'user_id':user,'session':session}).sort('ts',-1)
+        sessionEvents = col.find({'user_id':user,'session':session}).sort('ts',-1)
         total += sessionEvents[0]['ts'] - sessionEvents[sessionEvents.count()-1]['ts']
     return total/len(sessions)
 
@@ -438,7 +514,7 @@ def avgEventPerSession(userEvents):
     sessions = userEvents.distinct('session')
     return userEvents.count()/len(sessions)
 
-def findTop10Items(user):
+def findTop10Items(user,col):
     print ("Finding top 10 items for user")
     reducer = Code("""
                     function (cur,result) {
@@ -446,7 +522,7 @@ def findTop10Items(user):
                     }
                    """)
 
-    groups = sessCol.group(
+    groups = col.group(
                            key={'product_id':1},
                            condition={'user_id':user,'product_id':{'$ne':'NULL'}},
                            reduce=reducer,
@@ -457,7 +533,7 @@ def findTop10Items(user):
 
     return groups
 
-def findRatingAmountForUser(user):
+def findRatingAmountForUser(user,col):
     # print ("Counting rating events for user")
     reducer = Code("""
                     function (cur,result) {
@@ -465,7 +541,7 @@ def findRatingAmountForUser(user):
                     }
                    """)
 
-    groups = sessCol.group(
+    groups = col.group(
                            key={'event_id':1},
                            condition={'user_id':user,'$or':[{'event_id':'product_purchase_intended'}, {'event_id':'product_wanted'},{'event_id':'product_detail_clicked'}]},
                            reduce=reducer,
@@ -485,7 +561,7 @@ def findRatingAmountForUser(user):
 
     return groups
 
-def testWithMapReduce(user):
+def testWithMapReduce(user,col):
     mapper = Code(  """
                     function () {
                         if (this.event_id == 'product_purchase_intended' || this.event_id == 'product_wanted' || this.event_id == 'product_detail_clicked')
@@ -502,7 +578,7 @@ def testWithMapReduce(user):
                         return total;
                     }
                     """)
-    result = sessCol.map_reduce(mapper, reducer, "myresults")
+    result = col.map_reduce(mapper, reducer, "myresults")
 
     for r in result.find():
         print (r)

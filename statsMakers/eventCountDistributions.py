@@ -16,8 +16,8 @@ def main(sessDB='sessionsNew'):
     ks, counts = preprocessGroups(k,groups)
     ks,xss,xticks = groupProductsOnCounts(ks,counts,cap=50)
     helpers.makePlot(k + 'cum',
-                     xss,
                      ks,
+                     yaxis=xss,
                      # title='Cumulative distribution of events on products',
                      ylabel='Product count',
                      xlabel='Event count',
@@ -28,12 +28,13 @@ def main(sessDB='sessionsNew'):
     groups = helpers.getKGroups(k,sessDB)
     ks, counts = preprocessGroups(k,groups)
     helpers.makePlot(k,
-                     ks,
                      counts,
+                     yaxis=ks,
                      # title='Event id distribution',
                      ylabel='Event id count',
                      xlabel='Event id',
                      show=show,
+                     steps=len(ks)
                      )
 
     k = 'storefront_name'
@@ -41,8 +42,8 @@ def main(sessDB='sessionsNew'):
     ks,counts = preprocessGroups(k,groups)
     ks,counts = handleStoreFront(ks,counts)
     helpers.makePlot(k,
-                     ks,
                      counts,
+                     yaxis=ks,
                      # title='Distribution of events on stores',
                      ylabel='Event count',
                      xlabel='Store name',
@@ -58,14 +59,15 @@ def main(sessDB='sessionsNew'):
     ks, counts = preprocessGroups(k,groups)
     labels = handleRetailerBrand(ks)
     helpers.makePlot(k,
-                     ks,
                      counts,
+                     yaxis=ks,
                      # title='Distribution of events on retailer brands',
                      ylabel='Event count',
                      xlabel='Brand name',
                      labels=labels,
                      show=show,
-                     xticks=[]
+                     xticks=[],
+                     steps=len(ks)
                      )
 
     k = 'hr'
@@ -73,8 +75,8 @@ def main(sessDB='sessionsNew'):
     ks, counts = preprocessGroups(k,groups)
     ks, counts = sortHours(k,ks,counts)
     helpers.makePlot(k,
-                     ks,
                      counts,
+                     yaxis=ks,
                      # title='Distribution of events on hours',
                      ylabel='Event count',
                      xlabel='Time of day',
@@ -92,7 +94,7 @@ def main(sessDB='sessionsNew'):
     helpers.makePlot(
                         k,
                         ks,
-                        ks,
+                        yaxis=ks,
                         # title='Distribution of events for users',
                         ylabel='User count',
                         xlabel='Event count',
@@ -111,7 +113,7 @@ def main(sessDB='sessionsNew'):
     helpers.makePlot(
                         k + 'cum',
                         ks,
-                        ks,
+                        yaxis=ks,
                         # title='Cumulative distribution of events for users',
                         ylabel='Percentage of users',
                         xlabel='Event count',
@@ -138,7 +140,7 @@ def main(sessDB='sessionsNew'):
     helpers.makePlot(
                         k + 'cum',
                         ks,
-                        ks,
+                        yaxis=ks,
                         # title='Cumulative distribution of sessions for users',
                         ylabel='Percentage of users',
                         xlabel='Session count',

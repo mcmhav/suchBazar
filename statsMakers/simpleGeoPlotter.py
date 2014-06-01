@@ -5,13 +5,14 @@ import argparse
 import os
 
 def main(sessDB='sessionsNew'):
-    m = makeMap()
-    plotOnMap(m,sessDB)
-    location = os.path.dirname(os.path.abspath(__file__)) + "/../../muchBazar/src/image/simpleGeoPlot.png"
-    plt.savefig(location)
-    print ("Simple geo plot written to: %s" % location)
+    m = makeNorwayMap()
+    plotOnMap(m,sessDB,'Norway')
 
-def plotOnMap(m,sessDB):
+    m = makeWorldMap()
+    plotOnMap(m,sessDB,'world')
+
+
+def plotOnMap(m,sessDB,name):
     sessCol = helpers.getCollection(sessDB)
     locations = sessCol.distinct('event_data.location')
     c = 0
@@ -28,10 +29,20 @@ def plotOnMap(m,sessDB):
             newC += 1
         c += 1
     print (newC)
+    location = os.path.dirname(os.path.abspath(__file__)) + "/../../muchBazar/src/image/simpleGeoPlot" + name + ".png"
+    plt.savefig(location)
+    print ("Simple geo plot written to: %s" % location)
 
-def makeMap():
-    m = Basemap(width=3000000,height=2700000,projection='lcc',
-                resolution='c',lat_1=25.,lat_2=25,lat_0=66,lon_0=10.)
+def makeWorldMap():
+    m = Basemap(projection='robin', lat_0=0, lon_0=10,resolution='l', area_thresh=1000.0)
+
+    m.drawcoastlines()
+    m.drawmapboundary(fill_color='aqua')
+    m.fillcontinents(color='coral',lake_color='aqua')
+    return m
+
+def makeNorwayMap():
+    m = Basemap(width=3000000,height=2700000,projection='lcc',resolution='c',lat_1=25.,lat_2=25,lat_0=66,lon_0=10.)
     # oslo 59° 55' 0" North, 10° 45' 0"
 
     m.drawcoastlines()

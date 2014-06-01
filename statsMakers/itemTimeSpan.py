@@ -72,8 +72,8 @@ def plotItemTimeSpans(timeSpans):
     ks = np.arange(0,len(buckets))
     helpers.makePlot(
         'itemTimespans',
-        ks,
         buckets,
+        yaxis=ks,
         # title='Time between first event on item till the last',
         ylabel='Amount of items',
         xlabel='Time in weeks',

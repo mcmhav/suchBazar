@@ -1,12 +1,15 @@
 #!/usr/bin/env python
+from scipy.stats import gaussian_kde
 import os
 import csv
+import numpy as np
 import matplotlib.pyplot as plt
 import argparse
 
 parser = argparse.ArgumentParser(description = 'Blend ratings')
 parser.add_argument('-d', dest='dest', default="distributions", help="Where should we put our distributions?")
 parser.add_argument('-i', dest='infolder', default="ratings", help="Which folder should we plot from?")
+parser.add_argument('-c', dest='curve', action='store_true', default=False, help="Plot the density function as well")
 args = parser.parse_args()
 
 # Some preferences
@@ -40,11 +43,13 @@ for f in rfiles:
 
   # Parse CSV-file.
   i = 0
+  ratings = []
   for row in csv.reader(fh, delimiter="\t"):
     user_id = int(row[0])
     product_id = int(row[1])
     rating = float(row[2])
     x[i] = rating
+    ratings.append(rating)
     i += 1
 
   # Number of bars, should be pretty high to show granularity.
@@ -52,14 +57,27 @@ for f in rfiles:
 
   # the histogram of the data
   fig, ax = plt.subplots()
-  n, bins, patches = ax.hist(x, num_bins, facecolor='green', alpha=0.5)
+  n, bins, patches = ax.hist(x, num_bins, facecolor='green', normed=args.curve, alpha=0.5)
 
   # We manually set the x-lim.
   ax.set_xlim((0.9, 5.1))
 
+  # Add best fit line
+  if args.curve:
+    density = gaussian_kde(x)
+
+    # Set co-variance factor, lower means more detail.
+    density.covariance_factor = lambda : .25
+    density._compute_covariance()
+
+    # Create linear space with 200 samples.
+    xs = np.linspace(1,5,200)
+
+    # Plot the density function.
+    ax.plot(xs, density(xs), 'r--', linewidth=1)
+
   plt.xlabel('Rating')
   plt.ylabel('Number of ratings')
-  #plt.title(f["fname"][:-4])
 
   plt.savefig("%s/%s.png" % (args.dest, f["fname"][:-4]))
   plt.clf()

@@ -120,7 +120,7 @@ if [ "$RANKRECOMMENDERS" != "" ]; then
     /bin/bash $ROOT/generators/myMediaLitePredicter.sh -t "$trainTestTuples" -r -p $ir $QUIET;
 
     # evaluate predicted values
-    /bin/bash $ROOT/generators/evaluate.sh -t "$trainTestTuples" -r -p $ir;
+    /bin/bash $ROOT/evaluation/evaluate.sh -t "$trainTestTuples" -r -p $ir;
   done
 fi
 

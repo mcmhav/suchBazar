@@ -104,8 +104,8 @@ def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
     print('MAP%d: %.4f' %(k, mapk))
     #print('nDCG%d: %.4f' %(l, nDCG))
     #print('HLU%d: %.4f' %(beta, hluB))
-    
-    
+
+
     helpers.prepareEvauationScoreToLaTeX(
         ntpath.basename(predictionFile),
         str(us_coverage),

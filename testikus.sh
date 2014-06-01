@@ -13,7 +13,7 @@ usage() { echo "Usage: $0 -i sobazar_input.tab"; exit 1; }
 ROOT=$( cd "$( dirname "$0" )" && pwd );
 
 # Some parameters changable in the opts.
-INFILE="-i ../datasets/v3/sobazar_events_prod_cleaned_formatted.tab"
+INFILE="../datasets/v3/sobazar_events_prod_cleaned_formatted.tab"
 CLEAN=""
 SPLIT=0
 
@@ -31,10 +31,10 @@ MAHOUTRECOMMENDERS="svd"
 
 QUIET=''
 
-while getopts "i:cp:sr:m:q" o; do
+while getopts "i:cp:s:r:m:q" o; do
   case "${o}" in
     i)
-      INFILE="-i ${OPTARG}"
+      INFILE="${OPTARG}"
       ;;
     c)
       CLEAN="-c"
@@ -49,7 +49,7 @@ while getopts "i:cp:sr:m:q" o; do
       MAHOUTRECOMMENDERS="${OPTARG}"
       ;;
     s)
-      SPLIT=1
+      SPLIT="${OPTARG}"
       ;;
     q)
       QUIET="-q"
@@ -60,26 +60,41 @@ while getopts "i:cp:sr:m:q" o; do
   esac
 done
 
-OPTS="$INFILE $CLEAN"
+OPTS="-i $INFILE $CLEAN"
+
+TESTFILE=""
+TRAINFILE=""
+
+# Todo: can we avoid having such a long string which, to be honest, no one will change in near future anyways?
+trainTestTuples="blend_itemtrain1.txt:blend_itemtest1.txt blend_itemtrain2.txt:blend_itemtest2.txt blend_itemtrain3.txt:blend_itemtest3.txt blend_systemtrain1.txt:blend_systemtest.txt blend_systemtrain2.txt:blend_systemtest.txt blend_systemtrain3.txt:blend_systemtest.txt blend_usertrain1.txt:blend_usertest1.txt blend_usertrain2.txt:blend_usertest2.txt blend_usertrain3.txt:blend_usertest3.txt"
 
 # Generate ratings (blending and timestamps enabled by default)
 /bin/bash $ROOT/generators/generate_implicit.sh -b -t $OPTS;
 
-if [ $SPLIT -eq 1 ]; then
-  # Cold start split
-  echo "Splitting data into colstart splits"
-  python2.7 $ROOT/evaluation/evaluation.py --coldstart-split $ROOT/generated/ratings/blend.txt --feature-file $ROOT/data/product_features.txt -t -fb '1,1,1,1,0';
-fi
+if [ -n "$SPLIT" ]; then
 
-# Todo: can we avoid having such a long string which, to be honest, no one will change in near future anyways?
-trainTestTuples="blend_itemtrain1.txt:blend_itemtest1.txt blend_itemtrain2.txt:blend_itemtest2.txt blend_itemtrain3.txt:blend_itemtest3.txt blend_systemtrain1.txt:blend_systemtest.txt blend_systemtrain2.txt:blend_systemtest.txt blend_systemtrain3.txt:blend_systemtest.txt blend_usertrain1.txt:blend_usertest1.txt blend_usertrain2.txt:blend_usertest2.txt blend_usertrain3.txt:blend_usertest3.txt"
+  if [ "$SPLIT" == "random" ]; then
+    echo "Splitting based on $INFILE"
+    /bin/bash $ROOT/generators/split.sh -r -i $INFILE
+
+    FILENAME=$(basename $INFILE);
+    TESTFILE="${FILENAME}.1.txt";
+    TRAINFILE="${FILENAME}.9.txt";
+    trainTestTuples="${TRAINFILE}:${TESTFILE}"
+  else
+    # Cold start split
+    echo "Splitting data into colstart splits"
+    python2.7 $ROOT/evaluation/evaluation.py --coldstart-split $ROOT/generated/ratings/blend.txt --feature-file $ROOT/data/product_features.txt -t -fb '1,1,1,1,0';
+  fi
+
+fi
 
 if [ "$ITEMRECOMMENDERS" != "" ]; then
   for ir in $ITEMRECOMMENDERS
   do
     # make predictions
     echo "------------------------------"
-    /bin/bash $ROOT/generators/myMediaLitePredicter.sh -t "$trainTestTuples" -i -p $ir $QUIET;
+    /bin/bash $ROOT/generators/myMediaLitePredicter.sh -d $(dirname $INFILE) -t "$trainTestTuples" -i -p $ir $QUIET;
 
     # evaluate predicted values
     /bin/bash $ROOT/evaluation/evaluate.sh -t "$trainTestTuples" -r -i -p $ir -m;

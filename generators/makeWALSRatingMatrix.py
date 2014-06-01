@@ -5,7 +5,7 @@ from functools import partial
 from bson import Binary, Code
 
 parser = argparse.ArgumentParser(description='Make wALS rating matrix.')
-parser.add_argument('-sc',type=str, default="sessions")
+parser.add_argument('-sc',type=str, default="sessionsNew")
 args = parser.parse_args()
 
 print ("Collection used:             %s" % args.sc)
@@ -34,10 +34,10 @@ def useScheme(scheme,No):
     ratings = scheme()
     # count = 0
     # total = len(ratings)
-    e = open("ratings/No" + '.csv','w')
+    e = open("../generated/ratings/No" + '.csv','w')
     for s in ratings:
         if (s['product_id'] != 'NULL'):
-            ratingColumn = str(int(s['user_id']))+' '+str(int(s['product_id']))+' '+str(int(s['rating']))+' '+str(s['weight'])+'\n'
+            ratingColumn = str(int(s['user_id']))+' '+str(int(s['product_id']))+' '+str(int(s['rating']))+'\t'+str(s['weight'])+'\n'
             e.write(ratingColumn)
         # sys.exit()
         # count += 1

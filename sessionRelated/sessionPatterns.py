@@ -12,6 +12,8 @@ import json
 SCRIPT_FOLDER = os.path.dirname(os.path.realpath(__file__))
 ROOT_FOLDER = os.path.dirname(SCRIPT_FOLDER)
 savePath = ROOT_FOLDER + "/../muchBazar/src/image/"
+# savePath = ROOT_FOLDER + "/../../tmp/"
+
 DATA_FOLDER = 'data'
 folder = SCRIPT_FOLDER + '/' + DATA_FOLDER
 
@@ -79,12 +81,16 @@ def main(sessDB='sessionsNew'):
 
     uniqueSessions = makeUniqueSessions(col,makeNew)
 
-
     drawCirclesAndStuff(uniqueSessions,True)
     drawCirclesAndStuff(uniqueSessions,False)
     # pydottestur(uniqueSessions)
     # allInOneWithFlow(uniqueSessions)
-    # drawTopSessions(uniqueSessions)
+    # drawTopSessions(
+    #     uniqueSessions,
+    #     mostPopularCap=len(uniqueSessions),
+    #     minCap=7,
+    #     maxCap=10
+    # )
 
 def makeUniqueSessions(col,makeNew):
     if os.path.isfile(folder + '/' + filename) and not makeNew:
@@ -135,12 +141,18 @@ def groupSessions(col):
         helpers.printProgress(count,total)
     return uniqueSessions
 
-def drawTopSessions(uniqueSessions):
+def drawTopSessions(uniqueSessions,mostPopularCap=6000,minCap=12,maxCap=14):
     uniqueSessions_sorted = sorted(uniqueSessions, key=lambda k: k['count'], reverse=True)
-    tmp = uniqueSessions_sorted[2:102]
+    tmp = uniqueSessions_sorted[:mostPopularCap]
+    # tmp = uniqueSessions_sorted[2:1002]
 
+    c = 0
+    total = len(tmp)
     for session in tmp:
-        drawSeparateSession(session['session'],session['count'])
+        if len(session['session']) > minCap and len(session['session']) < maxCap:
+            drawSeparateSession(session['session'],session['count'],c)
+        c += 1
+        helpers.printProgress(c,total)
 
 def allInOneWithFlow(uniqueSessions):
     topSessions = []
@@ -200,7 +212,7 @@ def allInOneWithFlow(uniqueSessions):
 def renderDot(dotSource, name):
     dotSource.render(savePath + name + '-gvfile', view=False)
 
-def drawSeparateSession(session,sid):
+def drawSeparateSession(session,sid,lol):
     dot = Digraph(comment='Session' + str(sid))
     dot.node('1', 'Start')
     count = 2
@@ -218,7 +230,7 @@ def drawSeparateSession(session,sid):
         )
         count += 1
         prevNode = thisNode
-    renderDot(dot, 'session-' + str(sid))
+    renderDot(dot, str(lol) + 'session-' + str(sid))
 
 def drawCirclesAndStuff(uniqueSessions,reduced):
     dot = Digraph(comment='Session-pattern')

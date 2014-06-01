@@ -97,10 +97,10 @@ SCRIPT="$CWD/ratings.py"
 #python $SCRIPT $OPTS -m count -fx sigmoid_constant -sc 30
 
 ## A nice, example blend
-python $SCRIPT $OPTS -m count -fx linear &
-python $SCRIPT $OPTS -m count -fx sigmoid_fixed -sr 3.5 &
-python $SCRIPT $OPTS -m recentness -fx linear &
-python $SCRIPT $OPTS -m recentness -fx sigmoid_fixed -sr 3.5 &
+python2.7 $SCRIPT $OPTS -m count -fx linear &
+python2.7 $SCRIPT $OPTS -m count -fx sigmoid_fixed -sr 3.5 &
+python2.7 $SCRIPT $OPTS -m recentness -fx linear &
+python2.7 $SCRIPT $OPTS -m recentness -fx sigmoid_fixed -sr 3.5 &
 
 # Wait till the last backgorund process has completed.
 wait
@@ -114,10 +114,10 @@ if [ $BLEND -eq 1 ]; then
   ls "$RATINGS" > "$GENERATED/files.conf"
 
   # Do the blend.
-  python $CWD/blend.py -c "$GENERATED/files.conf" -d "$RATINGS" -o "blend.txt"
+  python2.7 $CWD/blend.py -c "$GENERATED/files.conf" -d "$RATINGS" -o "blend.txt"
 fi
 
 # If plot then we run the plotting tool
 if [ $PLOT -eq 1 ]; then
-  python $CWD/plot_distribution.py -i "$RATINGS" -d "$RATING_DISTS"
+  python2.7 $CWD/plot_distribution.py -i "$RATINGS" -d "$RATING_DISTS"
 fi

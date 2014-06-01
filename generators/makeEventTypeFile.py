@@ -1,7 +1,7 @@
 '''
 Functions for making a eventType file to be used during evaluation
 Generates a file on the form:
-<Item ID><Event Type>
+<Item ID><User ID><Event Type>
 Product_detail_clicked is translated into 1
 Product_wanted is translated into 2
 Product_purchase_intended is translated into 3
@@ -10,6 +10,7 @@ Product_purchase_intended is translated into 3
 import csv
 import json
 import argparse
+import os
 
 SCRIPT_FOLDER = os.path.dirname(os.path.realpath(__file__))
 ROOT_FOLDER = os.path.dirname(SCRIPT_FOLDER)
@@ -31,7 +32,7 @@ def createEventTypeFile(ratingFile, sobazarData):
         for row in reader: 
             eventId = translateEvent(row[1])
             if eventId and row[12] != 'NULL':
-                eventData.append([row[12], eventId])
+                eventData.append([row[12], row[16], eventId])
 
     eventData = mergeList(eventData)
     eventData = cleanList(eventData, ratingFile)
@@ -64,7 +65,7 @@ def cleanList(eventData, ratingFile):
     uniqueItems = getUniqueItemList(ratings)
     
     for event in eventData:
-        if event[0] in uniqueItems:
+        if event[1] in uniqueItems:
             new_list.append(event)
       
     print('Removed %d items from the event list %d items remaining' %(len(eventData) - len(new_list), len(new_list)))        
@@ -80,18 +81,26 @@ def mergeList(eventData):
     
     new_list = []
     
-    events = {}
+    
+    users = {}
+    
     for event in eventData:
-        if not event[0] in events:
-            events[event[0]] = list()
-        events[event[0]].append(event)
-            
-    for event in events:
-        m = 0
-        for i in range(len(events[event])):
-            if events[event][i][1] > m:
-                m = events[event][i][1]
-        new_list.append([events[event][0][0], m])     
+        if not event[1] in users:
+            users[event[1]] = list()
+        users[event[1]].append(event)
+        
+    for user in users:
+        events = {}  
+        for event in users[user]:
+            if not event[0] in events:
+                events[event[0]] = list()
+            events[event[0]].append(event)  
+        for event in events:
+            m = 0
+            for i in range(len(events[event])):
+                if events[event][i][2] > m:
+                    m = events[event][i][2]
+            new_list.append([user, events[event][0][0], m])     
     
     return new_list           
     

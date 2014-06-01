@@ -53,7 +53,9 @@ do
     OPT+=(--test-file $TEST_FILE);
     OPT+=(--prediction-file $PRED_FILE);
 
+    set -x
     python2.7 $CMD/evaluation.py -b 2 -k 20 "${OPT[@]}" $MMLITEMRATINGSTYLE &
+    set +x
 done
 wait $!
 echo "Done evaluating $RECOMMENDER"

@@ -33,7 +33,7 @@ def main(sessDB='sessionsNew'):
         xlabel='Session count',
         show=False,
         grid=True,
-        xticks=[helpers.makeTicks(yMax=len(xaxis)),xticks]
+        xticks=[helpers.makeTicks(yMax=len(xaxis)),helpers.makeTicks(yMax=max(xaxis))]
     )
 
 def getFromFile(filename):

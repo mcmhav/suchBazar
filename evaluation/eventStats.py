@@ -23,17 +23,17 @@ def readEventTypeData(filePath=ROOT_FOLDER + '/generated/event_type.txt'):
             eventData.append(row)
     return eventData
     
-def getEventType(itemId, userId, eventData):
+def getEventType(userId, itemId, eventData):
     '''
     Return the eventType of an item
+    Only return something if the item and user
+    combination is in the log files
     '''
-    print(itemId)
-    print(userId)
+    
     for event in eventData:
-        if itemId == event[1] and userId == event[0]:
+        if int(itemId) == int(event[1]) and int(userId) == int(event[0]):
             return int(event[2])
         
-    print('Warning: event_type could not be determined')
     return 0
     
 def getActualItems(actual, userId):
@@ -44,7 +44,7 @@ def getActualItems(actual, userId):
     items = []
     
     for rating in actual:
-        if int(rating[0]) == userId:
+        if int(rating[0]) == int(userId):
             items.append(rating[1])
             
     return items
@@ -58,7 +58,7 @@ def getActualStats(actual, eventData):
     counts = [0,0,0]
     
     for rating in actual:
-        eventType = getEventType(rating[1], rating[0], eventData)
+        eventType = getEventType(rating[0], rating[1], eventData)
         if eventType == 1:
             counts[0] += 1
         elif eventType == 2:
@@ -84,7 +84,7 @@ def getPredictionStats(actual, predicted, eventData, topk=20):
             m = topk
         for i in range(m):
             if users[user][i][1] in actualList:
-                eventType = getEventType(users[user][i][1], user, eventData)
+                eventType = getEventType(user, users[user][i][1], eventData)
                 if eventType == 1:
                     counts[0] += 1
                 elif eventType == 2:
@@ -120,12 +120,33 @@ def extractRatingsByEventType(actual, event_type, eventData):
     new_list = []
     
     for rating in actual:
-        eventType = getEventType(rating[1], rating[0], eventData)
+        eventType = getEventType(rating[0], rating[1], eventData)
         if eventType == event_type:
             new_list.append(rating)
        
+    print('Extracted %d ratings with eventType %d' %(len(new_list), event_type))   
     return new_list
 
+def compute_recall(actual, predicted):
+    
+    recall = []
+    for x,y in zip(predicted, actual):
+        if x != 0 and y != 0:
+            recall.append(x/float(y))
+        else:
+            recall.append(0)
+    return recall
+    
+def generateResultList(aCounts, pCounts, recall, map_c, map_w, map_p):
+    
+    result = pCounts
+    result.extend(aCounts)
+    result.extend(recall)
+    result.append(map_c)
+    result.append(map_w)
+    result.append(map_p)
+    return result
+        
  
 def compute(actual, predicted, k):
     
@@ -133,59 +154,44 @@ def compute(actual, predicted, k):
     
     eventData = readEventTypeData()
     predictions = filterNonTestUsersFromPredicted(actual, predicted)
-    actualCounts = getActualStats(actual, eventData)
-    predictedCounts = getPredictionStats(actual, predicted, eventData, k)
 
-    recall = []
-    for x,y in zip(predictedCounts, actualCounts):
-        if x != 0 and y != 0:
-            recall.append(x/float(y))
-        else:
-            recall.append(0)
+    aCounts = getActualStats(actual, eventData)
+    pCounts = getPredictionStats(actual, predicted, eventData, k)
+    recall = compute_recall(aCounts, pCounts)
     
-    MAP_click_test = extractRatingsByEventType(actual, 1, eventData) 
-    MAP_want_test = extractRatingsByEventType(actual, 2, eventData) 
-    MAP_purchase_test = extractRatingsByEventType(actual, 3, eventData) 
-    
-    t, p = helpers.preprocessMAP(MAP_click_test, predictions, k)
-    map_click_k = map.mapk(t, p, k)
-    t, p = helpers.preprocessMAP(MAP_want_test, predictions, k)
-    map_want_k = map.mapk(t, p, k)
-    t, p = helpers.preprocessMAP(MAP_purchase_test, predictions, k)
-    map_purchase_k = map.mapk(t, p, k)
+    MAP = extractRatingsByEventType(actual, 1, eventData)
+    t, p = helpers.preprocessMAP(MAP, predictions, k)
+    map_c = map.mapk(t, p, k)
+     
+    MAP = extractRatingsByEventType(actual, 2, eventData)
+    t, p = helpers.preprocessMAP(MAP, predictions, k)
+    map_w = map.mapk(t, p, k)
+     
+    MAP = extractRatingsByEventType(actual, 3, eventData) 
+    t, p = helpers.preprocessMAP(MAP, predictions, k)
+    map_p = map.mapk(t, p, k)
     
     print(datetime.now()-startTime)
     
-    '''
     print('*** RESULTS ***')
-    print('Predicted list recall (true-positives')
-    print(predictedCounts)
+    print('Predicted list recall (true-positives)')
+    print(pCounts)
     print('Test list event distribution')
-    print(actualCounts)
+    print(aCounts)
     print('Recall at %d' %k)
     print(recall)
-    print('MAP at %d clicked: %.2f' %(k, map_click_k))
-    print('MAP at %d wanted: %.2f' %(k, map_want_k))
-    print('MAP at %d purchased: %.2f' %(k, map_purchase_k))
-    '''
+    print('MAP at %d clicked: %.6f' %(k, map_c))
+    print('MAP at %d wanted: %.6f' %(k, map_w))
+    print('MAP at %d purchased: %.6f' %(k, map_p))
     
-    results = predictedCounts
-    results.extend(actualCounts)
-    results.extend(recall)
-    results.append(map_click_k)
-    results.append(map_want_k)
-    results.append(map_purchase_k)
-    print(results)
-    
-    return results
-    
+    return generateResultList(aCounts, pCounts, recall, map_c, map_w, map_p)
     
 ### TESTING ### 
         
-#import itemAverage
+import itemAverage
         
-#train = helpers.readRatingsFromFile('../data/count_linear.txt.1.txt')
-#test = helpers.readRatingsFromFile('../data/count_linear.txt.1.txt')
-#predictions = itemAverage.mostPopular(train, test)
+train = helpers.readRatingsFromFile('../data/count_linear.txt.9.txt')
+test = helpers.readRatingsFromFile('../data/count_linear.txt.1.txt')
+predictions = itemAverage.mostPopular(train, test)
 
-#compute(test, predictions, 100)
+compute(test, predictions, 20)

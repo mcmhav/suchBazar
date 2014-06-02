@@ -18,7 +18,7 @@ ROOT_FOLDER = os.path.dirname(SCRIPT_FOLDER)
 def createEventTypeFile(ratingFile, sobazarData):
     '''
     Generates a file on the form
-    Item ID : Event Type
+    User ID : Item ID : Event Type
     To be used in evaluation
     ratings: path of rating file
     sobazarData: path of sobazar log file
@@ -32,7 +32,7 @@ def createEventTypeFile(ratingFile, sobazarData):
         for row in reader: 
             eventId = translateEvent(row[1])
             if eventId and row[12] != 'NULL':
-                eventData.append([row[12], row[16], eventId])
+                eventData.append([row[16], row[12], eventId])
 
     eventData = mergeList(eventData)
     eventData = cleanList(eventData, ratingFile)
@@ -40,35 +40,40 @@ def createEventTypeFile(ratingFile, sobazarData):
     print('Writing event type data to file...')
     writeToFile(eventData)
     
-def getUniqueItemList(ratings):
+def getUnique(ratings):
     '''
     *** Testing ***
     Get a list of all the unique Item IDs
     '''
     
     items = []
+    users = []
     
     for rating in ratings:
         items.append(rating[1])
+        users.append(rating[0])
         
-    return set(items)  
+    return set(items), set(users)
     
 def cleanList(eventData, ratingFile):
     '''
     *** Testing ***
-    Remove items not in the rating file
+    Remove items & users not in the rating file
     '''
     
     new_list = []
     
     ratings = readRatings(ratingFile)
-    uniqueItems = getUniqueItemList(ratings)
+    uniqueItems, uniqueUsers = getUnique(ratings)
     
     for event in eventData:
-        if event[1] in uniqueItems:
+        if event[1] in uniqueItems and event[0] in uniqueUsers:
             new_list.append(event)
       
-    print('Removed %d items from the event list %d items remaining' %(len(eventData) - len(new_list), len(new_list)))        
+    print('Removed %d items from the event list %d items remaining' %(len(eventData) - len(new_list), len(new_list)))
+    
+    if len(new_list) == len(ratings):
+        print('Event file now matches rating file!')
             
     return new_list       
     
@@ -85,23 +90,24 @@ def mergeList(eventData):
     users = {}
     
     for event in eventData:
-        if not event[1] in users:
-            users[event[1]] = list()
-        users[event[1]].append(event)
+        if not event[0] in users:
+            users[event[0]] = list()
+        users[event[0]].append(event)
         
     for user in users:
         events = {}  
         for event in users[user]:
-            if not event[0] in events:
-                events[event[0]] = list()
-            events[event[0]].append(event)  
+            if not event[1] in events:
+                events[event[1]] = list()
+            events[event[1]].append(event)  
         for event in events:
             m = 0
             for i in range(len(events[event])):
                 if events[event][i][2] > m:
                     m = events[event][i][2]
-            new_list.append([user, events[event][0][0], m])     
+            new_list.append([user, events[event][0][1], m])     
     
+    print('Merge removed %d lesser events' %((len(eventData)-len(new_list))))
     return new_list           
     
        

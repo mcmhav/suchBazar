@@ -1,6 +1,7 @@
 import helpers
 import random
 import traceback
+import sys
 
 def appendZeroRatings(train, predictions, itemIds):
     '''
@@ -13,6 +14,17 @@ def appendZeroRatings(train, predictions, itemIds):
     random.shuffle(itemIds)
     count = 0
     keyError = 0
+
+
+    # This won't be right for all occurrences, but just wanna test fast now
+    predlen = len(predictions)
+    if len(train) == predlen:
+        return predictions
+
+    print (len(train))
+    print (len(predictions))
+    print (len(itemIds))
+    c = 0
     for user in predictions:
         for item in itemIds:
             try:
@@ -22,8 +34,10 @@ def appendZeroRatings(train, predictions, itemIds):
             except Exception:
                 #print('Key Error')
                 keyError += 1
+        c +=1
+        helpers.printProgress(c,predlen)
     print(keyError)
-    print('Done appending %d missing items' %count)
+    print('Done appending %d missing items' % count)
     return predictions
 
 def compute(train, test, predictions):

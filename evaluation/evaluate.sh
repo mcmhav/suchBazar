@@ -49,6 +49,8 @@ do
     PRED_FILE="$ROOT/generated/predictions/${Array[0]}-${Array[1]}-$RECOMMENDERSYS-$RECOMMENDER.predictions";
     F_FILE="$FEATUREFILE";
 
+    echo "Evaluating $PRED_FILE"
+
     OPT=(--training-file $TRAIN_FILE);
     OPT+=(--test-file $TEST_FILE);
     OPT+=(--prediction-file $PRED_FILE);

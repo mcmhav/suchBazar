@@ -26,9 +26,13 @@ MYMEDIAITEM=0
 MYMEDIARANK=0
 RECOMMENDER=""
 QUIET=0
+CLEAN=0
 
-while getopts "t:irqp:" o; do
+while getopts "ct:irqp:" o; do
   case "${o}" in
+    c)
+      CLEAN=1
+      ;;
     t)
       TTT=("${OPTARG}")
       ;;
@@ -81,7 +85,7 @@ if [ $MYMEDIAITEM -eq 1 ] || [ $MYMEDIARANK -eq 1 ]; then
         OPT+=(--prediction-file "$PREDFILE");
         # OPT+=($STDOUT)
         # echo ${OPT[@]}
-        if [ ! -f "$PREDFILE" ]; then
+        if [ ! -f "$PREDFILE" ] || [ $CLEAN -eq 1 ]; then
           if [ $QUIET -eq 1 ]; then
             item_recommendation ${OPT[@]} >/dev/null 2>/dev/null &
           else
@@ -96,7 +100,7 @@ if [ $MYMEDIAITEM -eq 1 ] || [ $MYMEDIARANK -eq 1 ]; then
         OPT+=(--prediction-file "$PREDFILE");
 
         if [ ! -f "$PREDFILE" ]; then
-          if [ $QUIET -eq 1 ]; then
+          if [ $QUIET -eq 1 ] || [ $CLEAN -eq 1 ]; then
             rating_prediction ${OPT[@]} >/dev/null 2>/dev/null &
           else
             rating_prediction ${OPT[@]} &

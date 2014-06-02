@@ -108,6 +108,6 @@ if [ $MYMEDIAITEM -eq 1 ] || [ $MYMEDIARANK -eq 1 ]; then
         fi
       fi
     done
-    wait $!
+    wait;
     echo "Done making MyMediaLite rating predictions with $RECOMMENDER";
 fi

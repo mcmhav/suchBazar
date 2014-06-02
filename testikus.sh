@@ -20,15 +20,15 @@ BINARY=0
 
 # Available Item Recommenders:
 # 'BPRMF' 'ItemAttributeKNN' 'ItemKNN' 'MostPopular' 'Random' 'UserAttributeKNN' 'UserKNN' 'WRMF' 'Zero' 'MultiCoreBPRMF' 'SoftMarginRankingMF' 'WeightedBPRMF' 'BPRLinear' 'MostPopularByAttributes' 'BPRSLIM' 'LeastSquareSLIM'
-ITEMRECOMMENDERS="MostPopular"
+ITEMRECOMMENDERS="UserKNN ItemKNN MostPopular Random"
 
 # Available Rank Recommenders:
 # 'BiPolarSlopeOne' 'GlobalAverage' 'ItemAttributeKNN' 'ItemAverage' 'ItemKNN' 'MatrixFactorization' 'SlopeOne' 'UserAttributeKNN' 'UserAverage' 'UserItemBaseline' 'UserKNN' 'TimeAwareBaseline' 'TimeAwareBaselineWithFrequencies' 'CoClustering' 'Random' 'Constant' 'LatentFeatureLogLinearModel' 'BiasedMatrixFactorization' 'SVDPlusPlus' 'SigmoidSVDPlusPlus' 'SocialMF' 'SigmoidItemAsymmetricFactorModel' 'SigmoidUserAsymmetricFactorModel' 'SigmoidCombinedAsymmetricFactorModel' 'NaiveBayes' 'ExternalRatingPredictor' 'GSVDPlusPlus'
-RANKRECOMMENDERS=""
+RANKRECOMMENDERS="UserKNN ItemKNN"
 
 #Available Mahout recommenders
 # 'svd' ...
-MAHOUTRECOMMENDERS=""
+MAHOUTRECOMMENDERS="svd "
 
 QUIET=''
 GENERATED="$ROOT/generated"
@@ -146,6 +146,6 @@ if [ "$MAHOUTRECOMMENDERS" != "" ]; then
   done
 fi
 
-python $ROOT/evaluation/generateLatexLines.py
+python $ROOT/evaluation/generateLatexLinesNormSplits.py
 
 echo 'Done.'

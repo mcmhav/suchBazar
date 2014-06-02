@@ -81,5 +81,5 @@ do
       fi
     fi
 done
-wait $!
+wait;
 echo "Done making Mahout items predictions with $RECOMMENDER";

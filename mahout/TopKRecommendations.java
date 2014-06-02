@@ -15,6 +15,7 @@ import org.apache.mahout.cf.taste.impl.recommender.ItemAverageRecommender;
 import org.apache.mahout.cf.taste.impl.recommender.ItemUserAverageRecommender;
 import org.apache.mahout.cf.taste.impl.recommender.svd.ALSWRFactorizer;
 import org.apache.mahout.cf.taste.impl.recommender.svd.SVDRecommender;
+import org.apache.mahout.cf.taste.impl.similarity.LogLikelihoodSimilarity;
 import org.apache.mahout.cf.taste.impl.similarity.PearsonCorrelationSimilarity;
 import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.neighborhood.UserNeighborhood;
@@ -51,6 +52,9 @@ public class TopKRecommendations {
                 } else if (recommender.equals("svd")) {
                     ALSWRFactorizer factorizer = new ALSWRFactorizer(model, 20, 100, 5, true, 20);
                     return new SVDRecommender(model, factorizer);
+                } else if (recommender.equals("loglikelihood")) {
+                    ItemSimilarity similarity = new LogLikelihoodSimilarity(model);
+                    return new GenericItemBasedRecommender(model, similarity);
                 }
                 // Not found, we default to item-average
                 return new ItemAverageRecommender(model);

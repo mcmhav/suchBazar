@@ -54,12 +54,12 @@ def compute(train, test, predictions):
     predictions = helpers.buildDictByIndex(predictions, 0)
     #sortDictByRatings(predictions)                                #The ratings usually comes pre sorted
     candidateItems = helpers.getUniqueItemList(train)
-    predictions = appendZeroRatings(train_users, predictions, candidateItems)
+    # predictions = appendZeroRatings(train_users, predictions, candidateItems)
     numCandidateItems = len(candidateItems)                       #Number of unique items in training set
 
     AUC = 0
     num_users = 0
-
+    nonRankedItems = 0
     for user in test_users:
 
         #Number of items that are recommendable to the user (all items - those already rated)
@@ -71,11 +71,13 @@ def compute(train, test, predictions):
             predictionCount = len(predictions[user])              #Length of the users prediction set
             if predictionCount < numCandidateItemsThisUser:
                 #TODO - Consider adding a function for randomly appending the missing items
-                print('Warning: Not all items have been ranked!')
+                nonRankedItems += 1
             numDroppedItems = numCandidateItemsThisUser - predictionCount
             AUC += auc(predictions[user], test_users[user], numDroppedItems)
             num_users += 1
 
+    if nonRankedItems > 0:
+        print ('Warning: %s items have been ranked!' % nonRankedItems)
     if (float(num_users) == 0):
         print ("Lol, num_users are 0, try again")
         return -1

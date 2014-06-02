@@ -139,8 +139,8 @@ def compute_recall(actual, predicted):
 
 def generateResultList(aCounts, pCounts, recall, map_c, map_w, map_p):
 
-    result = pCounts
-    result.extend(aCounts)
+    result = aCounts
+    result.extend(pCounts)
     result.extend(recall)
     result.append(map_c)
     result.append(map_w)
@@ -188,10 +188,10 @@ def compute(actual, predicted, k):
 
 ### TESTING ###
 
-import itemAverage
+# import itemAverage
 
-train = helpers.readRatingsFromFile('../data/count_linear.txt.9.txt')
-test = helpers.readRatingsFromFile('../data/count_linear.txt.1.txt')
-predictions = itemAverage.mostPopular(train, test)
+# train = helpers.readRatingsFromFile('../data/count_linear.txt.9.txt')
+# test = helpers.readRatingsFromFile('../data/count_linear.txt.1.txt')
+# predictions = itemAverage.mostPopular(train, test)
 
-compute(test, predictions, 20)
+# compute(test, predictions, 20)

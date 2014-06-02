@@ -37,6 +37,7 @@ public class TopKRecommendations {
         System.out.println("Using recommender-engine: " + recommender);
         long startTime = System.currentTimeMillis();
 
+
         DataModel model = new FileDataModel(new File(dataPath + "/" + filename));
         RecommenderBuilder builder = new RecommenderBuilder() {
             public Recommender buildRecommender(DataModel model) throws TasteException {
@@ -125,7 +126,7 @@ public class TopKRecommendations {
             System.out.print("Needs arguments: <ratings-folder> <method> <rating-file> <predictionfile>\n");
             System.out.print("Defaulting to: ../generators/ratings itembased\n");
             vals[0] = "../generated/splits";
-            vals[1] = "blend_itemtrain1.txt";
+            vals[1] = "recentness_sigmoid_fixed_sr-3.5.txt.9.txt";
             vals[2] = "svd";
             vals[3] = "../generated/predictions/tmp.predictions";
         } else {

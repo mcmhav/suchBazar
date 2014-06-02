@@ -13,13 +13,13 @@ def main(sessDB='sessionsNew'):
 
     timeSpans = [int(x['timespan']) for x in groups]
     counts = [int(x['count']) for x in groups]
-    plotItemTimeSpans(timeSpans)
+    # plotItemTimeSpans(timeSpans)
     plotItemTimeSpansSortedOnCount(groups)
 
 def plotItemTimeSpansSortedOnCount(groups):
     '''
     '''
-    doublePlotLol(groups)
+    # doublePlotLol(groups)
     doublePlotAVG(groups)
 
 def doublePlotAVG(groups):
@@ -33,19 +33,29 @@ def doublePlotAVG(groups):
         tmp = int(g['count'])
         tot[tmp] += (g['max'] - g['min'])
         ccount[tmp] += 1
+        if (g['count']) > 100:
+            print (g)
 
+    # print (minAVG)
+    print (ccount)
+    print (tot)
     bars = []
+    print (tot[46])
+    print (ccount[46])
     for x in range(0,maxikus):
         if ccount[x] != 0:
             tmp = (tot[x]/ccount[x])/(1000*60*60*24*7)
             bars.append(tmp)
 
+    print (bars[46])
+    print (bars)
     helpers.makePlot(
         'avglifetimeoncount',
         bars[::-1],
         xticks=[helpers.makeTicks(yMax=len(bars)),list(helpers.makeTicks(yMax=maxikus))[::-1]],
         ylabel='Average lifetime in weeks',
-        xlabel='Count of event'
+        xlabel='Count of event',
+        show=True
     )
 
 
@@ -185,7 +195,10 @@ def makeGroups(sessDB):
 
     groups = col.group(
         key={'product_id':1},
-        condition={'product_id':{'$ne':'NULL'}},
+        condition={
+            'product_id':{'$ne':'NULL'},
+            'ts': { '$gt': 1383283951000 }
+        },
         reduce=reducer,
         initial={
             'count':0,

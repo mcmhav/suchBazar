@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Stop on error
+set -e
+
 # Trap ctrl+c and abort all if it is entered
 trap 'echo interrupted; exit' INT
 
@@ -16,6 +19,7 @@ MMLITEMRATINGSTYLE=""
 RECOMMENDERSYS=""
 RECOMMENDER=""
 FEATUREFILE="$ROOT/generated/itemFeatures.txt"
+PREDFOLDER="$ROOT/generated/predictions"
 
 while getopts "t:p:r:m" o; do
   case "${o}" in
@@ -37,6 +41,11 @@ while getopts "t:p:r:m" o; do
   esac
 done
 
+# Ensure predictions folder exists
+if [ ! -d "$PREDFOLDER" ]; then
+  mkdir -p "$PREDFOLDER";
+fi
+
 # Get score for the predictions
 echo "Evaluating $RECOMMENDER"
 for ttt in $TTT
@@ -46,7 +55,7 @@ do
 
     TRAIN_FILE="$ROOT/generated/splits/${Array[0]}";
     TEST_FILE="$ROOT/generated/splits/${Array[1]}";
-    PRED_FILE="$ROOT/generated/predictions/${Array[0]}-${Array[1]}-$RECOMMENDERSYS-$RECOMMENDER.predictions";
+    PRED_FILE="$PREDFOLDER/${Array[0]}-${Array[1]}-$RECOMMENDERSYS-$RECOMMENDER.predictions";
     F_FILE="$FEATUREFILE";
 
     echo "Evaluating $PRED_FILE";
@@ -54,7 +63,6 @@ do
     OPT=(--training-file $TRAIN_FILE);
     OPT+=(--test-file $TEST_FILE);
     OPT+=(--prediction-file $PRED_FILE);
-
     python2.7 $CMD/evaluation.py -b 2 -k 20 "${OPT[@]}" $MMLITEMRATINGSTYLE &
 done
 wait;

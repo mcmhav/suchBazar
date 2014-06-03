@@ -83,11 +83,9 @@ if [ $MYMEDIAITEM -eq 1 ] || [ $MYMEDIARANK -eq 1 ]; then
       if [ $MYMEDIAITEM -eq 1 ]; then
         PREDFILE="$ROOT/generated/predictions/${Array[0]}-${Array[1]}--i-$RECOMMENDER.predictions"
         OPT+=(--prediction-file "$PREDFILE");
-        # OPT+=($STDOUT)
-        # echo ${OPT[@]}
         if [ ! -f "$PREDFILE" ] || [ $CLEAN -eq 1 ]; then
           if [ $QUIET -eq 1 ]; then
-            item_recommendation ${OPT[@]} >/dev/null 2>/dev/null &
+            item_recommendation ${OPT[@]} >/dev/null &
           else
             item_recommendation ${OPT[@]} $STDOUT &
           fi
@@ -101,7 +99,7 @@ if [ $MYMEDIAITEM -eq 1 ] || [ $MYMEDIARANK -eq 1 ]; then
 
         if [ ! -f "$PREDFILE" ]; then
           if [ $QUIET -eq 1 ] || [ $CLEAN -eq 1 ]; then
-            rating_prediction ${OPT[@]} >/dev/null 2>/dev/null &
+            rating_prediction ${OPT[@]} >/dev/null &
           else
             rating_prediction ${OPT[@]} &
           fi

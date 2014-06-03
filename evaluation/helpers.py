@@ -102,30 +102,33 @@ def readRatingsFromFile(path, convert=False):
       sys.stderr.write("File %s does not exist\n" % (path))
       sys.exit(1)
     f = open(path, 'r+')
-    reader = f.readlines()
+    lines = f.readlines()
     f.close()
-    for line in reader:
-        rating = line.split('\t')
-        if len(rating) == 3:
-            if rating[0] != '' and rating[1] != '' and rating[2] != '':
-                tmp_rating = float(rating[2])
-                ratings.append([int(rating[0]), int(rating[1]), tmp_rating])
-        if len(rating) > 3:
-            if rating[0] != '' and rating[1] != '' and rating[2] != '' and rating[3] != '':
-                if convert:
-                    try:
-                        t = datetime.strptime(rating[3].strip(),"%Y-%m-%d %H:%M:%S")
-                    except Exception:
-                        print (rating[3])
-                        print (traceback.format_exc())
-                    ratings.append([int(rating[0]), int(rating[1]), float(rating[2]), int(time.mktime(t.timetuple()))])
-                else:
-                    try:
-                        ratings.append([int(rating[0]), int(rating[1]), float(rating[2]), int(rating[3])])
-                    except Exception:
-                        print (rating[3])
-                        print (traceback.format_exc())
+    for line in lines:
+        l = line.split('\t')
 
+        # Parse the components in rating file.
+        user_id = l[0].strip()
+        product_id = l[1].strip()
+        rating = l[2].strip()
+        timestamp = l[3].strip() if len(l) > 3 else None
+
+        # Dont do anything if any of these are not there.
+        if not user_id or not product_id or not rating:
+          continue
+
+        # These are always included.
+        r = [user_id, product_id, rating]
+
+        # Add timestamp, and convert to unix-time if asked for.
+        if timestamp:
+          if convert:
+            t = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
+            timestamp = int(time.mktime(t.timetuple()))
+          r.append(timestamp)
+
+        # Add all the stuff to ratings array.
+        ratings.append(r)
     return ratings
 
 def readRatingsFromFileSmart(path, convert=False):

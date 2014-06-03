@@ -92,10 +92,12 @@ def getBrand(itemid, item_attributes):
     '''
     Returns the brand id for a given item
     '''
-    for item in item_attributes:
-        if int(item[0]) == itemid:
-            return item[2]
+    #return item_attrib.get(itemid, False)
 
+
+    for item in item_attributes:
+        if int(item[0]) == int(itemid):
+            return int(item[2])
     return 0
 
 def brandBot(ratings, item_attributes):
@@ -110,32 +112,92 @@ def brandBot(ratings, item_attributes):
     brandCounter = {}
     botRatings = []
     itemBrands = {}
+    item_attributes = buildHashmap(item_attributes)
     uniqueItemsD = {}
 
     for rating in ratings:
         if not uniqueItemsD.get(rating[1], None):
-            uniqueItemsD[rating[1]] = 1
-
-        if rating[1] in itemBrands:
-            brand = itemBrands[rating[1]]
-        else:
-            brand = getBrand(rating[1], item_attributes)
-            itemBrands[rating[1]] = brand
+            uniqueItemsD[rating[1]] = 1 
+        brand = getBrandHashmap(rating[1], item_attributes)
         if not brand in brandAverage:
             brandAverage[brand] = 0
         if not brand in brandCounter:
             brandCounter[brand] = 0
-        brandAverage[brand] += rating[2]
+        brandAverage[brand] += float(rating[2])
         brandCounter[brand] += 1
-
+    brandAverage.pop(0, None) #Remove items with no brand
     brandAverage = {k: float(brandAverage[k])/brandCounter[k] for k in brandAverage}
-
     for item in item_attributes:
-        if uniqueItemsD.get(int(item[0]), None):
-            botRatings.append([brandBotId, item[0], brandAverage[item[2]]])
+        if brandAverage.get(int(item_attributes[item]), None):  
+            botRatings.append([brandBotId, item[0], brandAverage[int(item_attributes[item])]])
 
     print('brandBot used %d seconds to generate %d ratings' %(time.time()-start, len(botRatings)))
     return botRatings
+
+
+def getUniqueBrandList(item_attributes):
+    
+    brands = []
+    for item in item_attributes:
+        if not int(item[2]) in brands and int(item[2]) != 0:
+            brands.append(int(item[2]))
+    return brands
+
+def getUniqueItemList(ratings):
+    
+    items = []
+    for rating in ratings:
+        if not rating[1] in items:
+            items.append(rating[1])
+    return items
+
+def getBrandHashmap(item_id, item_attributes):
+    
+    return int(item_attributes.get(item_id, 0))
+
+def buildHashmap(item_attributes):
+
+    hashMap = {}
+
+    for item in item_attributes:
+        if not item[0] in hashMap:
+            hashMap[item[0]] = item[2]
+            
+    return hashMap
+
+def rateItemsByBrand(items, item_attributes, userId, brandId):
+    
+    botRatings = []
+    for itemid in items:
+        brand = getBrandHashmap(itemid, item_attributes)
+        if brand == brandId:
+            botRatings.append([userId, itemid, 5.0])
+    
+    print(len(botRatings))
+    return botRatings
+
+def brandBots(ratings, item_attributes):
+    '''
+    Inject one filterbot user for each brand
+    where each filterbot user gives each item of a specific
+    brand a maximum rating
+    '''
+    
+    start = time.time()
+    print('Generating multiple brand bots...')
+    
+    botRatings = []
+    brands = getUniqueBrandList(item_attributes)
+    items = getUniqueItemList(ratings)
+    item_attributes = buildHashmap(item_attributes)
+    botIds = range(1200, 1200+len(brands))
+    for x, y in zip(botIds, brands):
+        botRatings.extend(rateItemsByBrand(items, item_attributes, x, y))
+        print('processed bot %d of %d ' % (len(botIds) -(max(botIds) - x), len(botIds)))
+        
+    print('brandBotUsers used %d seconds to generate %d ratings' %(time.time()-start, len(botRatings)))
+    return botRatings    
+    
 
 def averageBot(ratings):
     '''
@@ -276,6 +338,7 @@ def createSplit(ratings, item_attributes, test_ratio, split=True):
     writeRatingsToFile('ftrain.txt', train, '\t')
 
 def addFilterBotRatings(train, featurefile='', fbots=[0,0,0,0,0]):
+    
     item_attributes = readItemAttributes(featurefile)
     fbRatings = []
 
@@ -301,6 +364,10 @@ def addFilterBotRatings(train, featurefile='', fbots=[0,0,0,0,0]):
         p4 = Process(target=testur, args=[fbRatings, conformityBot, train])
         p4.start()
         procs.append(p4)
+    if fbots[5]:
+        p5 = Process(target=testur, args=[fbRatings, brandBots, train, item_attributes])
+        p4.start()
+        procs.append(p5)
 
     for p in procs:
         p.join()
@@ -320,11 +387,13 @@ def testur(fbRatings, bot, *args):
 ### TESTING ###
 #ratings = readRatings('../../datasets/blend.txt')
 
-#ratings = readRatings('Data/user_train3.txt')
-#item_attributes = readItemAttributes('./Data/product_features.txt')
+#ratings = readRatings('../generated/ratings/count_linear.txt')
+#item_attributes = readItemAttributes('../generated/itemFeatures.txt')
+#brandBot(ratings, item_attributes)
+#brandBots(ratings, item_attributes)
+
 #createSplit(ratings, item_attributes, 0.1)
 #createSplit(ratings, item_attributes, 0.1, False)
-#brandBot(ratings, item_attributes)
 #averageItemBot(ratings)
 #popularityBot(ratings, 5, 10)
 #VTBot(ratings, 5)

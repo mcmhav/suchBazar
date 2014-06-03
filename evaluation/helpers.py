@@ -98,6 +98,9 @@ def closeF():
 
 def readRatingsFromFile(path, convert=False):
     ratings = []
+    if not os.path.isfile(path):
+      sys.stderr.write("File %s does not exist\n" % (path))
+      sys.exit(1)
     f = open(path, 'r+')
     reader = f.readlines()
     f.close()

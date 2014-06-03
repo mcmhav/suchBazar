@@ -6,6 +6,7 @@ Functions for event_type specific evaluation metrics
 import csv
 import os
 import helpers
+import sys
 from datetime import datetime
 
 import map
@@ -16,7 +17,9 @@ ROOT_FOLDER = os.path.dirname(SCRIPT_FOLDER)
 def readEventTypeData(filePath=ROOT_FOLDER + '/generated/event_type.txt'):
 
     eventData = []
-
+    if not os.path.isfile(filePath):
+      sys.stderr.write("File %s does not exist" % filePath)
+      sys.exit(1)
     with open(filePath, 'r') as file:
         reader = csv.reader(file, delimiter='\t')
         for row in reader:

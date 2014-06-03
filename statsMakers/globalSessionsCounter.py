@@ -24,6 +24,8 @@ def main(sessDB='sessionsNew'):
         xaxis,yaxis,xticks = handle_appStarted(sessDB)
         writeToFile(xaxis,yaxis,xticks,filename)
 
+    print (xaxis)
+    print (yaxis)
     helpers.makePlot(
         'sessionsCount',
         xaxis,
@@ -33,7 +35,7 @@ def main(sessDB='sessionsNew'):
         xlabel='Session count',
         show=False,
         grid=True,
-        xticks=[helpers.makeTicks(yMax=len(xaxis)),xticks]
+        xticks=[helpers.makeTicks(yMax=len(xaxis)),helpers.makeTicks(yMax=len(xaxis))]
     )
 
 def getFromFile(filename):
@@ -72,22 +74,6 @@ def writeToFile(xaxis,yaxis,xticks,name):
     for t in xticks:
         e.write(str(t) + ", ")
     e.close()
-
-def sessionCountDistrCum(sessDB):
-    groups = helpers.getKGroups('session',sessDB)
-    groups_sorted = sorted(groups, key=lambda k: k['count'],reverse=True)
-    ks = [int(x['session']) for x in groups_sorted]
-    counts = [int(x['count']) for x in groups_sorted]
-    # for c in counts:
-    #     print (c)
-
-    # sys.exit()
-    print (ks)
-    print ()
-    print (counts_sorted)
-    xticks = helpers.makeTicks(yMax=max(ks))
-    return ks,counts,xticks
-
 
 def handle_appStarted(sessDB):
     col = helpers.getCollection(sessDB)

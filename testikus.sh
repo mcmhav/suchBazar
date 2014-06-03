@@ -20,15 +20,15 @@ BINARY=0
 
 # Available Item Recommenders:
 # 'BPRMF' 'ItemAttributeKNN' 'ItemKNN' 'MostPopular' 'Random' 'UserAttributeKNN' 'UserKNN' 'WRMF' 'Zero' 'MultiCoreBPRMF' 'SoftMarginRankingMF' 'WeightedBPRMF' 'BPRLinear' 'MostPopularByAttributes' 'BPRSLIM' 'LeastSquareSLIM'
-ITEMRECOMMENDERS="MostPopular"
+ITEMRECOMMENDERS="UserKNN ItemKNN MostPopular Random"
 
 # Available Rank Recommenders:
 # 'BiPolarSlopeOne' 'GlobalAverage' 'ItemAttributeKNN' 'ItemAverage' 'ItemKNN' 'MatrixFactorization' 'SlopeOne' 'UserAttributeKNN' 'UserAverage' 'UserItemBaseline' 'UserKNN' 'TimeAwareBaseline' 'TimeAwareBaselineWithFrequencies' 'CoClustering' 'Random' 'Constant' 'LatentFeatureLogLinearModel' 'BiasedMatrixFactorization' 'SVDPlusPlus' 'SigmoidSVDPlusPlus' 'SocialMF' 'SigmoidItemAsymmetricFactorModel' 'SigmoidUserAsymmetricFactorModel' 'SigmoidCombinedAsymmetricFactorModel' 'NaiveBayes' 'ExternalRatingPredictor' 'GSVDPlusPlus'
-RANKRECOMMENDERS="MatrixFactorization"
+RANKRECOMMENDERS="UserKNN ItemKNN"
 
 #Available Mahout recommenders
 # 'svd' ...
-MAHOUTRECOMMENDERS="svd"
+MAHOUTRECOMMENDERS="svd "
 
 QUIET=''
 GENERATED="$ROOT/generated"
@@ -81,7 +81,6 @@ fi
 
 trainTestTuples=""
 if [ -n "$SPLIT" ]; then
-
   if [ "$SPLIT" == "random" ]; then
     for FILE in "$GENERATED"/ratings/*; do
       echo "Splitting based on $INFILE"
@@ -96,9 +95,19 @@ if [ -n "$SPLIT" ]; then
   else
     # Cold start split
     echo "Splitting data into colstart splits"
+    trainTestTuples="blend_itemtrain1.txt:blend_itemtest1.txt blend_itemtrain2.txt:blend_itemtest2.txt blend_itemtrain3.txt:blend_itemtest3.txt blend_systemtrain1.txt:blend_systemtest.txt blend_systemtrain2.txt:blend_systemtest.txt blend_systemtrain3.txt:blend_systemtest.txt blend_usertrain1.txt:blend_usertest1.txt blend_usertrain2.txt:blend_usertest2.txt blend_usertrain3.txt:blend_usertest3.txt"
+
     python2.7 $ROOT/evaluation/evaluation.py --coldstart-split $ROOT/generated/ratings/blend.txt --feature-file $ROOT/data/product_features.txt -t -fb '1,1,1,1,0';
   fi
+else
+  echo "Getting tuples"
+  for FILE in "$GENERATED"/ratings/*; do
+    FILENAME=$(basename $FILE);
+    TESTFILE="${FILENAME}.1.txt";
+    TRAINFILE="${FILENAME}.9.txt";
 
+    trainTestTuples+="${TRAINFILE}:${TESTFILE} "
+  done
 fi
 
 if [ "$ITEMRECOMMENDERS" != "" ]; then
@@ -106,7 +115,7 @@ if [ "$ITEMRECOMMENDERS" != "" ]; then
   do
     # make predictions
     echo "------------------------------"
-    /bin/bash $ROOT/generators/myMediaLitePredicter.sh -t "$trainTestTuples" -i -p $ir $QUIET;
+    /bin/bash $ROOT/generators/myMediaLitePredicter.sh -t "$trainTestTuples" -i -p $ir $CLEAN $QUIET;
 
     # evaluate predicted values
     /bin/bash $ROOT/evaluation/evaluate.sh -t "$trainTestTuples" -r "-i" -p $ir -m;
@@ -117,7 +126,8 @@ if [ "$RANKRECOMMENDERS" != "" ]; then
   for ir in $RANKRECOMMENDERS
   do
     # make predictions
-    /bin/bash $ROOT/generators/myMediaLitePredicter.sh -t "$trainTestTuples" -r -p $ir $QUIET;
+    echo "------------------------------"
+    /bin/bash $ROOT/generators/myMediaLitePredicter.sh -t "$trainTestTuples" -r -p $ir $CLEAN $QUIET;
 
     # evaluate predicted values
     /bin/bash $ROOT/evaluation/evaluate.sh -t "$trainTestTuples" -r "-p" -p $ir;
@@ -128,13 +138,14 @@ if [ "$MAHOUTRECOMMENDERS" != "" ]; then
   for ir in $MAHOUTRECOMMENDERS
   do
     # make predictions
-    /bin/bash $ROOT/generators/mahoutPredict.sh -t "$trainTestTuples" -h -p $ir $QUIET;
+    echo "------------------------------"
+    /bin/bash $ROOT/generators/mahoutPredict.sh -t "$trainTestTuples" -h -p $ir $CLEAN $QUIET;
 
     # evaluate predicted values
     /bin/bash $ROOT/evaluation/evaluate.sh -t "$trainTestTuples" -r "-h" -p $ir;
   done
 fi
 
-python $ROOT/evaluation/generateLatexLines.py
+python $ROOT/evaluation/generateLatexLinesNormSplits.py
 
 echo 'Done.'

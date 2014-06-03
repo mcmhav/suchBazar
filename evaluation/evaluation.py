@@ -75,7 +75,6 @@ def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
     #train = helpers.readRatingsFromFile(trainFile)
     train = helpers.readRatingsFromFile(trainFile, True)
     test = helpers.readRatingsFromFile(testFile, True)
-
     if not predictionFile:
         train = fb.addFilterBotRatings(train, [1, 1, 1, 1, 0])
         #predictions = itemAverage.itemAverage(train, test)
@@ -112,7 +111,7 @@ def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
         str(is_coverage),
         str(roc_auc),
         str(mapk),
-        str(eStats),
+        eStats,
         str(k),
     )
 

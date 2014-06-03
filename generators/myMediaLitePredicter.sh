@@ -26,9 +26,13 @@ MYMEDIAITEM=0
 MYMEDIARANK=0
 RECOMMENDER=""
 QUIET=0
+CLEAN=0
 
-while getopts "t:irqp:" o; do
+while getopts "ct:irqp:" o; do
   case "${o}" in
+    c)
+      CLEAN=1
+      ;;
     t)
       TTT=("${OPTARG}")
       ;;
@@ -77,26 +81,33 @@ if [ $MYMEDIAITEM -eq 1 ] || [ $MYMEDIARANK -eq 1 ]; then
 
       # Do item predictions
       if [ $MYMEDIAITEM -eq 1 ]; then
-        OPT+=(--prediction-file "$ROOT/generated/predictions/${Array[0]}-${Array[1]}--i-$RECOMMENDER.predictions");
+        PREDFILE="$ROOT/generated/predictions/${Array[0]}-${Array[1]}--i-$RECOMMENDER.predictions"
+        OPT+=(--prediction-file "$PREDFILE");
         # OPT+=($STDOUT)
         # echo ${OPT[@]}
-        if [ $QUIET -eq 1 ]; then
-          item_recommendation ${OPT[@]} >/dev/null 2>/dev/null &
-        else
-          item_recommendation ${OPT[@]} $STDOUT &
+        if [ ! -f "$PREDFILE" ] || [ $CLEAN -eq 1 ]; then
+          if [ $QUIET -eq 1 ]; then
+            item_recommendation ${OPT[@]} >/dev/null 2>/dev/null &
+          else
+            item_recommendation ${OPT[@]} $STDOUT &
+          fi
         fi
       fi
 
       # Do rank predictions
       if [ $MYMEDIARANK -eq 1 ]; then
-        OPT+=(--prediction-file "$ROOT/generated/predictions/${Array[0]}-${Array[1]}--p-$RECOMMENDER.predictions");
-        if [ $QUIET -eq 1 ]; then
-          rating_prediction ${OPT[@]} >/dev/null 2>/dev/null &
-        else
-          rating_prediction ${OPT[@]} &
+        PREDFILE="$ROOT/generated/predictions/${Array[0]}-${Array[1]}--p-$RECOMMENDER.predictions"
+        OPT+=(--prediction-file "$PREDFILE");
+
+        if [ ! -f "$PREDFILE" ]; then
+          if [ $QUIET -eq 1 ] || [ $CLEAN -eq 1 ]; then
+            rating_prediction ${OPT[@]} >/dev/null 2>/dev/null &
+          else
+            rating_prediction ${OPT[@]} &
+          fi
         fi
       fi
     done
-    wait $!
+    wait;
     echo "Done making MyMediaLite rating predictions with $RECOMMENDER";
 fi

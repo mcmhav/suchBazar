@@ -15,7 +15,7 @@ import os
 SCRIPT_FOLDER = os.path.dirname(os.path.realpath(__file__))
 ROOT_FOLDER = os.path.dirname(SCRIPT_FOLDER)
 
-def createEventTypeFile(ratingFile, sobazarData):
+def createEventTypeFile(ratingFile, sobazarData, purchase_only):
     '''
     Generates a file on the form
     User ID : Item ID : Event Type
@@ -24,6 +24,11 @@ def createEventTypeFile(ratingFile, sobazarData):
     sobazarData: path of sobazar log file
     '''
     
+    if purchase_only:
+        print('Generating event type file from purchases ONLY...')
+    else:
+        print('Generating event type file from all events...')
+    
     eventData = []
 
     with open(sobazarData, 'r') as tsv:
@@ -31,12 +36,15 @@ def createEventTypeFile(ratingFile, sobazarData):
         #next(reader) #Skip Header
         for row in reader: 
             eventId = translateEvent(row[1])
-            if eventId and row[12] != 'NULL':
-                eventData.append([row[16], row[12], eventId])
+            if purchase_only:
+                if eventId == 3 and row[12] != 'NULL' and row[16] != 'N/A':
+                    eventData.append([row[16], row[12], eventId])
+            else:
+                if eventId and row[12] != 'NULL' and row[16] != 'N/A':
+                    eventData.append([row[16], row[12], eventId])
 
     eventData = mergeList(eventData)
     eventData = cleanList(eventData, ratingFile)
-
     print('Writing event type data to file...')
     writeToFile(eventData)
     
@@ -81,12 +89,10 @@ def mergeList(eventData):
     '''
     Merge the eventData list
     Items with multiple events are merged into one
-    event with the most valuable event translation value
+    event with the most valuable event value
     '''    
     
     new_list = []
-    
-    
     users = {}
     
     for event in eventData:
@@ -148,6 +154,7 @@ def writeToFile(data):
 parser = argparse.ArgumentParser(description='Evaluate Recommender Systems')
 parser.add_argument('-r', dest='r', type=str, help="Defaulting to './ratings/count_linear.txt'")
 parser.add_argument('-s', dest='s', type=str, help="Defaulting to 'sobazar.tab.prod'")
+parser.add_argument('-p', dest='p', default=False, action="store_true", help="Extracts purchases only!")
 
 args = parser.parse_args()
 
@@ -157,5 +164,5 @@ if not args.r:
 if not args.s:
     args.s = './sobazar.tab.prod'
     
-createEventTypeFile(args.r, args.s)    
+createEventTypeFile(args.r, args.s, args.p)    
 

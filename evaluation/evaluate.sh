@@ -49,13 +49,13 @@ do
     PRED_FILE="$ROOT/generated/predictions/${Array[0]}-${Array[1]}-$RECOMMENDERSYS-$RECOMMENDER.predictions";
     F_FILE="$FEATUREFILE";
 
+    echo "Evaluating $PRED_FILE";
+
     OPT=(--training-file $TRAIN_FILE);
     OPT+=(--test-file $TEST_FILE);
     OPT+=(--prediction-file $PRED_FILE);
 
-    set -x
     python2.7 $CMD/evaluation.py -b 2 -k 20 "${OPT[@]}" $MMLITEMRATINGSTYLE &
-    set +x
 done
-wait $!
-echo "Done evaluating $RECOMMENDER"
+wait;
+echo "Done evaluating $RECOMMENDER";

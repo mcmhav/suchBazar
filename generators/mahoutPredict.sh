@@ -22,9 +22,13 @@ RECOMMENDER_LOCATION="$ROOT/mahout"
 
 QUIET=0
 DIR=""
+CLEAN=0
 
-while getopts "dt:hp:l:q" o; do
+while getopts "cdt:hp:l:q" o; do
   case "${o}" in
+    c)
+      CLEAN=1
+      ;;
     d)
       DIR="${OPTARG}"
       ;;
@@ -69,11 +73,13 @@ do
     set -- "$ttt"
     IFS=":"; declare -a Array=($*)
     PREDFILE="$PREDICTIONS/"${Array[0]}"-"${Array[1]}"--h-"$RECOMMENDER".predictions"
-    if [ $QUIET -eq 1 ]; then
-      java TopKRecommendations $RATINGS "${Array[0]}" $RECOMMENDER  $PREDFILE >/dev/null 2>/dev/null &
-    else
-      java TopKRecommendations $RATINGS "${Array[0]}" $RECOMMENDER  $PREDFILE &
+    if [ ! -f "$PREDFILE" ] || [ $CLEAN -eq 1 ]; then
+      if [ $QUIET -eq 1 ]; then
+        java TopKRecommendations $RATINGS "${Array[0]}" $RECOMMENDER  $PREDFILE >/dev/null 2>/dev/null &
+      else
+        java TopKRecommendations $RATINGS "${Array[0]}" $RECOMMENDER  $PREDFILE &
+      fi
     fi
 done
-wait $!
+wait;
 echo "Done making Mahout items predictions with $RECOMMENDER";

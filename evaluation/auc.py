@@ -1,6 +1,7 @@
 import helpers
 import random
 import traceback
+import sys
 
 def appendZeroRatings(train, predictions, itemIds):
     '''
@@ -13,6 +14,12 @@ def appendZeroRatings(train, predictions, itemIds):
     random.shuffle(itemIds)
     count = 0
     keyError = 0
+
+    # This won't be right for all occurrences, but just wanna test fast now
+    #predlen = len(predictions)
+    #if len(train) == predlen:
+    #    return predictions
+    c = 0
     for user in predictions:
         for item in itemIds:
             try:
@@ -22,8 +29,10 @@ def appendZeroRatings(train, predictions, itemIds):
             except Exception:
                 #print('Key Error')
                 keyError += 1
+        #c +=1
+        #helpers.printProgress(c,predlen)
     print(keyError)
-    print('Done appending %d missing items' %count)
+    print('Done appending %d missing items' % count)
     return predictions
 
 def compute(train, test, predictions):
@@ -34,18 +43,18 @@ def compute(train, test, predictions):
     For Java implementation see:
     https://github.com/jcnewell/MyMediaLiteJava/blob/master/src/org/mymedialite/eval/Items.java
     '''
-    
+
     train_users = helpers.buildDictByIndex(train, 0)
     test_users = helpers.buildDictByIndex(test, 0)
     predictions = helpers.buildDictByIndex(predictions, 0)
     #sortDictByRatings(predictions)                                #The ratings usually comes pre sorted
     candidateItems = helpers.getUniqueItemList(train)
-    predictions = appendZeroRatings(train_users, predictions, candidateItems)
+    # predictions = appendZeroRatings(train_users, predictions, candidateItems)
     numCandidateItems = len(candidateItems)                       #Number of unique items in training set
 
     AUC = 0
     num_users = 0
-
+    nonRankedItems = 0
     for user in test_users:
 
         #Number of items that are recommendable to the user (all items - those already rated)
@@ -57,11 +66,13 @@ def compute(train, test, predictions):
             predictionCount = len(predictions[user])              #Length of the users prediction set
             if predictionCount < numCandidateItemsThisUser:
                 #TODO - Consider adding a function for randomly appending the missing items
-                print('Warning: Not all items have been ranked!')
+                nonRankedItems += 1
             numDroppedItems = numCandidateItemsThisUser - predictionCount
             AUC += auc(predictions[user], test_users[user], numDroppedItems)
             num_users += 1
 
+    if nonRankedItems > 0:
+        print ('Warning: %s items have been ranked!' % nonRankedItems)
     if (float(num_users) == 0):
         print ("Lol, num_users are 0, try again")
         return -1

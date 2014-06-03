@@ -29,6 +29,9 @@ def plotOnMap(m,sessDB,name):
             newC += 1
         c += 1
     print (newC)
+    plt.ylabel('')
+    plt.xlabel('')
+
     location = os.path.dirname(os.path.abspath(__file__)) + "/../../muchBazar/src/image/simpleGeoPlot" + name + ".png"
     plt.savefig(location)
     print ("Simple geo plot written to: %s" % location)

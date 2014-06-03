@@ -33,7 +33,6 @@ def getCounts(sessDB):
 def getRatingAmountAverage(sessDB='sessionsNew'):
     counts = getCounts(sessDB)
     avg = helpers.getAvgOfCount(counts)
-
     return avg
 
 def groupEventCountsOnCountCum(counts,cap):
@@ -69,16 +68,15 @@ def plotRatingCounts(
     '''
     helpers.makePlot(
         name,
-        # yaxis,
         xaxis,
+        # yaxis,
         # title='Global Sessions Count',
         ylabel=ylabel,
         xlabel=xlabel,
         show=show,
         grid=True,
-        xticks=[],
-        yticks=yticks
-        # xticks=xticks
+        yticks=yticks,
+        xticks=[helpers.makeTicks(yMax=len(xaxis)),helpers.makeTicks(yMax=len(xaxis))]
     )
 
 def getUserEventOnItemCounts(sessDB):

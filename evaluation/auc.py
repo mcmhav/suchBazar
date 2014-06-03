@@ -13,8 +13,6 @@ def appendZeroRatings(train, predictions, itemIds):
     random.shuffle(itemIds)
     count = 0
     keyError = 0
-    print(predictions)
-    print(train)
     for user in predictions:
         for item in itemIds:
             try:

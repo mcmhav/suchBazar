@@ -78,6 +78,7 @@ def getPredictionStats(actual, predicted, eventData, topk=20):
     users = helpers.buildDictByIndex(predicted, 0)
     
     for user in users:
+        print(users[user])
         actualList = getActualItems(actual, int(user))
         m = len(users[user])
         if m > topk:
@@ -188,10 +189,8 @@ def compute(actual, predicted, k):
     
 ### TESTING ### 
         
-import itemAverage
-        
-train = helpers.readRatingsFromFile('../data/count_linear.txt.9.txt')
-test = helpers.readRatingsFromFile('../data/count_linear.txt.1.txt')
-predictions = itemAverage.mostPopular(train, test)
-
-compute(test, predictions, 20)
+#import itemAverage
+#train = helpers.readRatingsFromFile('../data/count_linear.txt.9.txt')
+#test = helpers.readRatingsFromFile('../data/count_linear.txt.1.txt')
+#predictions = itemAverage.mostPopular(train, test)
+#compute(test, predictions, 20)

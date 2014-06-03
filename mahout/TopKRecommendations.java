@@ -15,6 +15,7 @@ import org.apache.mahout.cf.taste.impl.recommender.ItemAverageRecommender;
 import org.apache.mahout.cf.taste.impl.recommender.ItemUserAverageRecommender;
 import org.apache.mahout.cf.taste.impl.recommender.svd.ALSWRFactorizer;
 import org.apache.mahout.cf.taste.impl.recommender.svd.SVDRecommender;
+import org.apache.mahout.cf.taste.impl.similarity.LogLikelihoodSimilarity;
 import org.apache.mahout.cf.taste.impl.similarity.PearsonCorrelationSimilarity;
 import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.neighborhood.UserNeighborhood;
@@ -40,7 +41,8 @@ public class TopKRecommendations {
         RecommenderBuilder builder = new RecommenderBuilder() {
             public Recommender buildRecommender(DataModel model) throws TasteException {
                 if (recommender.equals("itembased")) {
-                    ItemSimilarity similarity = new PearsonCorrelationSimilarity(model);
+                    ItemSimilarity similarity = new LogLikelihoodSimilarity(model);
+                    //ItemSimilarity similarity = new PearsonCorrelationSimilarity(model);
                     return new GenericItemBasedRecommender(model, similarity);
                 } else if(recommender.equals("userbased")) {
                     UserSimilarity similarity = new PearsonCorrelationSimilarity(model);

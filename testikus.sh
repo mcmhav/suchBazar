@@ -28,7 +28,7 @@ RANKRECOMMENDERS="UserKNN ItemKNN"
 
 #Available Mahout recommenders
 # 'svd' ...
-MAHOUTRECOMMENDERS="svd "
+MAHOUTRECOMMENDERS="svd loglikelihood"
 
 QUIET=''
 GENERATED="$ROOT/generated"

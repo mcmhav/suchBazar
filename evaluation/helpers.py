@@ -118,14 +118,14 @@ def readRatingsFromFile(path, convert=False):
           continue
 
         # These are always included.
-        r = [user_id, product_id, rating]
+        r = [int(user_id), int(product_id), float(rating)]
 
         # Add timestamp, and convert to unix-time if asked for.
         if timestamp:
           if convert:
             t = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
             timestamp = int(time.mktime(t.timetuple()))
-          r.append(timestamp)
+          r.append(int(timestamp))
 
         # Add all the stuff to ratings array.
         ratings.append(r)

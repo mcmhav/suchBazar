@@ -71,7 +71,7 @@ public class TopKRecommendations {
 
         while (users.hasNext()) {
             long user = users.next();
-            List<RecommendedItem> topK = r.recommend(user,16000);
+            List<RecommendedItem> topK = r.recommend(user,20000);
 
             topKForUsers.put(user,topK);
         }
@@ -127,7 +127,7 @@ public class TopKRecommendations {
             System.out.print("Defaulting to: ../generators/ratings itembased\n");
             vals[0] = "../generated/splits";
             vals[1] = "recentness_sigmoid_fixed_sr-3.5.txt.9.txt";
-            vals[2] = "svd";
+            vals[2] = "loglikelihood";
             vals[3] = "../generated/predictions/tmp.predictions";
         } else {
             vals = args;

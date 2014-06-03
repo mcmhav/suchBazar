@@ -26,6 +26,8 @@ def main(sessDB='sessionsNew'):
                      )
     k = 'event_id'
     groups = helpers.getKGroups(k,sessDB)
+    groups = removeLowVals(groups,k,200,addCapToOther=True)
+    groups = sorted(groups, key=lambda k: k['count'],reverse=True)
     ks, counts = preprocessGroups(k,groups)
     helpers.makePlot(k,
                      counts,
@@ -151,6 +153,19 @@ def main(sessDB='sessionsNew'):
                         # labels=[1,5,10],
                         # ticks=[[1,5,10],[1,5,10]]
                     )
+
+def removeLowVals(groups,k,cap,addCapToOther=False):
+    tmp = []
+    other = {k:'other', 'count':0}
+    for g in groups:
+        if g['count'] > cap:
+            tmp.append(g)
+        else:
+            if addCapToOther:
+                other['count'] += g['count']
+    if addCapToOther:
+        tmp.append(other)
+    return tmp
 
 def groupProductsOnCounts(ks,counts,cap=80):
     '''

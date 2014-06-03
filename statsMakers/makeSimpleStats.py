@@ -28,7 +28,7 @@ def main(sessDB='prodR'):
 
     countP,countW,countD = getasdfsadf(sessDB)
     vals['Average purchase count per user'] = countP/vals['Unique users ids']
-    vals['Average purchase count per user'] = countW/vals['Unique users ids']
+    vals['Average want count per user'] = countW/vals['Unique users ids']
     vals['Average item click count per user'] = countD/vals['Unique users ids']
 
     for v in vals:

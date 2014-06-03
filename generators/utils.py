@@ -173,7 +173,8 @@ def write_ratings_to_file(user_id, ratings, f, config):
   for product_id in sorted(ratings):#.iteritems():
     base = "%s\t%s\t%.3f" % (user_id, product_id, ratings[product_id])#rating)
     if config["timestamps"]:
-      f.write("%s\t%s\n" % (base, last_event["%s-%s" % (user_id, product_id)].strftime("%Y-%m-%d %H:%M:%S")))
+      # f.write("%s\t%s\n" % (base, last_event["%s-%s" % (user_id, product_id)].strftime("%Y-%m-%d %H:%M:%S")))
+      f.write("%s\t%s\n" % (base, last_event["%s-%s" % (user_id, product_id)].strftime("%s")))
       continue
     f.write("%s\n" % base)
 

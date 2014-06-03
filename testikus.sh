@@ -29,7 +29,10 @@ ITEMRECOMMENDERS="ItemKNN"
 
 #Available Mahout recommenders
 # 'svd' ...
+
 #MAHOUTRECOMMENDERS="itemuseraverage "
+
+MAHOUTRECOMMENDERS="svd loglikelihood"
 
 QUIET=''
 GENERATED="$ROOT/generated"
@@ -131,6 +134,7 @@ if [ "$ITEMRECOMMENDERS" != "" ]; then
 
     # evaluate predicted values
     /bin/bash $ROOT/evaluation/evaluate.sh -t "$trainTestTuples" -r "-i" -p $ir -m;
+    echo "------------------------------"
   done
 fi
 
@@ -143,6 +147,7 @@ if [ "$RANKRECOMMENDERS" != "" ]; then
 
     # evaluate predicted values
     /bin/bash $ROOT/evaluation/evaluate.sh -t "$trainTestTuples" -r "-p" -p $ir;
+    echo "------------------------------"
   done
 fi
 
@@ -155,6 +160,7 @@ if [ "$MAHOUTRECOMMENDERS" != "" ]; then
 
     # evaluate predicted values
     /bin/bash $ROOT/evaluation/evaluate.sh -t "$trainTestTuples" -r "-h" -p $ir;
+    echo "------------------------------"
   done
 fi
 

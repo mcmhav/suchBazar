@@ -72,7 +72,7 @@ for ttt in $TTT
 do
     set -- "$ttt"
     IFS=":"; declare -a Array=($*)
-    PREDFILE="$PREDICTIONS/"${Array[0]}"-"${Array[1]}"--h-"$RECOMMENDER".predictions"
+    PREDFILE="$PREDICTIONS/${Array[0]}-${Array[1]}--h-$RECOMMENDER.predictions"
     if [ ! -f "$PREDFILE" ] || [ $CLEAN -eq 1 ]; then
       if [ $QUIET -eq 1 ]; then
         java TopKRecommendations $RATINGS "${Array[0]}" $RECOMMENDER  $PREDFILE >/dev/null 2>/dev/null &

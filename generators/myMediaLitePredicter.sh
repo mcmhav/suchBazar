@@ -20,6 +20,9 @@ ensure_dependencies;
 CWD=$( cd "$( dirname "$0" )" && pwd );
 
 ROOT=$( dirname "$CWD");
+
+PREDICTIONS="$ROOT/generated/predictions"
+
 # Some parameters changable in the opts.
 TTT=""
 MYMEDIAITEM=0
@@ -81,7 +84,7 @@ if [ $MYMEDIAITEM -eq 1 ] || [ $MYMEDIARANK -eq 1 ]; then
 
       # Do item predictions
       if [ $MYMEDIAITEM -eq 1 ]; then
-        PREDFILE="$ROOT/generated/predictions/${Array[0]}-${Array[1]}--i-$RECOMMENDER.predictions"
+        PREDFILE="$PREDICTIONS/${Array[0]}-${Array[1]}--i-$RECOMMENDER.predictions"
         OPT+=(--prediction-file "$PREDFILE");
         if [ ! -f "$PREDFILE" ] || [ $CLEAN -eq 1 ]; then
           if [ $QUIET -eq 1 ]; then
@@ -94,7 +97,7 @@ if [ $MYMEDIAITEM -eq 1 ] || [ $MYMEDIARANK -eq 1 ]; then
 
       # Do rank predictions
       if [ $MYMEDIARANK -eq 1 ]; then
-        PREDFILE="$ROOT/generated/predictions/${Array[0]}-${Array[1]}--p-$RECOMMENDER.predictions"
+        PREDFILE="$PREDICTIONS/${Array[0]}-${Array[1]}--p-$RECOMMENDER.predictions"
         OPT+=(--prediction-file "$PREDFILE");
 
         if [ ! -f "$PREDFILE" ]; then

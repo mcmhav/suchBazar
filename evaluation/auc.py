@@ -49,7 +49,7 @@ def compute(train, test, predictions):
     predictions = helpers.buildDictByIndex(predictions, 0)
     #sortDictByRatings(predictions)                                #The ratings usually comes pre sorted
     candidateItems = helpers.getUniqueItemList(train)
-    # predictions = appendZeroRatings(train_users, predictions, candidateItems)
+    predictions = appendZeroRatings(train_users, predictions, candidateItems)
     numCandidateItems = len(candidateItems)                       #Number of unique items in training set
 
     AUC = 0

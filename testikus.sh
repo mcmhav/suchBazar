@@ -20,15 +20,16 @@ BINARY=0
 
 # Available Item Recommenders:
 # 'BPRMF' 'ItemAttributeKNN' 'ItemKNN' 'MostPopular' 'Random' 'UserAttributeKNN' 'UserKNN' 'WRMF' 'Zero' 'MultiCoreBPRMF' 'SoftMarginRankingMF' 'WeightedBPRMF' 'BPRLinear' 'MostPopularByAttributes' 'BPRSLIM' 'LeastSquareSLIM'
-ITEMRECOMMENDERS="UserKNN ItemKNN MostPopular Random"
+#ITEMRECOMMENDERS="UserKNN ItemKNN MostPopular Random"
+ITEMRECOMMENDERS="ItemKNN"
 
 # Available Rank Recommenders:
 # 'BiPolarSlopeOne' 'GlobalAverage' 'ItemAttributeKNN' 'ItemAverage' 'ItemKNN' 'MatrixFactorization' 'SlopeOne' 'UserAttributeKNN' 'UserAverage' 'UserItemBaseline' 'UserKNN' 'TimeAwareBaseline' 'TimeAwareBaselineWithFrequencies' 'CoClustering' 'Random' 'Constant' 'LatentFeatureLogLinearModel' 'BiasedMatrixFactorization' 'SVDPlusPlus' 'SigmoidSVDPlusPlus' 'SocialMF' 'SigmoidItemAsymmetricFactorModel' 'SigmoidUserAsymmetricFactorModel' 'SigmoidCombinedAsymmetricFactorModel' 'NaiveBayes' 'ExternalRatingPredictor' 'GSVDPlusPlus'
-RANKRECOMMENDERS="UserKNN ItemKNN"
+#RANKRECOMMENDERS="UserKNN ItemKNN"
 
 #Available Mahout recommenders
 # 'svd' ...
-MAHOUTRECOMMENDERS="svd "
+#MAHOUTRECOMMENDERS="itemuseraverage "
 
 QUIET=''
 GENERATED="$ROOT/generated"
@@ -92,6 +93,17 @@ if [ -n "$SPLIT" ]; then
 
       trainTestTuples+="${TRAINFILE}:${TESTFILE} "
     done
+  elif [ "$SPLIT" == "time" ]; then
+    for FILE in "$GENERATED"/ratings/*; do
+      echo "Splitting based on $INFILE"
+      python2.7 $ROOT/evaluation/simpleTimeSplit.py -i $FILE;
+
+      FILENAME=$(basename $FILE);
+      TESTFILE="${FILENAME}_timetest.txt";
+      TRAINFILE="${FILENAME}_timetrain.txt";
+
+      trainTestTuples+="${TRAINFILE}:${TESTFILE} "
+    done	
   else
     # Cold start split
     echo "Splitting data into colstart splits"
@@ -146,6 +158,6 @@ if [ "$MAHOUTRECOMMENDERS" != "" ]; then
   done
 fi
 
-python $ROOT/evaluation/generateLatexLinesNormSplits.py
+#python $ROOT/evaluation/generateLatexLinesNormSplits.py
 
 echo 'Done.'

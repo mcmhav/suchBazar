@@ -87,4 +87,14 @@ you find useful. Then run it and check the `ratings/`-folder.
 ## Create Binary Ratings
 
     cat recentness_linear.txt | awk '{$3=1;print $0}' > all_events_binary.txt
+    
+## Generate event data file
+
+    python makeEventTypeFile.py -r ../generated/ratings/count_linear.txt -s sobazar.tab.prod
+    
+Optionally the -p flag can be added to only consider purchase events (used for purchase only evaluation)
+
+    python makeEventTypeFile.py -r ../generated/ratings/count_linear.txt -s sobazar.tab.prod -p
+
+    
 

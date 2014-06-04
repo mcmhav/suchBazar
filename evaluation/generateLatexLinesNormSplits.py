@@ -125,8 +125,8 @@ def getRecommenderSystem(filename):
 
 def getRecommenderidNames():
     return {
-        'item':'item recommender',
-        'rank':'rank prediction',
+        'item_recommendation':'item recommender',
+        'rating_prediction':'rank prediction',
         'mahout':'mahout',
     }
 
@@ -134,7 +134,7 @@ def getRecommender(filename):
     '''
     Super dependent on the predictionfile name structure, not perfect
     '''
-    recNames = {'item', 'rank', 'mahout'}
+    recNames = {'item_recommendation', 'rating_prediction', 'mahout'}
 
     tmp = filename.split('.')
     testur = tmp[2].split('-')[-1]
@@ -146,7 +146,7 @@ def getColdstartNameFromFileName(filename):
     Get the coldstart name from the file name
     '''
 
-    coldstartNames = {'item', 'user', 'system'}
+    coldstartNames = {'item_recommendation', 'rating_prediction', 'system'}
     for csn in coldstartNames:
         if csn in filename:
             return csn
@@ -223,7 +223,7 @@ def getRecommenderAlg(filename):
     '''
     Super dependent on the predictionfile name structure, not perfect
     '''
-    recNames = {'item', 'rank', 'mahout'}
+    recNames = {'item_recommendation', 'rating_prediction', 'mahout'}
 
     tmp = filename.split('.')
     testur = tmp[-3].split('-')[-1]

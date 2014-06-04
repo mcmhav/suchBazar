@@ -148,15 +148,17 @@ predictNevaluate() {
 if [ "$ITEMRECOMMENDERS" != "" ]; then
   for ir in $ITEMRECOMMENDERS
   do
-    pOPT=("-t $trainTestTuples" "-r" "item" "-p" "$ir" "$CLEAN" "$QUIET")
-    eOPT=("-t $trainTestTuples" "-r" "item" "-p" "$ir" "-m")
+    pOPT=("-t $trainTestTuples" "-r" "item_recommendation" "-p" "$ir" "$CLEAN")
+    eOPT=("-t $trainTestTuples" "-r" "item_recommendation" "-p" "$ir" "-m")
     canK "$ir"
     if [ $CANSETK -eq 1 ] && [ "$KRANGE" != "" ]; then
-      for i in {$KRANGE}; do
-        pOPT+=("-k $i")
+      for i in $(seq $KRANGE); do
+        pOPT+=("-k k=$i")
+        pOPT+=("$QUIET")
         predictNevaluate pOPT[@] eOPT[@]
       done
     else
+      pOPT+=("$QUIET")
       predictNevaluate pOPT[@] eOPT[@]
     fi
   done
@@ -165,15 +167,17 @@ fi
 if [ "$RANKRECOMMENDERS" != "" ]; then
   for ir in $RANKRECOMMENDERS
   do
-    pOPT=("-t $trainTestTuples" "-r" "rank" "-p" "$ir" "$CLEAN" "$QUIET")
-    eOPT=("-t $trainTestTuples" "-r" "rank" "-p" "$ir" "-m")
+    pOPT=("-t $trainTestTuples" "-r" "rating_prediction" "-p" "$ir" "$CLEAN")
+    eOPT=("-t $trainTestTuples" "-r" "rating_prediction" "-p" "$ir" "-m")
     canK "$ir"
     if [ $CANSETK -eq 1 ] && [ "$KRANGE" != "" ]; then
-      for i in {$KRANGE}; do
-        pOPT+=("-k $i")
+      for i in $(seq $KRANGE); do
+        pOPT+=("-k k=$i")
+        pOPT+=("$QUIET")
         predictNevaluate pOPT[@] eOPT[@]
       done
     else
+      pOPT+=("$QUIET")
       predictNevaluate pOPT[@] eOPT[@]
     fi
   done

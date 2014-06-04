@@ -41,24 +41,32 @@ def plotAVGforCOuntAtleast(groups):
         tot[tmp] += (g['max'] - g['min'])
         ccount[tmp] += 1
 
+    # print (tot)
+    # print (ccount)
     bars = [0] * (maxikus + 1)
     c = 1
+    itemS = 0
+    total =
     for x in range(1,maxikus+1):
-        if ccount[x-1] != 0:
-            bars[x] = (tot[x-1] + bars[x-1])/c
+        print ("tot: %s\t bars: %s\t count: %s" % (tot[x-1],bars[x-1],c))
+        if tot[x-1] != 0:
+            itemS += ccount[x-2]
+            tmp = (tot[x-1] + bars[x-1])/
+            bars[x] = tmp
             c += 1
         else:
             bars[x] = bars[x-1]
 
+
+    # sys.exit()
     print (bars)
-    bars = []
 
     x = range(0,len(bars))
     y = bars[::-1]
 
     helpers.makePlot(
         'avglifetimeoncountSUM',
-        bars[::-1],
+        bars,
         # xticks=[helpers.makeTicks(yMax=len(bars)),list(helpers.makeTicks(yMax=maxikus))[::-1]],
         ylabel='Average lifetime in weeks',
         xlabel='Count of event',

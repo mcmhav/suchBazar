@@ -112,7 +112,7 @@ def getIDFromFileName(filename):
 def getRecommenderSystem(filename):
     '''
     '''
-    recSysNames = {'--i', '--r', '--h'}
+    recSysNames = {'item', 'rank', 'mahout'}
 
     for name in recSysNames:
         if name in recSysNames:
@@ -124,7 +124,7 @@ def getRecommender(filename):
     '''
     Super dependent on the predictionfile name structure, not perfect
     '''
-    recNames = {'--i', '--r', '--h'}
+    recNames = {'item', 'rank', 'mahout'}
 
     tmp = filename.split('.')
     testur = tmp[2].split('-')[-1]

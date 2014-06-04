@@ -7,6 +7,9 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from pylab import *
+
+
 
 def main(sessDB='sessionsNew'):
     groups = makeGroups(sessDB)
@@ -20,7 +23,48 @@ def plotItemTimeSpansSortedOnCount(groups):
     '''
     '''
     # doublePlotLol(groups)
-    doublePlotAVG(groups)
+    # doublePlotAVG(groups)
+    plotAVGforCOuntAtleast(groups)
+
+def plotAVGforCOuntAtleast(groups):
+    '''
+    '''
+    groups = sorted(groups, key=lambda k: k['count'],reverse=False)
+    counts = [int(x['count']) for x in groups]
+    maxikus = max(counts) + 1
+    tot = [0] * maxikus
+    ccount = [0] * maxikus
+
+
+    for g in groups:
+        tmp = int(g['count'])
+        tot[tmp] += (g['max'] - g['min'])
+        ccount[tmp] += 1
+
+    bars = [0] * (maxikus + 1)
+    c = 1
+    for x in range(1,maxikus+1):
+        if ccount[x-1] != 0:
+            bars[x] = (tot[x-1] + bars[x-1])/c
+            c += 1
+        else:
+            bars[x] = bars[x-1]
+
+    print (bars)
+    bars = []
+
+    x = range(0,len(bars))
+    y = bars[::-1]
+
+    helpers.makePlot(
+        'avglifetimeoncountSUM',
+        bars[::-1],
+        # xticks=[helpers.makeTicks(yMax=len(bars)),list(helpers.makeTicks(yMax=maxikus))[::-1]],
+        ylabel='Average lifetime in weeks',
+        xlabel='Count of event',
+        show=True
+    )
+
 
 def doublePlotAVG(groups):
     '''
@@ -36,27 +80,49 @@ def doublePlotAVG(groups):
         if (g['count']) > 100:
             print (g)
 
-    # print (minAVG)
-    print (ccount)
-    print (tot)
     bars = []
-    print (tot[46])
-    print (ccount[46])
     for x in range(0,maxikus):
         if ccount[x] != 0:
             tmp = (tot[x]/ccount[x])/(1000*60*60*24*7)
             bars.append(tmp)
 
-    print (bars[46])
-    print (bars)
-    helpers.makePlot(
-        'avglifetimeoncount',
-        bars[::-1],
-        xticks=[helpers.makeTicks(yMax=len(bars)),list(helpers.makeTicks(yMax=maxikus))[::-1]],
-        ylabel='Average lifetime in weeks',
-        xlabel='Count of event',
-        show=True
-    )
+    x = range(0,len(bars))
+    y = bars[::-1]
+
+    fit = polyfit(x,y,1)
+    # fit_fn is now a function which takes in x and returns an estimate for y
+    fit_fn = poly1d(fit)
+
+    fig, ax1 = plt.subplots()
+    figsize=[14.0,8.0]
+    fig.set_size_inches(figsize[0],figsize[1])
+    width = 0.8
+
+    ax1.bar(x, y, width)
+    ax1.set_ylabel('Average lifetime in weeks')
+    ax1.axis([0, len(y), 0, max(y)])
+
+    ax2 = ax1.twinx()
+    # ax2.set_ylabel('Event count on items', color='b')
+    ax2.plot(x,y, 'yo', x, fit_fn(x), '--k',color='r',markersize=0)
+    ax2.axis([0, len(y), 0, max(y)])
+    for tl in ax2.get_yticklabels():
+            tl.set_color('b')
+
+    plt.show()
+    location = os.path.dirname(os.path.abspath(__file__)) + "/../../muchBazar/src/image/itemTimeSpansortedoneventcount.png"
+    plt.savefig(location)
+    print ('Distribution written to: %s' % location)
+
+
+    # helpers.makePlot(
+    #     'avglifetimeoncount',
+    #     bars[::-1],
+    #     xticks=[helpers.makeTicks(yMax=len(bars)),list(helpers.makeTicks(yMax=maxikus))[::-1]],
+    #     ylabel='Average lifetime in weeks',
+    #     xlabel='Count of event',
+    #     show=True
+    # )
 
 
 def doublePlotLol(groups):

@@ -75,14 +75,14 @@ def getActualStats(actual, eventData):
     return counts
 
 def itemInList(item, list):
-    
+
     for i in list:
         if int(i[1]) == int(item[1]):
             return True
     return False
 
 def getPredictionStats(actual, predicted, eventData, topk=20):
-    
+
     counts = [0,0,0]
 
     for key, p_user_ratings in predicted.iteritems():
@@ -93,7 +93,7 @@ def getPredictionStats(actual, predicted, eventData, topk=20):
                     eventType = getEventType(key, p_rating[1], eventData)
                     if eventType > 0 and eventType < 4:
                         counts[eventType-1] += 1
-                    
+
     return counts
 
 
@@ -106,14 +106,14 @@ def filterNonTestUsersFromPredicted(actual, predicted):
     for user in actual:
         if not user in predicted:
             predicted.pop(user, None)
-            
+
     return predicted
-    
+
 
 def extractRatingsByEventType(actual, eventData):
 
     events = {}
-    
+
     for user in actual:
         for rating in actual[user]:
             eventType = getEventType(user, rating[1], eventData)
@@ -151,43 +151,43 @@ def generateResultList(aCounts, pCounts, recall, map_c, map_w, map_p):
     return result
 
 def preprocessMeanAvgPrecision(events, predicted, k):
-    
+
     test = []
     predictions = []
-    
+
     for user, user_pred_ratings in predicted.iteritems():
         #predictions.append(user_ratings)
         user_test_items = []
         user_pred_items = []
-        
+
         for rating in events:
             if rating[0] == user:
                 user_test_items.append(rating[1])
-        
+
         #If the user is in the test set
         if len(user_test_items) > 0:
-            
+
             for rating in user_pred_ratings[:min(len(user_pred_ratings), k)]:
                 user_pred_items.append(rating[1])
-                
+
             test.append(user_test_items)
             predictions.append(user_pred_items)
-            
+
     return test, predictions
 
 def compute(actual, predicted, k):
-    
+
     startTime = datetime.now()
 
-    
-    
+
+
     eventData = readEventTypeData()
     #Build hashmaps for better speed
     #Move to evaluation.compute?
     eventData = helpers.buildDictByIndex(eventData, 0)
     actual = helpers.buildDictByIndex(actual, 0)
     predicted = helpers.buildDictByIndex(predicted, 0)
-    
+
     #predicted = filterNonTestUsersFromPredicted(actual, predicted)
 
     aCounts = getActualStats(actual, eventData)
@@ -201,11 +201,11 @@ def compute(actual, predicted, k):
     t, p = preprocessMeanAvgPrecision(events[3], predicted, k)
     map_p = map.mapk(t, p, k)
 
-    
+
 
     #test_p(actual, predicted)
     print(datetime.now()-startTime)
-    
+
     print('*** RESULTS ***')
     print('Predicted list recall (true-positives)')
     print(pCounts)
@@ -213,17 +213,16 @@ def compute(actual, predicted, k):
     print(aCounts)
     print('Recall at %d' %k)
     print(recall)
-    
+
     print('MAP at %d clicked: %.6f' %(k, map_c))
     print('MAP at %d wanted: %.6f' %(k, map_w))
     print('MAP at %d purchased: %.6f' %(k, map_p))
-    
-    
+
+
 
     #return generateResultList(aCounts, pCounts, recall, map_c, map_w, map_p)
 
-    
-### TESTING ### 
+### TESTING ###
 #import itemAverage
 #test = helpers.readRatingsFromFile('../generated/Data/test.txt')
 #train = helpers.readRatingsFromFile('../generated/Data/t.txt')

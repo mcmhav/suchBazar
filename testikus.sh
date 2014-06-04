@@ -9,6 +9,13 @@ trap 'echo interrupted; exit' INT
 # Usage function, describing the parameters to the user.
 usage() { echo "Usage: $0 -i sobazar_input.tab"; exit 1; }
 
+canK () {
+  local e
+  array=("LeastSquareSLIM" "UserAttributeKNN" "UserKNN" "ItemKNN")
+  for e in "${array[@]}"; do [[ "$e" == "$1" ]] && CANSETK=0; done
+  CANSETK=1
+}
+
 # Save the current path
 ROOT=$( cd "$( dirname "$0" )" && pwd );
 
@@ -21,7 +28,7 @@ BINARY=0
 # Available Item Recommenders:
 # 'BPRMF' 'ItemAttributeKNN' 'ItemKNN' 'MostPopular' 'Random' 'UserAttributeKNN' 'UserKNN' 'WRMF' 'Zero' 'MultiCoreBPRMF' 'SoftMarginRankingMF' 'WeightedBPRMF' 'BPRLinear' 'MostPopularByAttributes' 'BPRSLIM' 'LeastSquareSLIM'
 #ITEMRECOMMENDERS="UserKNN ItemKNN MostPopular Random"
-ITEMRECOMMENDERS="ItemKNN"
+ITEMRECOMMENDERS=""
 
 # Available Rank Recommenders:
 # 'BiPolarSlopeOne' 'GlobalAverage' 'ItemAttributeKNN' 'ItemAverage' 'ItemKNN' 'MatrixFactorization' 'SlopeOne' 'UserAttributeKNN' 'UserAverage' 'UserItemBaseline' 'UserKNN' 'TimeAwareBaseline' 'TimeAwareBaselineWithFrequencies' 'CoClustering' 'Random' 'Constant' 'LatentFeatureLogLinearModel' 'BiasedMatrixFactorization' 'SVDPlusPlus' 'SigmoidSVDPlusPlus' 'SocialMF' 'SigmoidItemAsymmetricFactorModel' 'SigmoidUserAsymmetricFactorModel' 'SigmoidCombinedAsymmetricFactorModel' 'NaiveBayes' 'ExternalRatingPredictor' 'GSVDPlusPlus'
@@ -32,12 +39,13 @@ ITEMRECOMMENDERS="ItemKNN"
 
 #MAHOUTRECOMMENDERS="itemuseraverage "
 
-MAHOUTRECOMMENDERS="svd loglikelihood"
+MAHOUTRECOMMENDERS=""
 
-QUIET=''
+QUIET=""
 GENERATED="$ROOT/generated"
+KRANGE=""
 
-while getopts "i:cp:s:r:m:qb" o; do
+while getopts "i:cp:s:r:m:qbk:" o; do
   case "${o}" in
     i)
       INFILE="${OPTARG}"
@@ -62,6 +70,9 @@ while getopts "i:cp:s:r:m:qb" o; do
       ;;
     q)
       QUIET="-q"
+      ;;
+    k)
+      KRANGE="${OPTARG}"
       ;;
     *)
       usage
@@ -106,7 +117,7 @@ if [ -n "$SPLIT" ]; then
       TRAINFILE="${FILENAME}_timetrain.txt";
 
       trainTestTuples+="${TRAINFILE}:${TESTFILE} "
-    done	
+    done
   else
     # Cold start split
     echo "Splitting data into colstart splits"
@@ -124,30 +135,50 @@ else
     trainTestTuples+="${TRAINFILE}:${TESTFILE} "
   done
 fi
+
 echo $trainTestTuples
+
+
+predictNevaluate() {
+  echo "------------------------------"
+  # make predictions
+  /bin/bash $ROOT/generators/myMediaLitePredicter.sh "${!1}";
+  # evaluate predicted values
+  /bin/bash $ROOT/evaluation/evaluate.sh "${!2}";
+  echo "------------------------------"
+}
+
 if [ "$ITEMRECOMMENDERS" != "" ]; then
   for ir in $ITEMRECOMMENDERS
   do
-    # make predictions
-    echo "------------------------------"
-    /bin/bash $ROOT/generators/myMediaLitePredicter.sh -t "$trainTestTuples" -i -p $ir $CLEAN $QUIET;
-
-    # evaluate predicted values
-    /bin/bash $ROOT/evaluation/evaluate.sh -t "$trainTestTuples" -r "-i" -p $ir -m;
-    echo "------------------------------"
+    pOPT=("-t $trainTestTuples" "-r" "item" "-p" "$ir" "$CLEAN" "$QUIET")
+    eOPT=("-t $trainTestTuples" "-r" "item" "-p" "$ir" "-m")
+    canK "$ir"
+    if [ $CANSETK -eq 1 ] && [ "$KRANGE" != "" ]; then
+      for i in {$KRANGE}; do
+        pOPT+=("-k $i")
+        predictNevaluate pOPT[@] eOPT[@]
+      done
+    else
+      predictNevaluate pOPT[@] eOPT[@]
+    fi
   done
 fi
 
 if [ "$RANKRECOMMENDERS" != "" ]; then
   for ir in $RANKRECOMMENDERS
   do
-    # make predictions
-    echo "------------------------------"
-    /bin/bash $ROOT/generators/myMediaLitePredicter.sh -t "$trainTestTuples" -r -p $ir $CLEAN $QUIET;
-
-    # evaluate predicted values
-    /bin/bash $ROOT/evaluation/evaluate.sh -t "$trainTestTuples" -r "-p" -p $ir;
-    echo "------------------------------"
+    pOPT=("-t $trainTestTuples" "-r" "rank" "-p" "$ir" "$CLEAN" "$QUIET")
+    eOPT=("-t $trainTestTuples" "-r" "rank" "-p" "$ir" "-m")
+    canK "$ir"
+    if [ $CANSETK -eq 1 ] && [ "$KRANGE" != "" ]; then
+      for i in {$KRANGE}; do
+        pOPT+=("-k $i")
+        predictNevaluate pOPT[@] eOPT[@]
+      done
+    else
+      predictNevaluate pOPT[@] eOPT[@]
+    fi
   done
 fi
 
@@ -159,7 +190,7 @@ if [ "$MAHOUTRECOMMENDERS" != "" ]; then
     /bin/bash $ROOT/generators/mahoutPredict.sh -t "$trainTestTuples" -h -p $ir $CLEAN $QUIET;
 
     # evaluate predicted values
-    /bin/bash $ROOT/evaluation/evaluate.sh -t "$trainTestTuples" -r "-h" -p $ir;
+    /bin/bash $ROOT/evaluation/evaluate.sh -t "$trainTestTuples" -r "mahout" -p $ir;
     echo "------------------------------"
   done
 fi

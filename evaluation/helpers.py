@@ -196,7 +196,9 @@ def readMyMediaLitePredictions(path):
                     ratings.append(ratingTriple)
                 except:
                     print (item)
+                    print (line)
                     print ('wtf')
+                    sys.exit()
     return ratings
 
 def readMyMediaLitePredictionsForMPR(path):
@@ -296,7 +298,7 @@ def preprocessMAP(actual, predictions, k):
     p = buildDictByIndex(predictions, 0)
     pred = []
     test = []
-    
+
     for user in a:
         utest = []
         for i in range(len(a[user])):

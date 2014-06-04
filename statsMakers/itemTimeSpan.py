@@ -23,8 +23,8 @@ def plotItemTimeSpansSortedOnCount(groups):
     '''
     '''
     # doublePlotLol(groups)
-    # doublePlotAVG(groups)
-    plotAVGforCOuntAtleast(groups)
+    doublePlotAVG(groups)
+    # plotAVGforCOuntAtleast(groups)
 
 def plotAVGforCOuntAtleast(groups):
     '''
@@ -46,12 +46,13 @@ def plotAVGforCOuntAtleast(groups):
     bars = [0] * (maxikus + 1)
     c = 1
     itemS = 0
-    total =
+    tc = 0
     for x in range(1,maxikus+1):
-        print ("tot: %s\t bars: %s\t count: %s" % (tot[x-1],bars[x-1],c))
+        # print ("tot: %s\t bars: %s\t count: %s" % (tot[x-1],bars[x-1],c))
         if tot[x-1] != 0:
             itemS += ccount[x-2]
-            tmp = (tot[x-1] + bars[x-1])/
+            tc += tot[x-1]
+            tmp = tc/c
             bars[x] = tmp
             c += 1
         else:
@@ -93,6 +94,8 @@ def doublePlotAVG(groups):
         if ccount[x] != 0:
             tmp = (tot[x]/ccount[x])/(1000*60*60*24*7)
             bars.append(tmp)
+        else:
+            bars.append(0)
 
     x = range(0,len(bars))
     y = bars[::-1]

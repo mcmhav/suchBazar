@@ -153,7 +153,8 @@ if [ "$ITEMRECOMMENDERS" != "" ]; then
     canK "$ir"
     if [ $CANSETK -eq 1 ] && [ "$KRANGE" != "" ]; then
       for i in $(seq $KRANGE); do
-        pOPT+=("-k k=$i")
+        pOPT+=("-k" "$i")
+        eOPT+=("-k" "$i")
         pOPT+=("$QUIET")
         predictNevaluate pOPT[@] eOPT[@]
       done
@@ -172,7 +173,8 @@ if [ "$RANKRECOMMENDERS" != "" ]; then
     canK "$ir"
     if [ $CANSETK -eq 1 ] && [ "$KRANGE" != "" ]; then
       for i in $(seq $KRANGE); do
-        pOPT+=("-k k=$i")
+        pOPT+=("-k" "$i")
+        eOPT+=("-k" "$i")
         pOPT+=("$QUIET")
         predictNevaluate pOPT[@] eOPT[@]
       done

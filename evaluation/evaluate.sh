@@ -22,7 +22,7 @@ FEATUREFILE="$ROOT/generated/itemFeatures.txt"
 PREDFOLDER="$ROOT/generated/predictions"
 KVAL=""
 
-while getopts "t:p:r:m" o; do
+while getopts "t:p:r:mk:" o; do
   case "${o}" in
     m)
       MMLITEMRATINGSTYLE="-m"

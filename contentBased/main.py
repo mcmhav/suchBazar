@@ -13,7 +13,7 @@ import os
 def get_mongo_db():
   client = pymongo.MongoClient()
   db = client.mydb
-  return db["offerstaging"]
+  return db["items"]
 
 # stop = stopwords.words('english') + stopwords.words('norwegian')
 

@@ -231,7 +231,7 @@ def sortDictByRatings(predictions):
         predictions[user] = sorted(predictions[user], key=itemgetter(2), reverse=True)
     return predictions
 
-def writeRatingsToFile(path, data, delimiter=','):
+def writeRatingsToFile(path, data, delimiter='\t'):
 
     with open(path, 'wb') as file:
         writer =  csv.writer(file, delimiter=delimiter)

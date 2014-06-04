@@ -99,9 +99,9 @@ if [ $MYMEDIAITEM -eq 1 ] || [ $MYMEDIARANK -eq 1 ]; then
       if [ $MYMEDIARANK -eq 1 ]; then
         PREDFILE="$PREDICTIONS/${Array[0]}-${Array[1]}--p-$RECOMMENDER.predictions"
         OPT+=(--prediction-file "$PREDFILE");
-
-        if [ ! -f "$PREDFILE" ]; then
-          if [ $QUIET -eq 1 ] || [ $CLEAN -eq 1 ]; then
+	echo $PREDFILE
+        if [ ! -f "$PREDFILE" ] || [ $CLEAN -eq 1 ]; then
+          if [ $QUIET -eq 1 ]; then
             rating_prediction ${OPT[@]} >/dev/null &
           else
             rating_prediction ${OPT[@]} &

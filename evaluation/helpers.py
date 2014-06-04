@@ -32,6 +32,7 @@ def prepareEvauationScoreToLaTeX(filename,us_coverage,is_coverage,auc,mapk,eStat
         os.makedirs(folder)
 
     saveName = folder + k  + "-" + filename + ".score"
+    print(eStats)
     f = open(saveName, 'w')
     f.write('01auc:' + auc + "\n")
     f.write('02map:' + mapk + "\n")
@@ -125,7 +126,7 @@ def readRatingsFromFile(path, convert=False):
           if convert:
             t = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
             timestamp = int(time.mktime(t.timetuple()))
-          r.append(int(timestamp))
+          r.append(timestamp)
 
         # Add all the stuff to ratings array.
         ratings.append(r)
@@ -257,14 +258,15 @@ def buildDictByIndex(X, index=0):
     index = 1, uses items as keys
     '''
 
-    d = dict()
+    d = {}
 
     for x in X:
-        if x[index] in d:
-            d[x[index]].append(x)
+        i = int(x[index])
+        if i in d:
+            d[i].append(x)
         else:
-            d[x[index]] = list()
-            d[x[index]].append(x)
+            d[i] = list()
+            d[i].append(x)
 
     return d
 
@@ -287,26 +289,24 @@ def appendZeroRatings(user, predictions, candidateItems):
 def preprocessMAP(actual, predictions, k):
     '''
     Preprocessing nMAP calculations
-
     Extracts the top k list of item-ids from each user
-
     '''
 
     a = buildDictByIndex(actual, 0)
     p = buildDictByIndex(predictions, 0)
     pred = []
     test = []
+    
     for user in a:
         utest = []
         for i in range(len(a[user])):
             utest.append(a[user][i][1])
-        test.append(utest)
         if user in p:
             upred = []
             p[user] = sorted(p[user], key=itemgetter(2), reverse=True)
-            if len(p[user]) >= k:
-                for j in range(k):
-                    upred.append(p[user][j][1])
+            for j in range(min(len(p[user]), k)):
+                upred.append(p[user][j][1])
+            test.append(utest)
             pred.append(upred)
     return test, pred
 
@@ -360,7 +360,7 @@ def determineLatexHeaderNumber(trainFile):
 
 if __name__ == "__main__":
     main()
-    print(determineLatexHeaderNumber('../data/itemtrain1'))
+    #print(determineLatexHeaderNumber('../data/itemtrain1'))
 
 
 

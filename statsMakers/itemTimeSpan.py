@@ -90,15 +90,21 @@ def doublePlotAVG(groups):
             print (g)
 
     bars = []
+    reBars = []
+    yr = []
     for x in range(0,maxikus):
         if ccount[x] != 0:
             tmp = (tot[x]/ccount[x])/(1000*60*60*24*7)
             bars.append(tmp)
+            reBars.append(tmp)
+            yr.append(x)
         else:
             bars.append(0)
 
     x = range(0,len(bars))
     y = bars[::-1]
+
+    xr = reBars[::-1]
 
     fit = polyfit(x,y,1)
     # fit_fn is now a function which takes in x and returns an estimate for y
@@ -115,8 +121,8 @@ def doublePlotAVG(groups):
 
     ax2 = ax1.twinx()
     # ax2.set_ylabel('Event count on items', color='b')
-    ax2.plot(x,y, 'yo', x, fit_fn(x), '--k',color='r',markersize=0)
-    ax2.axis([0, len(y), 0, max(y)])
+    ax2.plot(xr,yr, 'yo', xr, fit_fn(xr), '--k',color='r',markersize=0)
+    ax2.axis([0, max(yr), 0, max(xr)])
     for tl in ax2.get_yticklabels():
             tl.set_color('b')
 

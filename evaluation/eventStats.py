@@ -89,7 +89,6 @@ def getPredictionStats(actual, predicted, eventData, topk=20):
         for a_user_ratings in actual.get(key, []):
             for p_rating in p_user_ratings[:min(len(p_user_ratings), topk)]:
                 if a_user_ratings[1] == p_rating[1]:
-                    print('Yes!')
                     eventType = getEventType(key, p_rating[1], eventData)
                     if eventType > 0 and eventType < 4:
                         counts[eventType-1] += 1
@@ -220,7 +219,7 @@ def compute(actual, predicted, k):
 
 
 
-    #return generateResultList(aCounts, pCounts, recall, map_c, map_w, map_p)
+    return generateResultList(aCounts, pCounts, recall, map_c, map_w, map_p)
 
 ### TESTING ###
 #import itemAverage

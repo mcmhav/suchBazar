@@ -139,6 +139,7 @@ fi
 predictNevaluate() {
   echo "------------------------------"
   # make predictions
+  echo "${!1}"
   /bin/bash $ROOT/generators/myMediaLitePredicter.sh "${!1}";
   # evaluate predicted values
   /bin/bash $ROOT/evaluation/evaluate.sh "${!2}";
@@ -148,18 +149,18 @@ predictNevaluate() {
 if [ "$ITEMRECOMMENDERS" != "" ]; then
   for ir in $ITEMRECOMMENDERS
   do
-    pOPT=("-t $trainTestTuples" "-r" "item_recommendation" "-p" "$ir" "$CLEAN")
+    pOPT=("-t $trainTestTuples" "-r" "item_recommendation" "-p" "$ir")
     eOPT=("-t $trainTestTuples" "-r" "item_recommendation" "-p" "$ir" "-m")
     canK "$ir"
     if [ $CANSETK -eq 1 ] && [ "$KRANGE" != "" ]; then
       for i in $(seq $KRANGE); do
         pOPT+=("-k" "$i")
         eOPT+=("-k" "$i")
-        pOPT+=("$QUIET")
+        pOPT+=("$CLEAN" "$QUIET")
         predictNevaluate pOPT[@] eOPT[@]
       done
     else
-      pOPT+=("$QUIET")
+      pOPT+=("$CLEAN" "$QUIET")
       predictNevaluate pOPT[@] eOPT[@]
     fi
   done

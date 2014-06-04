@@ -86,27 +86,26 @@ def doublePlotAVG(groups):
         tmp = int(g['count'])
         tot[tmp] += (g['max'] - g['min'])
         ccount[tmp] += 1
-        if (g['count']) > 100:
-            print (g)
 
     bars = []
     reBars = []
-    yr = []
+    xr = []
     for x in range(0,maxikus):
         if ccount[x] != 0:
             tmp = (tot[x]/ccount[x])/(1000*60*60*24*7)
             bars.append(tmp)
             reBars.append(tmp)
-            yr.append(x)
+            xr.append(x)
         else:
             bars.append(0)
 
     x = range(0,len(bars))
-    y = bars[::-1]
+    y = bars
 
-    xr = reBars[::-1]
+    yr = reBars
+    xr = xr
 
-    fit = polyfit(x,y,1)
+    fit = polyfit(xr,yr,1)
     # fit_fn is now a function which takes in x and returns an estimate for y
     fit_fn = poly1d(fit)
 
@@ -117,14 +116,10 @@ def doublePlotAVG(groups):
 
     ax1.bar(x, y, width)
     ax1.set_ylabel('Average lifetime in weeks')
+    ax1.set_xlabel('Event count on item')
     ax1.axis([0, len(y), 0, max(y)])
 
-    ax2 = ax1.twinx()
-    # ax2.set_ylabel('Event count on items', color='b')
-    ax2.plot(xr,yr, 'yo', xr, fit_fn(xr), '--k',color='r',markersize=0)
-    ax2.axis([0, max(yr), 0, max(xr)])
-    for tl in ax2.get_yticklabels():
-            tl.set_color('b')
+    plot(xr,yr, 'yo', xr, fit_fn(xr), '--k',color='r',markersize=0)
 
     plt.show()
     location = os.path.dirname(os.path.abspath(__file__)) + "/../../muchBazar/src/image/itemTimeSpansortedoneventcount.png"

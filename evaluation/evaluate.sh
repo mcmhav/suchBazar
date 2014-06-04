@@ -59,7 +59,7 @@ do
 
     TRAIN_FILE="$ROOT/generated/splits/${Array[0]}";
     TEST_FILE="$ROOT/generated/splits/${Array[1]}";
-    PRED_FILE="$PREDFOLDER/${Array[0]}-${Array[1]}-$KVAL-$RECOMMENDERSYS-$RECOMMENDER.predictions";
+    PRED_FILE="$PREDFOLDER/${Array[0]}-$KVAL-$RECOMMENDERSYS-$RECOMMENDER.predictions";
     F_FILE="$FEATUREFILE";
 
     echo "Evaluating $PRED_FILE";

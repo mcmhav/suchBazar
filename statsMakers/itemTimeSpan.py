@@ -22,7 +22,7 @@ def main(sessDB='sessionsNew'):
 def plotItemTimeSpansSortedOnCount(groups):
     '''
     '''
-    # doublePlotLol(groups)
+    doublePlotLol(groups)
     doublePlotAVG(groups)
     # plotAVGforCOuntAtleast(groups)
 
@@ -121,8 +121,7 @@ def doublePlotAVG(groups):
 
     plot(xr,yr, 'yo', xr, fit_fn(xr), '--k',color='r',markersize=0)
 
-    plt.show()
-    location = os.path.dirname(os.path.abspath(__file__)) + "/../../muchBazar/src/image/itemTimeSpansortedoneventcount.png"
+    location = os.path.dirname(os.path.abspath(__file__)) + "/../../muchBazar/src/image/avglifetimeoncount.png"
     plt.savefig(location)
     print ('Distribution written to: %s' % location)
 

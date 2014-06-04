@@ -98,7 +98,7 @@ if [ -n "$SPLIT" ]; then
     done
   elif [ "$SPLIT" == "time" ]; then
     for FILE in "$GENERATED"/ratings/*; do
-      echo "Splitting based on $INFILE"
+      echo "Splitting $INFILE based on TIME"
       python2.7 $ROOT/evaluation/simpleTimeSplit.py -i $FILE;
 
       FILENAME=$(basename $FILE);
@@ -124,7 +124,7 @@ else
     trainTestTuples+="${TRAINFILE}:${TESTFILE} "
   done
 fi
-
+echo $trainTestTuples
 if [ "$ITEMRECOMMENDERS" != "" ]; then
   for ir in $ITEMRECOMMENDERS
   do

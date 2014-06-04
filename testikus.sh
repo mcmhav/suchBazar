@@ -4,7 +4,7 @@
 set -e
 
 # Trap ctrl+c and abort all if it is entered
-trap 'echo interrupted; exit' INT
+trap 'echo interrupted; kill $(jobs -p); exit' INT
 
 # Usage function, describing the parameters to the user.
 usage() { echo "Usage: $0 -i sobazar_input.tab"; exit 1; }

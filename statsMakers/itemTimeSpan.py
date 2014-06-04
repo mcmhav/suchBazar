@@ -23,12 +23,48 @@ def plotItemTimeSpansSortedOnCount(groups):
     '''
     '''
     # doublePlotLol(groups)
-    doublePlotAVG(groups)
-    doublePlotAVG(groups)
+    # doublePlotAVG(groups)
+    plotAVGforCOuntAtleast(groups)
 
 def plotAVGforCOuntAtleast(groups):
     '''
     '''
+    groups = sorted(groups, key=lambda k: k['count'],reverse=False)
+    counts = [int(x['count']) for x in groups]
+    maxikus = max(counts) + 1
+    tot = [0] * maxikus
+    ccount = [0] * maxikus
+
+
+    for g in groups:
+        tmp = int(g['count'])
+        tot[tmp] += (g['max'] - g['min'])
+        ccount[tmp] += 1
+
+    bars = [0] * (maxikus + 1)
+    c = 1
+    for x in range(1,maxikus+1):
+        if ccount[x-1] != 0:
+            bars[x] = (tot[x-1] + bars[x-1])/c
+            c += 1
+        else:
+            bars[x] = bars[x-1]
+
+    print (bars)
+    bars = []
+
+    x = range(0,len(bars))
+    y = bars[::-1]
+
+    helpers.makePlot(
+        'avglifetimeoncountSUM',
+        bars[::-1],
+        # xticks=[helpers.makeTicks(yMax=len(bars)),list(helpers.makeTicks(yMax=maxikus))[::-1]],
+        ylabel='Average lifetime in weeks',
+        xlabel='Count of event',
+        show=True
+    )
+
 
 def doublePlotAVG(groups):
     '''

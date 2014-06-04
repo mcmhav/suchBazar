@@ -20,6 +20,7 @@ RECOMMENDERSYS=""
 RECOMMENDER=""
 FEATUREFILE="$ROOT/generated/itemFeatures.txt"
 PREDFOLDER="$ROOT/generated/predictions"
+KVAL=""
 
 while getopts "t:p:r:m" o; do
   case "${o}" in
@@ -34,6 +35,9 @@ while getopts "t:p:r:m" o; do
       ;;
     p)
       RECOMMENDER="${OPTARG}"
+      ;;
+    k)
+      KVAL="${OPTARG}"
       ;;
     *)
       usage
@@ -55,7 +59,7 @@ do
 
     TRAIN_FILE="$ROOT/generated/splits/${Array[0]}";
     TEST_FILE="$ROOT/generated/splits/${Array[1]}";
-    PRED_FILE="$PREDFOLDER/${Array[0]}-${Array[1]}-$RECOMMENDERSYS-$RECOMMENDER.predictions";
+    PRED_FILE="$PREDFOLDER/${Array[0]}-${Array[1]}-$KVAL-$RECOMMENDERSYS-$RECOMMENDER.predictions";
     F_FILE="$FEATUREFILE";
 
     echo "Evaluating $PRED_FILE";

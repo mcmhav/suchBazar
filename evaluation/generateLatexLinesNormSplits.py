@@ -125,16 +125,16 @@ def getRecommenderSystem(filename):
 
 def getRecommenderidNames():
     return {
-        '--i':'item recommender',
-        '--r':'rank prediction',
-        '--h':'mahout',
+        'item':'item recommender',
+        'rank':'rank prediction',
+        'mahout':'mahout',
     }
 
 def getRecommender(filename):
     '''
     Super dependent on the predictionfile name structure, not perfect
     '''
-    recNames = {'--i', '--r', '--h'}
+    recNames = {'item', 'rank', 'mahout'}
 
     tmp = filename.split('.')
     testur = tmp[2].split('-')[-1]
@@ -223,7 +223,7 @@ def getRecommenderAlg(filename):
     '''
     Super dependent on the predictionfile name structure, not perfect
     '''
-    recNames = {'--i', '--r', '--h'}
+    recNames = {'item', 'rank', 'mahout'}
 
     tmp = filename.split('.')
     testur = tmp[-3].split('-')[-1]

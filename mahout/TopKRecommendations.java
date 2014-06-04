@@ -73,7 +73,7 @@ public class TopKRecommendations {
 
         while (users.hasNext()) {
             long user = users.next();
-            List<RecommendedItem> topK = r.recommend(user,20000);
+            List<RecommendedItem> topK = r.recommend(user,20);
 
             topKForUsers.put(user,topK);
         }

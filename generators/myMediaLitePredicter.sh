@@ -26,13 +26,13 @@ PREDICTIONS="$ROOT/generated/predictions"
 # Some parameters changable in the opts.
 TTT=""
 MYMEDIAITEM=0
-MYMEDIARANK=0
+RECTYPE=""
 RECOMMENDER=""
 QUIET=0
 CLEAN=0
 KVAL=""
 
-while getopts "ct:irqp:k:" o; do
+while getopts "ct:ir:qp:k:" o; do
   case "${o}" in
     c)
       CLEAN=1
@@ -44,7 +44,7 @@ while getopts "ct:irqp:k:" o; do
       MYMEDIAITEM=1
       ;;
     r)
-      MYMEDIARANK=1
+      RECTYPE="${OPTARG}"
       ;;
     p)
       RECOMMENDER="${OPTARG}"
@@ -75,8 +75,8 @@ if [ "$TTT" == "" ]; then
   echo "Need to specify Train-Test-Tuples with -t";
   exit 1;
 fi
-echo $TTT
-if [ $MYMEDIAITEM -eq 1 ] || [ $MYMEDIARANK -eq 1 ]; then
+
+if [ "$RECTYPE" !=  "" ]; then
     echo "Making MyMediaLite rating predictions with $RECOMMENDER";
     for ttt in $TTT; do
       set -- "$ttt"
@@ -88,29 +88,13 @@ if [ $MYMEDIAITEM -eq 1 ] || [ $MYMEDIARANK -eq 1 ]; then
       OPT+=($KVAl);
 
       # Do item predictions
-      if [ $MYMEDIAITEM -eq 1 ]; then
-        PREDFILE="$PREDICTIONS/${Array[0]}-${Array[1]}-$KVAL--i-$RECOMMENDER.predictions"
-        OPT+=(--prediction-file "$PREDFILE");
-        if [ ! -f "$PREDFILE" ] || [ $CLEAN -eq 1 ]; then
-          if [ $QUIET -eq 1 ]; then
-            item_recommendation ${OPT[@]} >/dev/null &
-          else
-            item_recommendation ${OPT[@]} $STDOUT &
-          fi
-        fi
-      fi
-
-      # Do rank predictions
-      if [ $MYMEDIARANK -eq 1 ]; then
-        PREDFILE="$PREDICTIONS/${Array[0]}-${Array[1]}-$KVAL--p-$RECOMMENDER.predictions"
-        OPT+=(--prediction-file "$PREDFILE");
-
-        if [ ! -f "$PREDFILE" ]; then
-          if [ $QUIET -eq 1 ] || [ $CLEAN -eq 1 ]; then
-            rating_prediction ${OPT[@]} >/dev/null &
-          else
-            rating_prediction ${OPT[@]} &
-          fi
+      PREDFILE="$PREDICTIONS/${Array[0]}-${Array[1]}-$KVAL-$RECTYPE-$RECOMMENDER.predictions"
+      OPT+=(--prediction-file "$PREDFILE");
+      if [ ! -f "$PREDFILE" ] || [ $CLEAN -eq 1 ]; then
+        if [ $QUIET -eq 1 ]; then
+          item_recommendation ${OPT[@]} >/dev/null &
+        else
+          item_recommendation ${OPT[@]} &
         fi
       fi
     done

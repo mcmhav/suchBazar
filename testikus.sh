@@ -139,42 +139,43 @@ fi
 predictNevaluate() {
   echo "------------------------------"
   # make predictions
-  echo "$1"
-  /bin/bash $ROOT/generators/myMediaLitePredicter.sh "$1";
+  /bin/bash $ROOT/generators/myMediaLitePredicter.sh "${!1}";
   # evaluate predicted values
-  /bin/bash $ROOT/evaluation/evaluate.sh "$2";
+  /bin/bash $ROOT/evaluation/evaluate.sh "${!2}";
   echo "------------------------------"
 }
 
 if [ "$ITEMRECOMMENDERS" != "" ]; then
   for ir in $ITEMRECOMMENDERS
   do
-    pOPT=("-t $trainTestTuples -i -p $ir $CLEAN $QUIET")
-    eOPT=(-t "$trainTestTuples" -r "-i" -p $ir -m)
+    pOPT=("-t $trainTestTuples" "-r" "item" "-p" "$ir" "$CLEAN" "$QUIET")
+    eOPT=("-t $trainTestTuples" "-r" "item" "-p" "$ir" "-m")
     canK "$ir"
-    if [ $CANSETK -eq 1 ] && [ KRANGE != "" ]; then
+    if [ $CANSETK -eq 1 ] && [ "$KRANGE" != "" ]; then
       for i in {$KRANGE}; do
         pOPT+=("-k $i")
-        predictNevaluate "$pOPT" "$eOPT"
+        predictNevaluate pOPT[@] eOPT[@]
       done
     else
-      predictNevaluate "$pOPT" "$eOPT"
+      predictNevaluate pOPT[@] eOPT[@]
     fi
   done
 fi
 
-
-
 if [ "$RANKRECOMMENDERS" != "" ]; then
   for ir in $RANKRECOMMENDERS
   do
-    # make predictions
-    echo "------------------------------"
-    /bin/bash $ROOT/generators/myMediaLitePredicter.sh -t "$trainTestTuples" -r -p $ir $CLEAN $QUIET $KRANGE;
-
-    # evaluate predicted values
-    /bin/bash $ROOT/evaluation/evaluate.sh -t "$trainTestTuples" -r "-p" -p $ir;
-    echo "------------------------------"
+    pOPT=("-t $trainTestTuples" "-r" "rank" "-p" "$ir" "$CLEAN" "$QUIET")
+    eOPT=("-t $trainTestTuples" "-r" "rank" "-p" "$ir" "-m")
+    canK "$ir"
+    if [ $CANSETK -eq 1 ] && [ "$KRANGE" != "" ]; then
+      for i in {$KRANGE}; do
+        pOPT+=("-k $i")
+        predictNevaluate pOPT[@] eOPT[@]
+      done
+    else
+      predictNevaluate pOPT[@] eOPT[@]
+    fi
   done
 fi
 
@@ -186,7 +187,7 @@ if [ "$MAHOUTRECOMMENDERS" != "" ]; then
     /bin/bash $ROOT/generators/mahoutPredict.sh -t "$trainTestTuples" -h -p $ir $CLEAN $QUIET;
 
     # evaluate predicted values
-    /bin/bash $ROOT/evaluation/evaluate.sh -t "$trainTestTuples" -r "-h" -p $ir;
+    /bin/bash $ROOT/evaluation/evaluate.sh -t "$trainTestTuples" -r "mahout" -p $ir;
     echo "------------------------------"
   done
 fi

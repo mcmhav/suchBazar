@@ -152,7 +152,7 @@ if [ "$ITEMRECOMMENDERS" != "" ]; then
     eOPT=("-t $trainTestTuples" "-r" "item_recommendation" "-p" "$ir" "-m")
     canK "$ir"
     if [ $CANSETK -eq 1 ] && [ "$KRANGE" != "" ]; then
-      for i in $(seq $KRANGE); do
+      for i in $KRANGE; do
         pOPT+=("-k" "$i")
         eOPT+=("-k" "$i")
         pOPT+=("$CLEAN" "$QUIET")
@@ -169,10 +169,10 @@ if [ "$RANKRECOMMENDERS" != "" ]; then
   for ir in $RANKRECOMMENDERS
   do
     pOPT=("-t $trainTestTuples" "-r" "rating_prediction" "-p" "$ir")
-    eOPT=("-t $trainTestTuples" "-r" "rating_prediction" "-p" "$ir" "-m")
+    eOPT=("-t $trainTestTuples" "-r" "rating_prediction" "-p" "$ir")
     canK "$ir"
     if [ $CANSETK -eq 1 ] && [ "$KRANGE" != "" ]; then
-      for i in $(seq $KRANGE); do
+      for i in $KRANGE; do
         pOPT+=("-k" "$i")
         eOPT+=("-k" "$i")
         pOPT+=("$CLEAN" "$QUIET")

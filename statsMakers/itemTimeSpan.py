@@ -274,7 +274,7 @@ def makeGroups(sessDB):
         key={'product_id':1},
         condition={
             'product_id':{'$ne':'NULL'},
-            'ts': { '$gt': 1383283951000 }
+            # 'ts': { '$gt': 1383283951000 }
         },
         reduce=reducer,
         initial={

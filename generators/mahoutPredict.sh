@@ -75,6 +75,7 @@ do
     PREDFILE="$PREDICTIONS/${Array[0]}-${Array[1]}--h-$RECOMMENDER.predictions"
     if [ ! -f "$PREDFILE" ] || [ $CLEAN -eq 1 ]; then
       if [ $QUIET -eq 1 ]; then
+        cat "$RATINGS/${Array[1]}" >> "$RATINGS/${Array[0]}"
         java TopKRecommendations $RATINGS "${Array[0]}" $RECOMMENDER  $PREDFILE >/dev/null 2>/dev/null &
       else
         java TopKRecommendations $RATINGS "${Array[0]}" $RECOMMENDER  $PREDFILE &

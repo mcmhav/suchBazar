@@ -30,8 +30,9 @@ MYMEDIARANK=0
 RECOMMENDER=""
 QUIET=0
 CLEAN=0
+KVAL=""
 
-while getopts "ct:irqp:" o; do
+while getopts "ct:irqp:k:" o; do
   case "${o}" in
     c)
       CLEAN=1
@@ -50,6 +51,9 @@ while getopts "ct:irqp:" o; do
       ;;
     q)
       QUIET=1
+      ;;
+    k)
+      KVAL="k=${OPTARG}"
       ;;
     *)
       usage
@@ -81,10 +85,11 @@ if [ $MYMEDIAITEM -eq 1 ] || [ $MYMEDIARANK -eq 1 ]; then
       OPT=(--training-file "$ROOT/generated/splits/${Array[0]}");
       OPT+=(--test-file "$ROOT/generated/splits/${Array[1]}");
       OPT+=(--recommender $RECOMMENDER);
+      OPT+=($KVAl);
 
       # Do item predictions
       if [ $MYMEDIAITEM -eq 1 ]; then
-        PREDFILE="$PREDICTIONS/${Array[0]}-${Array[1]}--i-$RECOMMENDER.predictions"
+        PREDFILE="$PREDICTIONS/${Array[0]}-${Array[1]}-$KVAL--i-$RECOMMENDER.predictions"
         OPT+=(--prediction-file "$PREDFILE");
         if [ ! -f "$PREDFILE" ] || [ $CLEAN -eq 1 ]; then
           if [ $QUIET -eq 1 ]; then
@@ -97,7 +102,7 @@ if [ $MYMEDIAITEM -eq 1 ] || [ $MYMEDIARANK -eq 1 ]; then
 
       # Do rank predictions
       if [ $MYMEDIARANK -eq 1 ]; then
-        PREDFILE="$PREDICTIONS/${Array[0]}-${Array[1]}--p-$RECOMMENDER.predictions"
+        PREDFILE="$PREDICTIONS/${Array[0]}-${Array[1]}-$KVAL--p-$RECOMMENDER.predictions"
         OPT+=(--prediction-file "$PREDFILE");
 
         if [ ! -f "$PREDFILE" ]; then

@@ -28,15 +28,16 @@ import java.io.*;
 import java.util.*;
 
 public class TopKRecommendations {
-    static String dataPath = "../generated/splits";
     /* static String[] files = { "naive.txt", "sigmoid_count.txt", "sigmoid_recent.txt", "blend.txt" }; */
     String[] files = { "blend.txt" };
   /* static String recommender = "itembased"; */
 
     public void recommendations(String dataPath, String filename, final String recommender, String predictionFile) throws IOException, TasteException {
+        System.out.println("Using dataPath: " + dataPath);
+        System.out.println("Train file: " + filename);
         System.out.println("Using recommender-engine: " + recommender);
+        System.out.println("Storing to: " + predictionFile);
         long startTime = System.currentTimeMillis();
-
 
         DataModel model = new FileDataModel(new File(dataPath + "/" + filename));
         RecommenderBuilder builder = new RecommenderBuilder() {

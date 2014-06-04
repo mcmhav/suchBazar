@@ -196,9 +196,9 @@ def compute(actual, predicted, k):
 
     return generateResultList(aCounts, pCounts, recall, map_c, map_w, map_p)
 
-    
-### TESTING ### 
-        
+
+### TESTING ###
+
 #import itemAverage
 #train = helpers.readRatingsFromFile('../data/count_linear.txt.9.txt')
 #test = helpers.readRatingsFromFile('../data/count_linear.txt.1.txt')

@@ -9,6 +9,13 @@ trap 'echo interrupted; exit' INT
 # Usage function, describing the parameters to the user.
 usage() { echo "Usage: $0 -i sobazar_input.tab"; exit 1; }
 
+canK () {
+  local e
+  array=("LeastSquareSLIM" "UserAttributeKNN" "UserKNN" "ItemKNN")
+  for e in "${array[@]}"; do [[ "$e" == "$1" ]] && CANSETK=0; done
+  CANSETK=1
+}
+
 # Save the current path
 ROOT=$( cd "$( dirname "$0" )" && pwd );
 
@@ -34,10 +41,11 @@ ITEMRECOMMENDERS="ItemKNN"
 
 MAHOUTRECOMMENDERS="svd loglikelihood"
 
-QUIET=''
+QUIET=""
 GENERATED="$ROOT/generated"
+KRANGE=""
 
-while getopts "i:cp:s:r:m:qb" o; do
+while getopts "i:cp:s:r:m:qbk:" o; do
   case "${o}" in
     i)
       INFILE="${OPTARG}"
@@ -62,6 +70,9 @@ while getopts "i:cp:s:r:m:qb" o; do
       ;;
     q)
       QUIET="-q"
+      ;;
+    k)
+      KRANGE="${OPTARG}"
       ;;
     *)
       usage
@@ -106,7 +117,7 @@ if [ -n "$SPLIT" ]; then
       TRAINFILE="${FILENAME}_timetrain.txt";
 
       trainTestTuples+="${TRAINFILE}:${TESTFILE} "
-    done	
+    done
   else
     # Cold start split
     echo "Splitting data into colstart splits"
@@ -125,25 +136,41 @@ else
   done
 fi
 
+predictNevaluate() {
+  echo "------------------------------"
+  # make predictions
+  echo "$1"
+  /bin/bash $ROOT/generators/myMediaLitePredicter.sh "$1";
+  # evaluate predicted values
+  /bin/bash $ROOT/evaluation/evaluate.sh "$2";
+  echo "------------------------------"
+}
+
 if [ "$ITEMRECOMMENDERS" != "" ]; then
   for ir in $ITEMRECOMMENDERS
   do
-    # make predictions
-    echo "------------------------------"
-    /bin/bash $ROOT/generators/myMediaLitePredicter.sh -t "$trainTestTuples" -i -p $ir $CLEAN $QUIET;
-
-    # evaluate predicted values
-    /bin/bash $ROOT/evaluation/evaluate.sh -t "$trainTestTuples" -r "-i" -p $ir -m;
-    echo "------------------------------"
+    pOPT=("-t $trainTestTuples -i -p $ir $CLEAN $QUIET")
+    eOPT=(-t "$trainTestTuples" -r "-i" -p $ir -m)
+    canK "$ir"
+    if [ $CANSETK -eq 1 ] && [ KRANGE != "" ]; then
+      for i in {$KRANGE}; do
+        pOPT+=("-k $i")
+        predictNevaluate "$pOPT" "$eOPT"
+      done
+    else
+      predictNevaluate "$pOPT" "$eOPT"
+    fi
   done
 fi
+
+
 
 if [ "$RANKRECOMMENDERS" != "" ]; then
   for ir in $RANKRECOMMENDERS
   do
     # make predictions
     echo "------------------------------"
-    /bin/bash $ROOT/generators/myMediaLitePredicter.sh -t "$trainTestTuples" -r -p $ir $CLEAN $QUIET;
+    /bin/bash $ROOT/generators/myMediaLitePredicter.sh -t "$trainTestTuples" -r -p $ir $CLEAN $QUIET $KRANGE;
 
     # evaluate predicted values
     /bin/bash $ROOT/evaluation/evaluate.sh -t "$trainTestTuples" -r "-p" -p $ir;

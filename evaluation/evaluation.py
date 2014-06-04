@@ -88,7 +88,6 @@ def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
 
     us_coverage, is_coverage = coverage.compute(train, predictions)
     roc_auc = auc.compute(train, test, predictions)
-    # roc_auc = -1
     t, p = helpers.preprocessMAP(test, predictions, k)
     mapk = map.mapk(t, p, k)
     #t, p = helpers.preprocessDCG(test, predictions, l)

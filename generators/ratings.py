@@ -7,7 +7,7 @@ import utils
 import os
 from datetime import datetime
 
-valid_methods = ['naive', 'recentness', 'count']
+valid_methods = ['naive', 'recentness', 'count', 'price', 'popularity']
 valid_functions = ['sigmoid_fixed', 'sigmoid_constant', 'linear', 'norm_dist']
 
 def main():
@@ -54,7 +54,7 @@ def main():
   if args.fx and 'naive' in args.method:
     print ("It does not make sense to define fx when using naive methods.")
     sys.exit(1)
-  if not config.get("fx", None) and args.method != "naive":
+  if not config.get("fx", None) and args.method not in ("naive", "price", "popularity"):
     print ("Wrong function type '%s', please choose between %s with '-fx' flag" % (args.fx, valid_functions))
     sys.exit(1)
 
@@ -167,6 +167,10 @@ def main():
       utils.parse_eventline(l, users, config)
   else:
     users = utils.create_usermatrix(config)
+
+  # If we need to do some intitial calculations
+  if config["method"] == "popularity":
+    utils.init_calc(users)
 
   # Reset the file for output
   open(config["outfile"], 'w').close()

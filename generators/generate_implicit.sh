@@ -14,7 +14,7 @@ set -e
 usage() { echo "Usage: $0 [-c (clean)] [-p (plot)] [-b (blend)] [-i (infile)] [-h (help)]"; exit 1; }
 
 # Check for ctrl+c
-trap 'echo interrupted; exit' INT
+trap 'echo interrupted; kill $(jobs -p); exit' INT
 
 # Save the current path
 CWD=$( cd "$( dirname "$0" )" && pwd );
@@ -97,10 +97,12 @@ SCRIPT="$CWD/ratings.py"
 #python $SCRIPT $OPTS -m count -fx sigmoid_constant -sc 30
 
 ## A nice, example blend
+python2.7 $SCRIPT $OPTS -m price -fx linear &
+python2.7 $SCRIPT $OPTS -m popularity -fx linear &
 python2.7 $SCRIPT $OPTS -m count -fx linear &
-python2.7 $SCRIPT $OPTS -m count -fx sigmoid_fixed -sr 3.5 &
+#python2.7 $SCRIPT $OPTS -m count -fx sigmoid_fixed -sr 3.5 &
 python2.7 $SCRIPT $OPTS -m recentness -fx linear &
-python2.7 $SCRIPT $OPTS -m recentness -fx sigmoid_fixed -sr 3.5 &
+#python2.7 $SCRIPT $OPTS -m recentness -fx sigmoid_fixed -sr 3.5 &
 
 # Wait till the last backgorund process has completed.
 wait

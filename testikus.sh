@@ -153,10 +153,12 @@ if [ "$ITEMRECOMMENDERS" != "" ]; then
     canK "$ir"
     if [ $CANSETK -eq 1 ] && [ "$KRANGE" != "" ]; then
       for i in $KRANGE; do
-        pOPT+=("-k" "$i")
-        eOPT+=("-k" "$i")
-        pOPT+=("$CLEAN" "$QUIET")
-        predictNevaluate pOPT[@] eOPT[@]
+        ptmp=( "${pOPT[@]}" )
+        etmp=( "${eOPT[@]}" )
+        ptmp+=("-k" "$i")
+        etmp+=("-k" "$i")
+        ptmp+=("$CLEAN" "$QUIET")
+        predictNevaluate ptmp[@] etmp[@]
       done
     else
       pOPT+=("$CLEAN" "$QUIET")
@@ -173,10 +175,12 @@ if [ "$RANKRECOMMENDERS" != "" ]; then
     canK "$ir"
     if [ $CANSETK -eq 1 ] && [ "$KRANGE" != "" ]; then
       for i in $KRANGE; do
-        pOPT+=("-k" "$i")
-        eOPT+=("-k" "$i")
-        pOPT+=("$CLEAN" "$QUIET")
-        predictNevaluate pOPT[@] eOPT[@]
+        ptmp=( "${pOPT[@]}" )
+        etmp=( "${eOPT[@]}" )
+        ptmp+=("-k" "$i")
+        etmp+=("-k" "$i")
+        ptmp+=("$CLEAN" "$QUIET")
+        predictNevaluate ptmp[@] etmp[@]
       done
     else
       pOPT+=("$CLEAN" "$QUIET")

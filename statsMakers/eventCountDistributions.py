@@ -35,7 +35,7 @@ def main(sessDB='sessionsNew'):
                      # title='Event id distribution',
                      ylabel='Event id count',
                      xlabel='Event id',
-                     show=show,
+                     show=True,
                      steps=len(ks)
                      )
 

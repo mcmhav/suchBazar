@@ -179,8 +179,6 @@ def compute(actual, predicted, k):
 
     startTime = datetime.now()
 
-
-
     eventData = readEventTypeData()
     #Build hashmaps for better speed
     #Move to evaluation.compute?
@@ -218,9 +216,7 @@ def compute(actual, predicted, k):
     print('MAP at %d wanted: %.6f' %(k, map_w))
     print('MAP at %d purchased: %.6f' %(k, map_p))
 
-
-
-    #return generateResultList(aCounts, pCounts, recall, map_c, map_w, map_p)
+    return generateResultList(aCounts, pCounts, recall, map_c, map_w, map_p)
 
 ### TESTING ###
 #import itemAverage

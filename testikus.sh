@@ -111,7 +111,7 @@ main() {
             TESTFILE="${FILENAME_NOEXT}_timetest.txt";
             TRAINFILE="${FILENAME_NOEXT}_timetrain.txt";
             trainTestTuples+="${TRAINFILE}:${TESTFILE} "
-        else
+        elif [ "$SPLIT" == "cold" ]; then
           # Cold start split
           trainTestTuples+="blend_itemtrain1.txt:blend_itemtest1.txt "
           trainTestTuples+="blend_itemtrain2.txt:blend_itemtest2.txt "
@@ -121,8 +121,8 @@ main() {
           trainTestTuples+="blend_systemtrain3.txt:blend_systemtest.txt "
           trainTestTuples+="blend_usertrain1.txt:blend_usertest1.txt "
           trainTestTuples+="blend_usertrain2.txt:blend_usertest2.txt "
-          trainTestTuples+="blend_usertrain3.txt:blend_usertest3.txt"
-          python2.7 $ROOT/evaluation/evaluation.py --coldstart-split $GENERATED/ratings/blend.txt --feature-file $ROOT/data/product_features.txt -t -fb '1,1,1,1,0';
+          trainTestTuples+="blend_usertrain3.txt:blend_usertest3.txt "
+          python2.7 $ROOT/evaluation/evaluation.py --coldstart-split $GENERATED/ratings/blend.txt --feature-file $ROOT/data/product_features.txt -t -fb '1,1,1,1,1';
         fi
     else
       echo "Getting tuples, no splitting"
@@ -132,11 +132,10 @@ main() {
     fi
   done
 
-  echo $ITEMRECOMMENDERS
   # Recommending with item_recommendation (MyMediaLite)
   if [ "$ITEMRECOMMENDERS" != "" ]; then
     for ir in $ITEMRECOMMENDERS; do
-      medialitepredict $ir $KRANGE
+      medialitePredict "item_recommendation" $ir $KRANGE
       evaluate "item_recommendation" $ir
     done
   fi
@@ -144,7 +143,7 @@ main() {
   # Recommending with rating predictions (MyMediaLite)
   if [ "$RANKRECOMMENDERS" != "" ]; then
     for ir in $RANKRECOMMENDERS; do
-      medialitepredict $ir $KRANGE
+      medialitePredict "rating_prediction" $ir $KRANGE
       evaluate "rating_prediction" "$ir"
     done
   fi
@@ -171,17 +170,13 @@ main() {
 
 evaluate() {
   # Possitional argument, indicating recommender system.
-  RECOMMENDERSYS="${0}";
-  RECOMMENDER="${1}";
+  RECOMMENDERSYS="${1}";
+  RECOMMENDER="${2}";
 
-  # Check if we are evaluating something that comes from mymedialite.
-  MYMEDIALITE_COND=""
-  if [ $RECOMMENDERSYS != "mahout" ]; then
-    MYMEDIALITE_COND="-m"
-  fi
+  echo "Evaluating $RECOMMENDERSYS using $RECOMMENDER"
 
   # Do evaluation.
-  for ttt in $trainTuples; do
+  for ttt in $trainTestTuples; do
 
     # Split 'train.txt:test.txt' on ':', and insert to Array.
     IFS=":" read -a Array <<< $ttt;
@@ -189,64 +184,108 @@ evaluate() {
     TEST="${Array[1]}";
     TRAIN_FILE="$GENERATED/splits/${TRAIN}";
     TEST_FILE="$GENERATED/splits/${TEST}";
-
-    PRED_FILE="$PREDFOLDER/${TRAIN}-$KVAL-$RECOMMENDERSYS-$RECOMMENDER.predictions";
-
     OPT=(--training-file $TRAIN_FILE);
     OPT+=(--test-file $TEST_FILE);
-    OPT+=(--prediction-file $PRED_FILE);
 
-    python2.7 $ROOT/evaluation/evaluation.py -b 2 -k 20 "${OPT[@]}" "$MYMEDIALITE_COND" &
-  done;
-  wait;
-}
-
-medialitePredict() {
-  # Get arguments
-  RECOMMENDER="${0}";
-  KVAL="${1}";
-
-  for ttt in $trainTuples; do
-    # Split 'train.txt:test.txt' on ':', and insert to Array.
-    IFS=":" read -a Array <<< $ttt;
-    TRAIN="${Array[0]}";
-    TEST="${Array[1]}";
-    PREDFILE="$PREDICTIONS/${TRAIN}-$KVAL-$RECTYPE-$RECOMMENDER.predictions"
-
-    OPT=(--training-file "$ROOT/generated/splits/${TRAIN}");
-    OPT+=(--test-file "$ROOT/generated/splits/${TEST}");
-    OPT+=(--recommender $RECOMMENDER);
-    OPT+=(--recommender-options "k=$KVAL correlation=Jaccard");
-    OPT+=(--prediction-file "$PREDFILE");
-
-    # Do item predictions
-    if [ ! -f "$PREDFILE" ] || [ $CLEAN -eq 1 ]; then
-      if [ $QUIET -eq 1 ]; then
-        $RECTYPE ${OPT[@]} >/dev/null &
-      else
-        $RECTYPE ${OPT[@]} &
-      fi
+    arr=("LeastSquareSLIM" "UserAttributeKNN" "UserKNN" "ItemKNN")
+    if [[ " ${arr[@]} " =~ " ${RECOMMENDER} " ]] && [ "$KVAL" != "" ]; then
+      for K in "$KVAL"; do
+        PRED_FILE="$GENERATED/predictions/${TRAIN}-$KVAL-$RECOMMENDERSYS-$RECOMMENDER.predictions";
+        OPT+=(--prediction-file $PRED_FILE);
+        bar OPT[@] $RECOMMENDERSYS
+      done
+    else
+      PRED_FILE="$GENERATED/predictions/${TRAIN}--$RECOMMENDERSYS-$RECOMMENDER.predictions";
+      OPT+=(--prediction-file $PRED_FILE);
+      bar OPT[@] $RECOMMENDERSYS
     fi
   done;
   wait;
 }
 
+bar() {
+  OPTS="${!1}"
+  RECOMMENDERSYS="${2}"
+
+  if [ $RECOMMENDERSYS == "item_recommendation" ]; then
+    python2.7 $ROOT/evaluation/evaluation.py -b 2 -k 20 ${OPTS} -m &
+  else
+    python2.7 $ROOT/evaluation/evaluation.py -b 2 -k 20 ${OPTS} &
+  fi
+}
+
+medialitePredict() {
+  # Get arguments
+  RECTYPE="${1}"
+  RECOMMENDER="${2}";
+  KVAL="${3}";
+
+  echo "Recommending with $RECTYPE using $RECOMMENDER"
+
+  for ttt in $trainTestTuples; do
+    # Split 'train.txt:test.txt' on ':', and insert to Array.
+    IFS=":" read -a Array <<< $ttt;
+    TRAIN="${Array[0]}";
+    TEST="${Array[1]}";
+    OPT=(--training-file "$ROOT/generated/splits/${TRAIN}");
+    OPT+=(--test-file "$ROOT/generated/splits/${TEST}");
+    OPT+=(--recommender $RECOMMENDER);
+
+    # Do item predictions
+    arr=("LeastSquareSLIM" "UserAttributeKNN" "UserKNN" "ItemKNN")
+    if [[ " ${arr[@]} " =~ " ${RECOMMENDER} " ]] && [ "$KVAL" != "" ]; then
+      for K in "$KVAL"; do
+        OPT+=("--recommender-options k=$K");
+        OPT+=("--recommender-options correlation=Jaccard");
+        foo OPT[@] "$PREDFILE" "$RECTYPE" "$K"
+      done
+    else
+      foo OPT[@] "$PREDFILE" "$RECTYPE"
+    fi
+  done;
+  wait;
+}
+
+foo() {
+  OPTS="${!1}"
+  PREDFILE="$2"
+  RECTYPE="$3"
+  K="$4"
+
+  PREDFILE="$GENERATED/predictions/${TRAIN}-$K-$RECTYPE-$RECOMMENDER.predictions"
+  OPTS+=" --prediction-file $PREDFILE";
+
+  if [ ! -f "$PREDFILE" ] || [ "$CLEAN" == "-c" ]; then
+    if [ "$QUIET" == "-q" ]; then
+      $RECTYPE ${OPTS} >/dev/null &
+    else
+      $RECTYPE ${OPTS} &
+    fi
+  fi
+}
+
 mahoutPredict() {
   # Get arguments
-  RECOMMENDER=${0};
+  RECOMMENDER=${1};
 
-  for ttt in $trainTuples; do
+  echo "Recommending with Mahout using $RECOMMENDER"
+
+
+  for ttt in $trainTestTuples; do
     # Split 'train.txt:test.txt' on ':', and insert to Array.
     IFS=":" read -a Array <<< $ttt;
     TRAINFILE="${Array[0]}";
     TESTFILE="${Array[1]}";
-    OUTFILE="$PREDICTIONS/${Array[0]}--mahout-$RECOMMENDER.predictions"
-    if [ ! -f "$OUTFILE" ] || [ $CLEAN -eq 1 ]; then
-      if [ $QUIET -eq 1 ]; then
+    OUTFILE="$GENERATED/predictions/${Array[0]}--mahout-$RECOMMENDER.predictions"
+    if [ ! -f "$OUTFILE" ] || [ "$CLEAN" == "-c" ]; then
+      cd "$ROOT/mahout"
+      javac TopKRecommendations.java
+      if [ "$QUIET" == "-q" ]; then
         java TopKRecommendations "$GENERATED/splits" $TRAINFILE $RECOMMENDER $OUTFILE $TESTFILE >/dev/null 2>/dev/null &
       else
         java TopKRecommendations "$GENERATED/splits" $TRAINFILE $RECOMMENDER $OUTFILE $TESTFILE &
       fi
+      cd -
     else
       echo "Already had $OUTFILE and thus, I did not predict anything new...";
       exit 1;

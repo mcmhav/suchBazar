@@ -34,7 +34,7 @@ def appendZeroRatings(train, predictions, itemIds):
     print('Done appending %d missing items' % count)
     return predictions
 
-def compute(train, test, predictions):
+def compute(train_users, test_users, predictions, candidateItems):
     '''
     Computes the AUC for all users in the test set
     For more information about AUC see e.g.
@@ -42,13 +42,7 @@ def compute(train, test, predictions):
     For Java implementation see:
     https://github.com/jcnewell/MyMediaLiteJava/blob/master/src/org/mymedialite/eval/Items.java
     '''
-
-    train_users = helpers.buildDictByIndex(train, 0)
-    test_users = helpers.buildDictByIndex(test, 0)
-    predictions = helpers.buildDictByIndex(predictions, 0)
-    #sortDictByRatings(predictions)                                #The ratings usually comes pre sorted
-    candidateItems = helpers.getUniqueItemList(train)
-    #predictions = appendZeroRatings(train_users, predictions, candidateItems)
+        
     numCandidateItems = len(candidateItems)                       #Number of unique items in training set
 
     AUC = 0

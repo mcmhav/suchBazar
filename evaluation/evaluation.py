@@ -73,6 +73,10 @@ def coldStartSplits():
 
 def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
     #train = helpers.readRatingsFromFile(trainFile)
+    
+    print('Training file, test file')
+    print(trainFile, testFile)
+    
     train = helpers.readRatingsFromFile(trainFile, convert=False)
     test = helpers.readRatingsFromFile(testFile, convert=False)
     if not predictionFile:
@@ -85,14 +89,35 @@ def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
             predictions = helpers.readMyMediaLitePredictions(predictionFile)
         else:
             predictions = helpers.readRatingsFromFileSmart(predictionFile)
-
+         
+    k = 200  
+           
     us_coverage, is_coverage = coverage.compute(train, predictions)
-    roc_auc = auc.compute(train, test, predictions)
+    candidateItems = helpers.getUniqueItemList(train)
+    #Build Hashmaps
+    train = helpers.buildDictByIndex(train, 0)
+    test = helpers.buildDictByIndex(test, 0) 
+    predictions = helpers.buildDictByIndex(predictions, 0)
+    predictions = helpers.sortDictByRatings(predictions)
+   
+    print(len(test))
+    print(len(predictions))
+    for user in predictions:
+        if user in test:
+            '''
+            '''
+        else:
+            print(user)
+    
+    
+    
+    roc_auc = auc.compute(train, test, predictions, candidateItems)
     t, p = helpers.preprocessMAP(test, predictions, k)
     mapk = map.mapk(t, p, k)
     #t, p = helpers.preprocessDCG(test, predictions, l)
     #nDCG = ndcg.compute(t, p, 1, l)
     #hluB = hlu.compute(t, p, beta)
+    
     eStats = es.compute(test, predictions, k)
 
     print('*** RESULTS ***')

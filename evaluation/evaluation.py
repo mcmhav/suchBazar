@@ -69,14 +69,7 @@ def coldStartSplits():
     #createColdStartSplits('../generators/ratings/recentness_sigmoid_constant_sc-30.0.txt', timeStamps, filterBotSettings)
     #createColdStartSplits('../generators/ratings/recentness_sigmoid_fixed_sr-4.5.txt', timeStamps, filterBotSettings)
 
-
-
 def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
-    #train = helpers.readRatingsFromFile(trainFile)
-    
-    print('Training file, test file')
-    print(trainFile, testFile)
-    
     train = helpers.readRatingsFromFile(trainFile, convert=False)
     test = helpers.readRatingsFromFile(testFile, convert=False)
     if not predictionFile:
@@ -89,35 +82,26 @@ def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
             predictions = helpers.readMyMediaLitePredictions(predictionFile)
         else:
             predictions = helpers.readRatingsFromFileSmart(predictionFile)
-         
-     
-           
+
     us_coverage, is_coverage = coverage.compute(train, predictions)
     candidateItems = helpers.getUniqueItemList(train)
     #Build Hashmaps
     train = helpers.buildDictByIndex(train, 0)
-    test = helpers.buildDictByIndex(test, 0) 
+    test = helpers.buildDictByIndex(test, 0)
     predictions = helpers.buildDictByIndex(predictions, 0)
     predictions = helpers.sortDictByRatings(predictions)
-   
-    print(len(test))
-    print(len(predictions))
+
     for user in predictions:
-        if user in test:
-            '''
-            '''
-        else:
+        if not user in test:
             print(user)
-    
-    
-    
+
     roc_auc = auc.compute(train, test, predictions, candidateItems)
     t, p = helpers.preprocessMAP(test, predictions, k)
     mapk = map.mapk(t, p, k)
     #t, p = helpers.preprocessDCG(test, predictions, l)
     #nDCG = ndcg.compute(t, p, 1, l)
     #hluB = hlu.compute(t, p, beta)
-    
+
     eStats = es.compute(test, predictions, k)
 
     print('*** RESULTS ***')
@@ -126,7 +110,6 @@ def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
     print('MAP%d: %.4f' %(k, mapk))
     #print('nDCG%d: %.4f' %(l, nDCG))
     #print('HLU%d: %.4f' %(beta, hluB))
-
 
     helpers.prepareEvauationScoreToLaTeX(
         ntpath.basename(predictionFile),

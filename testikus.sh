@@ -21,7 +21,7 @@ BINARY=0
 # Available Item Recommenders:
 # 'BPRMF' 'ItemAttributeKNN' 'ItemKNN' 'MostPopular' 'Random' 'UserAttributeKNN' 'UserKNN' 'WRMF' 'Zero' 'MultiCoreBPRMF' 'SoftMarginRankingMF' 'WeightedBPRMF' 'BPRLinear' 'MostPopularByAttributes' 'BPRSLIM' 'LeastSquareSLIM'
 #ITEMRECOMMENDERS="UserKNN ItemKNN MostPopular Random"
-ITEMRECOMMENDERS="ItemKNN"
+ITEMRECOMMENDERS=""
 
 # Available Rank Recommenders:
 # 'BiPolarSlopeOne' 'GlobalAverage' 'ItemAttributeKNN' 'ItemAverage' 'ItemKNN' 'MatrixFactorization' 'SlopeOne' 'UserAttributeKNN' 'UserAverage' 'UserItemBaseline' 'UserKNN' 'TimeAwareBaseline' 'TimeAwareBaselineWithFrequencies' 'CoClustering' 'Random' 'Constant' 'LatentFeatureLogLinearModel' 'BiasedMatrixFactorization' 'SVDPlusPlus' 'SigmoidSVDPlusPlus' 'SocialMF' 'SigmoidItemAsymmetricFactorModel' 'SigmoidUserAsymmetricFactorModel' 'SigmoidCombinedAsymmetricFactorModel' 'NaiveBayes' 'ExternalRatingPredictor' 'GSVDPlusPlus'
@@ -31,7 +31,7 @@ ITEMRECOMMENDERS="ItemKNN"
 # 'svd' ...
 
 #MAHOUTRECOMMENDERS="itemuseraverage "
-MAHOUTRECOMMENDERS="svd loglikelihood"
+MAHOUTRECOMMENDERS=""
 
 QUIET=""
 GENERATED="$ROOT/generated"
@@ -101,7 +101,7 @@ if [ -n "$SPLIT" ]; then
     done
   elif [ "$SPLIT" == "time" ]; then
     for FILE in "$GENERATED"/ratings/*; do
-      echo "Splitting based on $INFILE"
+      echo "Splitting $INFILE based on TIME"
       python2.7 $ROOT/evaluation/simpleTimeSplit.py -i $FILE;
 
       FILENAME=$(basename $FILE);
@@ -127,6 +127,9 @@ else
     trainTestTuples+="${TRAINFILE}:${TESTFILE} "
   done
 fi
+
+echo $trainTestTuples
+
 
 predictNevaluate() {
   echo "------------------------------"

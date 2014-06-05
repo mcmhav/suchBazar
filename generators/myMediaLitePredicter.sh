@@ -53,7 +53,8 @@ while getopts "ct:ir:qp:k:" o; do
       QUIET=1
       ;;
     k)
-      KVAL="--recommender-options=k=${OPTARG}"
+      KVAL="--recommender-options=k=${OPTARG} correlation=Jaccard"
+      #KVAL="--recommender-options=k=${OPTARG}"
       KVALSINGLE="${OPTARG}"
       ;;
     *)

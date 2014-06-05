@@ -178,29 +178,25 @@ def compute(actual, predicted, k):
 
     startTime = datetime.now()
 
-
-
     eventData = readEventTypeData()
     #Build hashmaps for better speed
-    #Move to evaluation.compute?
     eventData = helpers.buildDictByIndex(eventData, 0)
-    actual = helpers.buildDictByIndex(actual, 0)
-    predicted = helpers.buildDictByIndex(predicted, 0)
-
     #predicted = filterNonTestUsersFromPredicted(actual, predicted)
 
     aCounts = getActualStats(actual, eventData)
     pCounts = getPredictionStats(actual, predicted, eventData, k)
     recall = compute_recall(aCounts, pCounts)
+    
     events = extractRatingsByEventType(actual, eventData)
+    
     t, p = preprocessMeanAvgPrecision(events[1], predicted, k)
     map_c = map.mapk(t, p, k)
+    
     t, p = preprocessMeanAvgPrecision(events[2], predicted, k)
     map_w = map.mapk(t, p, k)
+    
     t, p = preprocessMeanAvgPrecision(events[3], predicted, k)
     map_p = map.mapk(t, p, k)
-
-
 
     #test_p(actual, predicted)
     print(datetime.now()-startTime)
@@ -216,8 +212,6 @@ def compute(actual, predicted, k):
     print('MAP at %d clicked: %.6f' %(k, map_c))
     print('MAP at %d wanted: %.6f' %(k, map_w))
     print('MAP at %d purchased: %.6f' %(k, map_p))
-
-
 
     return generateResultList(aCounts, pCounts, recall, map_c, map_w, map_p)
 

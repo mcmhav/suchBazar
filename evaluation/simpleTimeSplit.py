@@ -11,9 +11,10 @@ SPLITS_FOLDER = 'splits'
 GENERATED_LOCATION = 'generated'
 folder = ROOT_FOLDER + '/' + GENERATED_LOCATION + '/' + SPLITS_FOLDER + '/'
 
-
 def timeSplit(inputFile, test_ratio):
     '''
+    Split the dataset on time, putting the freshest
+    ratings in the testset
     '''
     ratings = helpers.readRatingsFromFile(inputFile)
     

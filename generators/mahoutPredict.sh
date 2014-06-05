@@ -76,12 +76,14 @@ for ttt in $TTT
 do
     set -- "$ttt"
     IFS=":"; declare -a Array=($*)
-    PREDFILE="$PREDICTIONS/${Array[0]}-$KVAL-mahout-$RECOMMENDER.predictions"
+    TRAINFILE="${Array[0]}";
+    TESTFILE="${Array[1]}";
+    OUTFILE="$PREDICTIONS/${Array[0]}-$KVAL-mahout-$RECOMMENDER.predictions"
     if [ ! -f "$PREDFILE" ] || [ $CLEAN -eq 1 ]; then
       if [ $QUIET -eq 1 ]; then
-        java TopKRecommendations $RATINGS "${Array[0]}" $RECOMMENDER  $PREDFILE >/dev/null 2>/dev/null &
+        java TopKRecommendations $RATINGS $TRAINFILE $RECOMMENDER  $OUTFILE $TESTFILE >/dev/null 2>/dev/null &
       else
-        java TopKRecommendations $RATINGS "${Array[0]}" $RECOMMENDER  $PREDFILE &
+        java TopKRecommendations $RATINGS $TRAINFILE $RECOMMENDER $OUTFILE $TESTFILE &
       fi
     fi
 done

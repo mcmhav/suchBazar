@@ -342,7 +342,7 @@ def addFilterBotRatings(train, featurefile='', fbots=[0,0,0,0,0]):
 
     item_attributes = readItemAttributes(featurefile)
     fbRatings = []
-
+    
     procs = []
 
     if fbots[0]:

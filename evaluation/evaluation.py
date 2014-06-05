@@ -67,15 +67,18 @@ def coldStartSplits():
     #createColdStartSplits('../generators/ratings/recentness_sigmoid_constant_sc-30.0.txt', timeStamps, filterBotSettings)
     #createColdStartSplits('../generators/ratings/recentness_sigmoid_fixed_sr-4.5.txt', timeStamps, filterBotSettings)
 
-def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
-
+def evaluate(trainFile, testFile, predictionFile, k, l, beta, m, featurefile):
     start = time.time()
 
     train = helpers.readRatingsFromFile(trainFile, convert=False)
     test = helpers.readRatingsFromFile(testFile, convert=False)
 
+
     if not predictionFile:
-        train = fb.addFilterBotRatings(train, featurefile='', fbots=[1, 1, 1, 1, 0])
+        if not featurefile or not os.path.isfile(featurefile):
+	    print("Can not evaluate without featurefile, when I dont even have a predictionfile!")
+            sys.exit(1)
+        train = fb.addFilterBotRatings(train, featurefile, fbots=[1, 1, 1, 1, 0])
         #predictions = itemAverage.itemAverage(train, test)
         predictions = itemAverage.mostPopular(train, test)
 
@@ -85,17 +88,18 @@ def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
         else:
             predictions = helpers.readRatingsFromFileSmart(predictionFile)
 
+    # we use approx. 15 seconds to come here.
     us_coverage, is_coverage = coverage.compute(train, predictions)
     candidateItems = helpers.getUniqueItemList(train)
 
     #Build Hashmaps
     train = helpers.buildDictByIndex(train, 0)
     test = helpers.buildDictByIndex(test, 0)
-    predictions = helpers.buildDictByIndex(predictions, 0)
+    predictions = helpers.buildDictByIndex(predictions, 0) # takes about 5 seconds to complete.
     predictions = helpers.sortDictByRatings(predictions)
-
     roc_auc = auc.compute(train, test, predictions, candidateItems)
     t, p = helpers.preprocessMAP(test, predictions, k)
+
     mapk = map.mapk(t, p, k)
     #t, p = helpers.preprocessDCG(test, predictions, l)
     #nDCG = ndcg.compute(t, p, 1, l)
@@ -109,9 +113,7 @@ def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
     #print('MAP%d: %.4f' %(k, mapk))
     #print('nDCG%d: %.4f' %(l, nDCG))
     #print('HLU%d: %.4f' %(beta, hluB))
-
     print('Evaluation took %.2f seconds.'%(time.time()-start))
-
 
     helpers.prepareEvauationScoreToLaTeX(
         ntpath.basename(predictionFile),
@@ -222,4 +224,4 @@ if args.coldstart:
     createColdStartSplits(args.coldstart, args.timestamps, args.featurefile, fb)
 
 if args.test:
-    evaluate(args.train, args.test, args.pred, args.k, args.l, args.beta, args.m)
+    evaluate(args.train, args.test, args.pred, args.k, args.l, args.beta, args.m, args.featurefile)

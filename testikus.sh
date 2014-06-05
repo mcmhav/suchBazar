@@ -11,9 +11,11 @@ usage() { echo "Usage: $0 -i sobazar_input.tab"; exit 1; }
 
 # Save the current path
 ROOT=$( cd "$( dirname "$0" )" && pwd );
+GENERATED="$ROOT/generated"
 
 # Some parameters changable in the opts.
 INFILE="../datasets/v3/sobazar_events_prod_cleaned_formatted.tab"
+FEATURE_FILE="$GENERATED/itemFeatures.txt"
 CLEAN=""
 SPLIT=""
 BINARY=0
@@ -42,10 +44,9 @@ RANKRECOMMENDERS=""
 MAHOUTRECOMMENDERS=""
 
 QUIET=""
-GENERATED="$ROOT/generated"
 KRANGE=""
 
-while getopts "i:cp:s:r:m:qbk:" o; do
+while getopts "i:cp:s:f:r:m:qbk:" o; do
   case "${o}" in
     i)
       INFILE="${OPTARG}"
@@ -73,6 +74,9 @@ while getopts "i:cp:s:r:m:qbk:" o; do
       ;;
     k)
       KRANGE="${OPTARG}"
+      ;;
+    f)
+      FEATUREFILE="${OPTARG}"
       ;;
     *)
       usage
@@ -185,6 +189,7 @@ evaluate() {
     TRAIN_FILE="$GENERATED/splits/${TRAIN}";
     TEST_FILE="$GENERATED/splits/${TEST}";
     OPT=(--training-file $TRAIN_FILE);
+    OPT+=(--feature-file $FEATURE_FILE);
     OPT+=(--test-file $TEST_FILE);
 
     arr=("LeastSquareSLIM" "UserAttributeKNN" "UserKNN" "ItemKNN")

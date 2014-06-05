@@ -32,7 +32,6 @@ def prepareEvauationScoreToLaTeX(filename,us_coverage,is_coverage,auc,mapk,eStat
         os.makedirs(folder)
 
     saveName = folder + k  + "-" + filename + ".score"
-    print(eStats)
     f = open(saveName, 'w')
     f.write('01auc:' + auc + "\n")
     f.write('02map:' + mapk + "\n")
@@ -311,7 +310,6 @@ def preprocessMAP(a, p, k):
                 upred.append(p[user][j][1])
             test.append(utest)
             pred.append(upred)
-    print(len(test), len(pred))
     return test, pred
 
 def preprocessMeanAvgPrecision(events, predicted, k):

@@ -75,7 +75,7 @@ done
 OPTS="-i $INFILE $CLEAN"
 
 # Generate ratings (blending and timestamps enabled by default)
-/bin/bash $ROOT/generators/generate_implicit.sh -t $OPTS;
+/bin/bash $ROOT/generators/generate_implicit.sh -t -b $OPTS;
 
 # Check if we want binary ratings instead, making all ratings 1.
 if [ $BINARY -eq 1 ]; then
@@ -105,8 +105,8 @@ if [ -n "$SPLIT" ]; then
       python2.7 $ROOT/evaluation/simpleTimeSplit.py -i $FILE;
 
       FILENAME=$(basename $FILE);
-      TESTFILE="${FILENAME}_timetest.txt";
-      TRAINFILE="${FILENAME}_timetrain.txt";
+      TESTFILE="${FILENAME%%.*}_timetest.txt";
+      TRAINFILE="${FILENAME%%.*}_timetrain.txt";
 
       trainTestTuples+="${TRAINFILE}:${TESTFILE} "
     done

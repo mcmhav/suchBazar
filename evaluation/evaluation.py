@@ -3,9 +3,6 @@ Evaluation functions
 
 '''
 
-from sklearn import metrics
-from scipy import stats
-from operator import itemgetter
 import argparse
 
 #Evaluation modules
@@ -16,12 +13,13 @@ import auc
 import map
 import helpers
 import coldStart
-import hlu
-import ndcg
+#import hlu
+#import ndcg
 import itemAverage
 import filterbots as fb
 import ntpath
 import sys
+import time
 from multiprocessing import Process
 
 
@@ -70,6 +68,9 @@ def coldStartSplits():
     #createColdStartSplits('../generators/ratings/recentness_sigmoid_fixed_sr-4.5.txt', timeStamps, filterBotSettings)
 
 def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
+
+    start = time.time()    
+
     train = helpers.readRatingsFromFile(trainFile, convert=False)
     test = helpers.readRatingsFromFile(testFile, convert=False)
     if not predictionFile:
@@ -85,6 +86,7 @@ def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
 
     us_coverage, is_coverage = coverage.compute(train, predictions)
     candidateItems = helpers.getUniqueItemList(train)
+    
     #Build Hashmaps
     train = helpers.buildDictByIndex(train, 0)
     test = helpers.buildDictByIndex(test, 0)
@@ -100,12 +102,15 @@ def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
 
     eStats = es.compute(test, predictions, k)
 
-    print('*** RESULTS ***')
-    print('User-Space Coverage: %.4f\nItem-Space Coverage: %.4f' %(us_coverage, is_coverage))
-    print('AUC: %.4f' %(roc_auc))
-    print('MAP%d: %.4f' %(k, mapk))
+    #print('*** RESULTS ***')
+    #print('User-Space Coverage: %.4f\nItem-Space Coverage: %.4f' %(us_coverage, is_coverage))
+    #print('AUC: %.4f' %(roc_auc))
+    #print('MAP%d: %.4f' %(k, mapk))
     #print('nDCG%d: %.4f' %(l, nDCG))
     #print('HLU%d: %.4f' %(beta, hluB))
+    
+    print('Evaluation took %.2f seconds.'%(time.time()-start))
+
 
     helpers.prepareEvauationScoreToLaTeX(
         ntpath.basename(predictionFile),

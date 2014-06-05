@@ -132,7 +132,7 @@ main() {
     fi
   done
 
-
+  echo $ITEMRECOMMENDERS
   # Recommending with item_recommendation (MyMediaLite)
   if [ "$ITEMRECOMMENDERS" != "" ]; then
     for ir in $ITEMRECOMMENDERS; do

@@ -11,38 +11,38 @@ import math
 def main(sessDB='sessionsNew'):
     show = False
 
-    k = 'product_id'
-    groups = helpers.getKGroups(k,sessDB)
-    ks, counts = preprocessGroups(k,groups)
-    ks,xss,xticks = groupProductsOnCounts(ks,counts,cap=50)
-    yticks = helpers.makeTicks(yMax=max(ks),steps=10)
-    yticksl = helpers.makeTicks(yMax=100,steps=10)
-    helpers.makePlot(k + 'cum',
-                     ks,
-                     yaxis=xss,
-                     # title='Cumulative distribution of events on products',
-                     ylabel='Product count',
-                     xlabel='Event count',
-                     show=True,
-                     xticks=[xticks,xticks],
-                     yticks=[yticks,yticksl],
-                     )
+    # k = 'product_id'
+    # groups = helpers.getKGroups(k,sessDB)
+    # ks, counts = preprocessGroups(k,groups)
+    # ks,xss,xticks = groupProductsOnCounts(ks,counts,cap=50)
+    # yticks = helpers.makeTicks(yMax=max(ks),steps=10)
+    # yticksl = helpers.makeTicks(yMax=100,steps=10)
+    # helpers.makePlot(k + 'cum',
+    #                  ks,
+    #                  yaxis=xss,
+    #                  # title='Cumulative distribution of events on products',
+    #                  ylabel='Product count',
+    #                  xlabel='Event count',
+    #                  show=show,
+    #                  xticks=[xticks,xticks],
+    #                  yticks=[yticks,yticksl],
+    #                  )
 
-    k = 'product_id'
-    maximum = 50
-    groups = helpers.getKGroups(k,sessDB)
-    ks, counts = preprocessGroups(k,groups)
-    ks,counts = sortUsersOnEvenCount(ks,counts,maximum)
-    xTicks = makeTicks(yMax=maximum)
-    helpers.makePlot(k,
-                     ks,
-                     yaxis=ks,
-                     # title='Cumulative distribution of events on products',
-                     ylabel='Product count',
-                     xlabel='Event count',
-                     show=True,
-                     xticks=[xTicks,xTicks],
-                     )
+    # k = 'product_id'
+    # maximum = 50
+    # groups = helpers.getKGroups(k,sessDB)
+    # ks, counts = preprocessGroups(k,groups)
+    # ks,counts = sortUsersOnEvenCount(ks,counts,maximum)
+    # xTicks = makeTicks(yMax=maximum)
+    # helpers.makePlot(k,
+    #                  ks,
+    #                  yaxis=ks,
+    #                  # title='Cumulative distribution of events on products',
+    #                  ylabel='Product count',
+    #                  xlabel='Event count',
+    #                  show=show,
+    #                  xticks=[xTicks,xTicks],
+    #                  )
 
     # k = 'event_id'
     # groups = helpers.getKGroups(k,sessDB)
@@ -107,45 +107,46 @@ def main(sessDB='sessionsNew'):
     #                  xticks=[]
     #                  )
 
-    # k = 'user_id'
-    # maximum = 250
-    # groups = helpers.getKGroups(k,sessDB)
-    # ks, counts = preprocessGroups(k,groups)
-    # ks,counts = sortUsersOnEvenCount(ks,counts,maximum)
-    # xTicks = makeTicks(yMax=maximum)
-    # helpers.makePlot(
-    #                     k,
-    #                     ks,
-    #                     yaxis=ks,
-    #                     # title='Distribution of events for users',
-    #                     ylabel='User count',
-    #                     xlabel='Event count',
-    #                     show=show,
-    #                     grid=True,
-    #                     xticks=[xTicks,xTicks]
-    #                     # labels=[1,5,10],
-    #                     # ticks=[[1,5,10],[1,5,10]]
-    #                 )
+    k = 'user_id'
+    maximum = 250
+    groups = helpers.getKGroups(k,sessDB)
+    ks, counts = preprocessGroups(k,groups)
+    ks,counts = sortUsersOnEvenCount(ks,counts,maximum)
+    xTicks = makeTicks(yMax=maximum)
+    helpers.makePlot(
+                        k,
+                        ks,
+                        yaxis=ks,
+                        # title='Distribution of events for users',
+                        ylabel='User count',
+                        xlabel='Event count',
+                        show=show,
+                        grid=True,
+                        xticks=[xTicks,xTicks]
+                        # labels=[1,5,10],
+                        # ticks=[[1,5,10],[1,5,10]]
+                    )
 
-    # k = 'user_id'
-    # maximum = 250
-    # groups = helpers.getKGroups(k,sessDB)
-    # ks, counts = preprocessGroups(k,groups)
-    # ks,yTicks,xTicks = sortUsersOnEvenCountCum(ks,counts,maximum)
-    # helpers.makePlot(
-    #                     k + 'cum',
-    #                     ks,
-    #                     yaxis=ks,
-    #                     # title='Cumulative distribution of events for users',
-    #                     ylabel='Percentage of users',
-    #                     xlabel='Event count',
-    #                     show=show,
-    #                     grid=True,
-    #                     yticks=yTicks,
-    #                     xticks=xTicks,
-    #                     # labels=[1,5,10],
-    #                     # ticks=[[1,5,10],[1,5,10]]
-    #                 )
+    k = 'user_id'
+    maximum = 250
+    groups = helpers.getKGroups(k,sessDB)
+    ks, counts = preprocessGroups(k,groups)
+    print (ks)
+    ks,yTicks,xTicks = sortUsersOnEvenCountCum(ks,counts,maximum)
+    helpers.makePlot(
+                        k + 'cum',
+                        ks,
+                        yaxis=ks,
+                        # title='Cumulative distribution of events for users',
+                        ylabel='Percentage of users',
+                        xlabel='Event count',
+                        show=True,
+                        grid=True,
+                        yticks=yTicks,
+                        xticks=xTicks,
+                        # labels=[1,5,10],
+                        # ticks=[[1,5,10],[1,5,10]]
+                    )
 
     # k = 'session'
     # maximum = 30
@@ -375,16 +376,20 @@ def sortUsersOnEvenCount(ks,counts,cap,reverse=False):
             tmp.append(counts[i])
         i += 1
 
-    counts_sorted = sorted(tmp,reverse=reverse)
+    counts_sorted = sorted(tmp[:],reverse=reverse)
     i = 0
     ks = [0] * ((max(tmp))+1)
     for c in counts_sorted:
         ks[c] += 1
         i += 1
-    return ks,tmp
+
+    return ks[1:len(ks)],tmp
 
 def sortUsersOnEvenCountCum(ks,counts,cap):
     ks = sortUsersOnEvenCount(ks,counts,cap)
+    # print (list(ks))
+    # print (ks)
+    # print (ks[0])
     total = getTotalCount(ks)
     cum_ks = [0] * (max(counts)+2)
     i = 0

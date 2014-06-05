@@ -102,8 +102,8 @@ if [ -n "$SPLIT" ]; then
       /bin/bash $ROOT/generators/split.sh -r -i $FILE -o "$ROOT/generated/splits"
 
       FILENAME=$(basename $FILE);
-      TESTFILE="${FILENAME}.1.txt";
-      TRAINFILE="${FILENAME}.9.txt";
+      TESTFILE="${FILENAME%%.*}-1.txt";
+      TRAINFILE="${FILENAME%%.*}-9.txt";
 
       trainTestTuples+="${TRAINFILE}:${TESTFILE} "
     done

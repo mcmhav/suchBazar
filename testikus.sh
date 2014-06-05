@@ -113,7 +113,7 @@ main() {
             trainTestTuples+="${TRAINFILE}:${TESTFILE} "
         elif [ "$SPLIT" == "cold" ]; then
           # Cold start split
-          trainTestTuples+="blend_itemtrain1.txt:blend_itemtest1.txt "
+          trainTestTuples="blend_itemtrain1.txt:blend_itemtest1.txt "
           trainTestTuples+="blend_itemtrain2.txt:blend_itemtest2.txt "
           trainTestTuples+="blend_itemtrain3.txt:blend_itemtest3.txt "
           trainTestTuples+="blend_systemtrain1.txt:blend_systemtest.txt "
@@ -269,8 +269,9 @@ mahoutPredict() {
   RECOMMENDER=${1};
 
   echo "Recommending with Mahout using $RECOMMENDER"
-
-
+  echo "$trainTestTuples"
+  cd "$ROOT/mahout"
+  javac TopKRecommendations.java
   for ttt in $trainTestTuples; do
     # Split 'train.txt:test.txt' on ':', and insert to Array.
     IFS=":" read -a Array <<< $ttt;
@@ -278,19 +279,17 @@ mahoutPredict() {
     TESTFILE="${Array[1]}";
     OUTFILE="$GENERATED/predictions/${Array[0]}--mahout-$RECOMMENDER.predictions"
     if [ ! -f "$OUTFILE" ] || [ "$CLEAN" == "-c" ]; then
-      cd "$ROOT/mahout"
-      javac TopKRecommendations.java
       if [ "$QUIET" == "-q" ]; then
         java TopKRecommendations "$GENERATED/splits" $TRAINFILE $RECOMMENDER $OUTFILE $TESTFILE >/dev/null 2>/dev/null &
       else
         java TopKRecommendations "$GENERATED/splits" $TRAINFILE $RECOMMENDER $OUTFILE $TESTFILE &
       fi
-      cd -
     else
       echo "Already had $OUTFILE and thus, I did not predict anything new...";
       exit 1;
     fi
   done;
+  cd -
   wait;
 }
 

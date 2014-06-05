@@ -91,10 +91,6 @@ def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
     predictions = helpers.buildDictByIndex(predictions, 0)
     predictions = helpers.sortDictByRatings(predictions)
 
-    for user in predictions:
-        if not user in test:
-            print(user)
-
     roc_auc = auc.compute(train, test, predictions, candidateItems)
     t, p = helpers.preprocessMAP(test, predictions, k)
     mapk = map.mapk(t, p, k)

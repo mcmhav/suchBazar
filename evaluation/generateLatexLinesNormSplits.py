@@ -245,7 +245,9 @@ def ratingFileNames():
         'recentness_linear':'Recentness linear',
         'recentness_sigmoid':'Recentness sigmoid',
         'count_sigmoid':'Count sigmoid',
-        'price_linear':'Price linear'
+        'price_linear':'Price linear',
+        'blend': 'Blend',
+        'popularity_linear': 'Popularity Linear'
     }
 
 def isColdSplit(f):

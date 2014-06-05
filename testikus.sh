@@ -74,63 +74,93 @@ done
 
 OPTS="-i $INFILE $CLEAN"
 
-# Generate ratings (blending and timestamps enabled by default)
-/bin/bash $ROOT/generators/generate_implicit.sh -t -b $OPTS;
+main() {
+  # Generate ratings (blending and timestamps enabled by default)
+  /bin/bash $ROOT/generators/generate_implicit.sh -t -b $OPTS;
 
-# Check if we want binary ratings instead, making all ratings 1.
-if [ $BINARY -eq 1 ]; then
-  for FILE in "$GENERATED"/ratings/*; do
-    FILENAME=$(basename "$FILE")
-    cat "$FILE" | awk '{$3=1;print}' FS='\t' OFS='\t' > /tmp/"$FILENAME"
-    mv /tmp/"$FILENAME" $FILE
-  done
-fi
-
-trainTestTuples=""
-if [ -n "$SPLIT" ]; then
-  if [ "$SPLIT" == "random" ]; then
+  # Check if we want binary ratings instead, making all ratings 1.
+  if [ $BINARY -eq 1 ]; then
     for FILE in "$GENERATED"/ratings/*; do
-      echo "Splitting based on $INFILE"
-      /bin/bash $ROOT/generators/split.sh -r -i $FILE -o "$ROOT/generated/splits"
-
-      FILENAME=$(basename $FILE);
-      TESTFILE="${FILENAME%%.*}-1.txt";
-      TRAINFILE="${FILENAME%%.*}-9.txt";
-
-      trainTestTuples+="${TRAINFILE}:${TESTFILE} "
+      FILENAME=$(basename "$FILE")
+      cat "$FILE" | awk '{$3=1;print}' FS='\t' OFS='\t' > /tmp/"$FILENAME"
+      mv /tmp/"$FILENAME" $FILE
     done
-  elif [ "$SPLIT" == "time" ]; then
-    for FILE in "$GENERATED"/ratings/*; do
-      echo "Splitting $INFILE based on TIME"
-      python2.7 $ROOT/evaluation/simpleTimeSplit.py -i $FILE;
-
-      FILENAME=$(basename $FILE);
-      TESTFILE="${FILENAME%%.*}_timetest.txt";
-      TRAINFILE="${FILENAME%%.*}_timetrain.txt";
-
-      trainTestTuples+="${TRAINFILE}:${TESTFILE} "
-    done
-  else
-    # Cold start split
-    echo "Splitting data into colstart splits"
-    trainTestTuples="blend_itemtrain1.txt:blend_itemtest1.txt blend_itemtrain2.txt:blend_itemtest2.txt blend_itemtrain3.txt:blend_itemtest3.txt blend_systemtrain1.txt:blend_systemtest.txt blend_systemtrain2.txt:blend_systemtest.txt blend_systemtrain3.txt:blend_systemtest.txt blend_usertrain1.txt:blend_usertest1.txt blend_usertrain2.txt:blend_usertest2.txt blend_usertrain3.txt:blend_usertest3.txt"
-
-    python2.7 $ROOT/evaluation/evaluation.py --coldstart-split $ROOT/generated/ratings/blend.txt --feature-file $ROOT/data/product_features.txt -t -fb '1,1,1,1,0';
   fi
-else
-  echo "Getting tuples"
+
+  trainTestTuples=""
   for FILE in "$GENERATED"/ratings/*; do
     FILENAME=$(basename $FILE);
-    TESTFILE="${FILENAME}.1.txt";
-    TRAINFILE="${FILENAME}.9.txt";
-
-    trainTestTuples+="${TRAINFILE}:${TESTFILE} "
+    FILENAME_NOEXT="${FILENAME%%.*}";
+    if [ -n "$SPLIT" ]; then
+        if [ "$SPLIT" == "random" ]; then
+            split "$FILE" "$ROOT/generated/splits" "$FILENAME" "random";
+            TESTFILE="${FILENAME_NOEXT}-1.txt";
+            TRAINFILE="${FILENAME_NOEXT}-9.txt";
+            trainTestTuples+="${TRAINFILE}:${TESTFILE} "
+        elif [ "$SPLIT" == "time" ]; then
+            python2.7 $ROOT/evaluation/simpleTimeSplit.py -i $FILE;
+            TESTFILE="${FILENAME_NOEXT}_timetest.txt";
+            TRAINFILE="${FILENAME_NOEXT}_timetrain.txt";
+            trainTestTuples+="${TRAINFILE}:${TESTFILE} "
+        else
+          # Cold start split
+          trainTestTuples+="blend_itemtrain1.txt:blend_itemtest1.txt "
+          trainTestTuples+="blend_itemtrain2.txt:blend_itemtest2.txt "
+          trainTestTuples+="blend_itemtrain3.txt:blend_itemtest3.txt "
+          trainTestTuples+="blend_systemtrain1.txt:blend_systemtest.txt "
+          trainTestTuples+="blend_systemtrain2.txt:blend_systemtest.txt "
+          trainTestTuples+="blend_systemtrain3.txt:blend_systemtest.txt "
+          trainTestTuples+="blend_usertrain1.txt:blend_usertest1.txt "
+          trainTestTuples+="blend_usertrain2.txt:blend_usertest2.txt "
+          trainTestTuples+="blend_usertrain3.txt:blend_usertest3.txt"
+          python2.7 $ROOT/evaluation/evaluation.py --coldstart-split $ROOT/generated/ratings/blend.txt --feature-file $ROOT/data/product_features.txt -t -fb '1,1,1,1,0';
+        fi
+    else
+      echo "Getting tuples, no splitting"
+      TESTFILE="${FILENAME_NOEXT}-1.txt";
+      TRAINFILE="${FILENAME_NOEXT}-9.txt";
+      trainTestTuples+="${TRAINFILE}:${TESTFILE} "
+    fi
   done
-fi
 
-echo $trainTestTuples
+  if [ "$ITEMRECOMMENDERS" != "" ]; then
+    for ir in $ITEMRECOMMENDERS
+    do
+      pOPT=("-t $trainTestTuples" "-r" "item_recommendation" "-p" "$ir")
+      eOPT=("-t $trainTestTuples" "-r" "item_recommendation" "-p" "$ir" "-m")
+      predictNevaluate pOPT[@] eOPT[@] "$ir"
+    done
+  fi
 
+  if [ "$RANKRECOMMENDERS" != "" ]; then
+    for ir in $RANKRECOMMENDERS
+    do
+      pOPT=("-t $trainTestTuples" "-r" "rating_prediction" "-p" "$ir")
+      eOPT=("-t $trainTestTuples" "-r" "rating_prediction" "-p" "$ir")
+      predictNevaluate pOPT[@] eOPT[@] "$ir"
+    done
+  fi
 
+  if [ "$MAHOUTRECOMMENDERS" != "" ]; then
+    for ir in $MAHOUTRECOMMENDERS
+    do
+      # make predictions
+      echo "------------------------------"
+      /bin/bash $ROOT/generators/mahoutPredict.sh -t "$trainTestTuples" -h -p $ir $CLEAN $QUIET;
+
+      # evaluate predicted values
+      /bin/bash $ROOT/evaluation/evaluate.sh -t "$trainTestTuples" -r "mahout" -p $ir;
+      echo "------------------------------"
+    done
+  fi
+
+  # Generate Latex-lines based on scoring files.
+  python $ROOT/evaluation/generateLatexLinesNormSplits.py
+}
+
+###
+### Functions
+###
 predictNevaluate() {
   echo "------------------------------"
   # make predictions
@@ -152,37 +182,31 @@ predictNevaluate() {
   echo "------------------------------"
 }
 
-if [ "$ITEMRECOMMENDERS" != "" ]; then
-  for ir in $ITEMRECOMMENDERS
-  do
-    pOPT=("-t $trainTestTuples" "-r" "item_recommendation" "-p" "$ir")
-    eOPT=("-t $trainTestTuples" "-r" "item_recommendation" "-p" "$ir" "-m")
-    predictNevaluate pOPT[@] eOPT[@] "$ir"
-  done
-fi
 
-if [ "$RANKRECOMMENDERS" != "" ]; then
-  for ir in $RANKRECOMMENDERS
-  do
-    pOPT=("-t $trainTestTuples" "-r" "rating_prediction" "-p" "$ir")
-    eOPT=("-t $trainTestTuples" "-r" "rating_prediction" "-p" "$ir")
-    predictNevaluate pOPT[@] eOPT[@] "$ir"
-  done
-fi
+split() {
+  # Argument #1: Input filename. File to split.
+  # Argument #2: Output directory. Absolute path to directory.
+  # Argument #3: Output filename.
+  FILETOSPLIT="${1}"
+  OUTDIR="${2}"
+  OUTFILENAME="${3}"
+  OUTPUT="${2}/${OUTFILENAME%%.*}";
 
-if [ "$MAHOUTRECOMMENDERS" != "" ]; then
-  for ir in $MAHOUTRECOMMENDERS
-  do
-    # make predictions
-    echo "------------------------------"
-    /bin/bash $ROOT/generators/mahoutPredict.sh -t "$trainTestTuples" -h -p $ir $CLEAN $QUIET;
+  METHOD="${4}";
+  TMPFILE="/tmp/test_tmp.txt";
 
-    # evaluate predicted values
-    /bin/bash $ROOT/evaluation/evaluate.sh -t "$trainTestTuples" -r "mahout" -p $ir;
-    echo "------------------------------"
-  done
-fi
+  if [ "$METHOD" == "random" ]; then
+    perl -MList::Util -e 'print List::Util::shuffle <>' "$FILETOSPLIT" > "$TMPFILE";
+    FILETOSPLIT="$TMPFILE";
+  fi
 
-python $ROOT/evaluation/generateLatexLinesNormSplits.py
+  awk '
+    BEGIN { srand() }
+    {f = rand() <= 0.9 ? "'"${OUTPUT}"'-9.txt" : "'"${OUTPUT}"'-1.txt"; print > f}
+  ' "$FILETOSPLIT"
 
-echo 'Done.'
+  rm -f "$TMPFILE";
+}
+
+# Run main function
+main

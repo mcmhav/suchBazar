@@ -136,14 +136,16 @@ main() {
   # Recommending with item_recommendation (MyMediaLite)
   if [ "$ITEMRECOMMENDERS" != "" ]; then
     for ir in $ITEMRECOMMENDERS; do
-      predictNevaluate "item_recommendation" $ir
+      medialitepredict $ir $KRANGE
+      evaluate "item_recommendation" $ir
     done
   fi
 
   # Recommending with rating predictions (MyMediaLite)
   if [ "$RANKRECOMMENDERS" != "" ]; then
     for ir in $RANKRECOMMENDERS; do
-      predictNevaluate "rating_prediction" "$ir"
+      medialitepredict $ir $KRANGE
+      evaluate "rating_prediction" "$ir"
     done
   fi
 
@@ -151,10 +153,11 @@ main() {
   if [ "$MAHOUTRECOMMENDERS" != "" ]; then
     for ir in $MAHOUTRECOMMENDERS; do
       # make predictions
-      /bin/bash $GENERATED/mahoutPredict.sh -t "$trainTestTuples" -h -p $ir $CLEAN $QUIET;
+      # /bin/bash $GENERATED/mahoutPredict.sh -t "$trainTestTuples" -h -p $ir $CLEAN $QUIET;
+      mahoutPredict $ir
 
       # evaluate predicted values
-      predictNevaluate "mahout" $ir
+      evaluate "mahout" $ir
     done
   fi
 
@@ -166,11 +169,19 @@ main() {
 ### Functions
 ###
 
-predictNevaluate() {
+evaluate() {
+  # Possitional argument, indicating recommender system.
+  RECOMMENDERSYS="${0}";
+  RECOMMENDER="${1}";
+
+  # Check if we are evaluating something that comes from mymedialite.
+  MYMEDIALITE_COND=""
+  if [ $RECOMMENDERSYS != "mahout" ]; then
+    MYMEDIALITE_COND="-m"
+  fi
+
+  # Do evaluation.
   for ttt in $trainTuples; do
-    # Possitional argument, indicating recommender system.
-    RECOMMENDERSYS="${0}";
-    RECOMMENDER="${1}";
 
     # Split 'train.txt:test.txt' on ':', and insert to Array.
     IFS=":" read -a Array <<< $ttt;
@@ -185,8 +196,63 @@ predictNevaluate() {
     OPT+=(--test-file $TEST_FILE);
     OPT+=(--prediction-file $PRED_FILE);
 
-    python2.7 $ROOT/evaluation/evaluation.py -b 2 -k 20 "${OPT[@]}" -m;
-  done
+    python2.7 $ROOT/evaluation/evaluation.py -b 2 -k 20 "${OPT[@]}" "$MYMEDIALITE_COND" &
+  done;
+  wait;
+}
+
+medialitePredict() {
+  # Get arguments
+  RECOMMENDER="${0}";
+  KVAL="${1}";
+
+  for ttt in $trainTuples; do
+    # Split 'train.txt:test.txt' on ':', and insert to Array.
+    IFS=":" read -a Array <<< $ttt;
+    TRAIN="${Array[0]}";
+    TEST="${Array[1]}";
+    PREDFILE="$PREDICTIONS/${TRAIN}-$KVAL-$RECTYPE-$RECOMMENDER.predictions"
+
+    OPT=(--training-file "$ROOT/generated/splits/${TRAIN}");
+    OPT+=(--test-file "$ROOT/generated/splits/${TEST}");
+    OPT+=(--recommender $RECOMMENDER);
+    OPT+=(--recommender-options "k=$KVAL correlation=Jaccard");
+    OPT+=(--prediction-file "$PREDFILE");
+
+    # Do item predictions
+    if [ ! -f "$PREDFILE" ] || [ $CLEAN -eq 1 ]; then
+      if [ $QUIET -eq 1 ]; then
+        $RECTYPE ${OPT[@]} >/dev/null &
+      else
+        $RECTYPE ${OPT[@]} &
+      fi
+    fi
+  done;
+  wait;
+}
+
+mahoutPredict() {
+  # Get arguments
+  RECOMMENDER=${0};
+
+  for ttt in $trainTuples; do
+    # Split 'train.txt:test.txt' on ':', and insert to Array.
+    IFS=":" read -a Array <<< $ttt;
+    TRAINFILE="${Array[0]}";
+    TESTFILE="${Array[1]}";
+    OUTFILE="$PREDICTIONS/${Array[0]}--mahout-$RECOMMENDER.predictions"
+    if [ ! -f "$OUTFILE" ] || [ $CLEAN -eq 1 ]; then
+      if [ $QUIET -eq 1 ]; then
+        java TopKRecommendations "$GENERATED/splits" $TRAINFILE $RECOMMENDER $OUTFILE $TESTFILE >/dev/null 2>/dev/null &
+      else
+        java TopKRecommendations "$GENERATED/splits" $TRAINFILE $RECOMMENDER $OUTFILE $TESTFILE &
+      fi
+    else
+      echo "Already had $OUTFILE and thus, I did not predict anything new...";
+      exit 1;
+    fi
+  done;
+  wait;
 }
 
 split() {

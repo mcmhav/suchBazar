@@ -337,8 +337,9 @@ def init_calc(users):
   popularities = []
   for uid, products in users.iteritems():
     for pid, events in products.iteritems():
-      p = product_popularity[pid]
-      popularities.append(p)
+      for e in events:
+        p = product_popularity[pid]
+        popularities.append(p)
 
   global avg_popularity
   avg_popularity = np.average(popularities)
@@ -348,13 +349,18 @@ def get_popularity_rating(pop):
   """
     Returns a number between 0 and rmax.
   """
-  a = -12.353336986688191
-  b = 19.272762696836708
-  c = -9.49625639913711
-  d = 2.0931143246693296
-  e = 0.48841143839214785
-  f = a * math.pow(pop, 4) + b * math.pow(pop, 3) + c * math.pow(pop, 2) + d * pop + e
-  return max(f,0.0)
+  # a = -12.353336986688191
+  # b = 19.272762696836708
+  # c = -9.49625639913711
+  # d = 2.0931143246693296
+  # e = 0.48841143839214785
+  # f = a * math.pow(pop, 4) + b * math.pow(pop, 3) + c * math.pow(pop, 2) + d * pop + e
+  # return max(f,0.0)
+  best_item_score = 0.5
+  if pop < avg_popularity:
+    return - (best_item_score / avg_popularity) * pop + best_item_score
+  increase = 1/(1-avg_popularity)
+  return increase * pop - increase + 1
 
 def fx_popularity(events, config):
   MAX_RATING = 5.0
@@ -365,9 +371,9 @@ def fx_popularity(events, config):
     pid = event["product_id"]
 
     pop = product_popularity[pid]
-    penalization = 1 - get_popularity_rating(pop)
+    penalization = get_popularity_rating(pop)
     r = MAX_RATING - (MAX_RATING - MIN_RATING) * penalization
-    norm_rating = normalize(r,a=1.0,b=5.0,xmin=1.02,xmax=4.79)
+    norm_rating = normalize(r,a=1.0,b=5.0,xmin=1.0,xmax=5.0)
     rating = max(rating, norm_rating)
     if rating == 1.0:
       print pop, penalization, r, rating

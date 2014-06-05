@@ -175,25 +175,19 @@ def preprocessMeanAvgPrecision(events, predicted, k):
 
 def compute(actual, predicted, k):
 
-
-
     eventData = readEventTypeData()
     eventData = helpers.buildDictByIndex(eventData, 0)
 
-# <<<<<<< HEAD
 #     print (actual)
 #     sys.exit()
 #     actual = helpers.buildDictByIndex(actual, 0)
 #     predicted = helpers.buildDictByIndex(predicted, 0)
 
-# =======
     aCounts = getActualStats(actual, eventData)
     pCounts = getPredictionStats(actual, predicted, eventData, k)
     recall = compute_recall(aCounts, pCounts)
 
     events = extractRatingsByEventType(actual, eventData)
-
-    print (events)
 
     t, p = preprocessMeanAvgPrecision(events[1], predicted, k)
     map_c = map.mapk(t, p, k)

@@ -25,7 +25,7 @@ BINARY=0
 # 'BPRSLIM' 'LeastSquareSLIM'
 ITEMRECOMMENDERS=""
 
-# Available Rank Recommenders: 
+# Available Rank Recommenders:
 # 'BiPolarSlopeOne' 'GlobalAverage' 'ItemAttributeKNN' 'ItemAverage' 'ItemKNN'
 # 'MatrixFactorization' 'SlopeOne' 'UserAttributeKNN' 'UserAverage'
 # 'UserItemBaseline' 'UserKNN' 'TimeAwareBaseline'
@@ -136,14 +136,14 @@ main() {
   # Recommending with item_recommendation (MyMediaLite)
   if [ "$ITEMRECOMMENDERS" != "" ]; then
     for ir in $ITEMRECOMMENDERS; do
-      predictNeval "item_recommendation" $ir
+      predictNevaluate "item_recommendation" $ir
     done
   fi
 
   # Recommending with rating predictions (MyMediaLite)
   if [ "$RANKRECOMMENDERS" != "" ]; then
     for ir in $RANKRECOMMENDERS; do
-      predictNeval "rating_prediction" "$ir"
+      predictNevaluate "rating_prediction" "$ir"
     done
   fi
 
@@ -154,7 +154,7 @@ main() {
       /bin/bash $GENERATED/mahoutPredict.sh -t "$trainTestTuples" -h -p $ir $CLEAN $QUIET;
 
       # evaluate predicted values
-      predictNeval "mahout" $ir
+      predictNevaluate "mahout" $ir
     done
   fi
 

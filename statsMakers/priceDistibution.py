@@ -77,6 +77,7 @@ def makeBuckets(priceCounts,buckets=51,maxPrice=4000):
             bucket = math.floor((price/(maxPrice/buckets)))
             priceBuckets[bucket] += priceCounts[price]
 
+
     return priceBuckets
 
 def plotIt(priceBuckets,yaxis,buckets,maxCount,maxPrice):

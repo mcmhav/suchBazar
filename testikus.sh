@@ -87,6 +87,7 @@ main() {
     done
   fi
 
+  # Splitting into training and test sets
   trainTestTuples=""
   for FILE in "$GENERATED"/ratings/*; do
     FILENAME=$(basename $FILE);
@@ -123,34 +124,29 @@ main() {
     fi
   done
 
+
+  # Recommending with item_recommendation (MyMediaLite)
   if [ "$ITEMRECOMMENDERS" != "" ]; then
-    for ir in $ITEMRECOMMENDERS
-    do
-      pOPT=("-t $trainTestTuples" "-r" "item_recommendation" "-p" "$ir")
-      eOPT=("-t $trainTestTuples" "-r" "item_recommendation" "-p" "$ir" "-m")
-      predictNevaluate pOPT[@] eOPT[@] "$ir"
+    for ir in $ITEMRECOMMENDERS; do
+      predictNeval "item_recommendation" $ir
     done
   fi
 
+  # Recommending with rating predictions (MyMediaLite)
   if [ "$RANKRECOMMENDERS" != "" ]; then
-    for ir in $RANKRECOMMENDERS
-    do
-      pOPT=("-t $trainTestTuples" "-r" "rating_prediction" "-p" "$ir")
-      eOPT=("-t $trainTestTuples" "-r" "rating_prediction" "-p" "$ir")
-      predictNevaluate pOPT[@] eOPT[@] "$ir"
+    for ir in $RANKRECOMMENDERS; do
+      predictNeval "rating_prediction" "$ir"
     done
   fi
 
+  # Recommending with Mahout
   if [ "$MAHOUTRECOMMENDERS" != "" ]; then
-    for ir in $MAHOUTRECOMMENDERS
-    do
+    for ir in $MAHOUTRECOMMENDERS; do
       # make predictions
-      echo "------------------------------"
       /bin/bash $ROOT/generators/mahoutPredict.sh -t "$trainTestTuples" -h -p $ir $CLEAN $QUIET;
 
       # evaluate predicted values
-      /bin/bash $ROOT/evaluation/evaluate.sh -t "$trainTestTuples" -r "mahout" -p $ir;
-      echo "------------------------------"
+      predictNeval "mahout" $ir
     done
   fi
 
@@ -180,6 +176,29 @@ predictNevaluate() {
   # evaluate predicted values
   /bin/bash $ROOT/evaluation/evaluate.sh "${etmp[@]}";
   echo "------------------------------"
+}
+
+predictNeval(){
+  for ttt in $trainTuples; do
+    # Possitional argument, indicating recommender system.
+    RECOMMENDERSYS="${0}";
+    RECOMMENDER="${1}";
+
+    # Split 'train.txt:test.txt' on ':', and insert to Array.
+    IFS=":" read -a Array <<< $ttt;
+    TRAIN="${Array[0]}";
+    TEST="${Array[1]}";
+    TRAIN_FILE="$ROOT/generated/splits/${TRAIN}";
+    TEST_FILE="$ROOT/generated/splits/${TEST}";
+
+    PRED_FILE="$PREDFOLDER/${TRAIN}-$KVAL-$RECOMMENDERSYS-$RECOMMENDER.predictions";
+
+    OPT=(--training-file $TRAIN_FILE);
+    OPT+=(--test-file $TEST_FILE);
+    OPT+=(--prediction-file $PRED_FILE);
+    set -x
+    python2.7 $ROOT/evaluation/evaluation.py -b 2 -k 20 "${OPT[@]}" -m;
+  done
 }
 
 

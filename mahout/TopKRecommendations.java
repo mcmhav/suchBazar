@@ -3,6 +3,7 @@ import org.apache.mahout.cf.taste.eval.IRStatistics;
 import org.apache.mahout.cf.taste.eval.RecommenderBuilder;
 import org.apache.mahout.cf.taste.eval.RecommenderEvaluator;
 import org.apache.mahout.cf.taste.eval.RecommenderIRStatsEvaluator;
+import org.apache.mahout.cf.taste.impl.common.FastIDSet;
 import org.apache.mahout.cf.taste.impl.common.LongPrimitiveIterator;
 import org.apache.mahout.cf.taste.impl.eval.AverageAbsoluteDifferenceRecommenderEvaluator;
 import org.apache.mahout.cf.taste.impl.eval.GenericRecommenderIRStatsEvaluator;
@@ -18,6 +19,7 @@ import org.apache.mahout.cf.taste.impl.recommender.svd.SVDRecommender;
 import org.apache.mahout.cf.taste.impl.similarity.LogLikelihoodSimilarity;
 import org.apache.mahout.cf.taste.impl.similarity.PearsonCorrelationSimilarity;
 import org.apache.mahout.cf.taste.model.DataModel;
+import org.apache.mahout.cf.taste.model.PreferenceArray;
 import org.apache.mahout.cf.taste.neighborhood.UserNeighborhood;
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 import org.apache.mahout.cf.taste.recommender.Recommender;
@@ -32,7 +34,7 @@ public class TopKRecommendations {
     String[] files = { "blend.txt" };
   /* static String recommender = "itembased"; */
 
-    public void recommendations(String dataPath, String filename, final String recommender, String predictionFile) throws IOException, TasteException {
+    public void recommendations(String dataPath, String filename, final String recommender, String predictionFile, String testFile) throws IOException, TasteException {
         System.out.println("Using dataPath: " + dataPath);
         System.out.println("Train file: " + filename);
         System.out.println("Using recommender-engine: " + recommender);
@@ -40,6 +42,10 @@ public class TopKRecommendations {
         long startTime = System.currentTimeMillis();
 
         DataModel model = new FileDataModel(new File(dataPath + "/" + filename));
+       
+        //PreferenceArray user_test = model.getPreferencesFromUser(userId);
+        //System.out.print(user_test);
+        
         RecommenderBuilder builder = new RecommenderBuilder() {
             public Recommender buildRecommender(DataModel model) throws TasteException {
                 if (recommender.equals("itembased")) {
@@ -65,20 +71,58 @@ public class TopKRecommendations {
         };
 
         Recommender r = builder.buildRecommender(model);
+        DataModel test = new FileDataModel(new File(dataPath + "/" + testFile));
+        LongPrimitiveIterator test_users = test.getUserIDs();
+        
+        PrintWriter w = new PrintWriter(predictionFile);
+        w.print("");
+        w.close();
+        
+        PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(predictionFile, true)));
+        
+        Long i = (long) 0;
+        Long ui = (long) 0;
+        
+        //System.out.print("\n");
+        while (test_users.hasNext()) {
+        	//System.out.print("\rUser " + i);
+        	i++;
+            long user = test_users.next();
+            //System.out.println("USER:" +user);
+            
+            LongPrimitiveIterator items = model.getItemIDs();
+            
+            
+            while (items.hasNext()){
+            	long item = items.next();
 
-        LongPrimitiveIterator items = model.getItemIDs();
-        LongPrimitiveIterator users = model.getUserIDs();
-
-        HashMap<Long,List<RecommendedItem>> topKForUsers = new HashMap<Long, List<RecommendedItem>>();
-
-        while (users.hasNext()) {
-            long user = users.next();
-            List<RecommendedItem> topK = r.recommend(user,20);
-
-            topKForUsers.put(user,topK);
+            	//System.out.println("Switched to next item: " + item);
+            	boolean found = false;
+            	//System.out.println("ITEM:" +item);
+            	LongPrimitiveIterator items_user = model.getItemIDsFromUser(user).iterator();
+            	while (items_user.hasNext()){
+            		ui = items_user.next();
+            		//System.out.print(user + " " + item + " vs. " + ui + " equals " + (ui == item) + "\n");
+            		if (ui == item){
+            			found = true;
+            		}
+            	}
+            	
+            	if(found == false){
+            		//System.out.println(user + " " + item + " " + ui);
+            		Float rating = (float) r.estimatePreference(user, item);
+            		if (rating.isNaN())
+            			rating = (float) 0.0;
+            		appendToRatingFile(user, item, rating, writer);
+            	}
+            }
         }
-
-        writeToFile(topKForUsers, predictionFile);
+        writer.close();
+    }
+    
+    public void appendToRatingFile(Long userID, Long itemID, Float rating, PrintWriter writer){
+        String f = userID.toString() + '\t' + itemID.toString() + '\t' + rating.toString();
+        writer.println(f);
     }
 
     public void writeToFile(HashMap<Long,List<RecommendedItem>> topKForUsers, String predictionFile) throws IOException {
@@ -123,14 +167,15 @@ public class TopKRecommendations {
     }
 
     public void start(String[] args) throws IOException, TasteException {
-        String[] vals = new String[4];
+        String[] vals = new String[5];
         if (args.length < 3) {
             System.out.print("Needs arguments: <ratings-folder> <method> <rating-file> <predictionfile>\n");
             System.out.print("Defaulting to: ../generators/ratings itembased\n");
             vals[0] = "../generated/splits";
-            vals[1] = "recentness_sigmoid_fixed_sr-3.5.txt.9.txt";
-            vals[2] = "loglikelihood";
+            vals[1] = "count_linear.txt_timetrain.txt";
+            vals[2] = "itembased";
             vals[3] = "../generated/predictions/tmp.predictions";
+            vals[4] = "count_linear.txt_timetest.txt";
         } else {
             vals = args;
         }
@@ -140,7 +185,7 @@ public class TopKRecommendations {
         this.dataPath = vals[0];
         for (int i = 0; i < files.size(); i++) {
         }*/
-        recommendations(vals[0], vals[1], vals[2], vals[3]);
+        recommendations(vals[0], vals[1], vals[2], vals[3], vals[4]);
     }
 
     public static void main(String[] args) throws IOException, TasteException{

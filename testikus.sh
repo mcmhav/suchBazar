@@ -4,7 +4,7 @@
 set -e
 
 # Trap ctrl+c and abort all if it is entered
-trap 'echo interrupted; exit' INT
+trap 'echo interrupted; kill $(jobs -p); exit' INT
 
 # Usage function, describing the parameters to the user.
 usage() { echo "Usage: $0 -i sobazar_input.tab"; exit 1; }
@@ -151,17 +151,18 @@ predictNevaluate() {
 if [ "$ITEMRECOMMENDERS" != "" ]; then
   for ir in $ITEMRECOMMENDERS
   do
-    pOPT=("-t $trainTestTuples" "-r" "item_recommendation" "-p" "$ir" "$CLEAN")
+    pOPT=("-t $trainTestTuples" "-r" "item_recommendation" "-p" "$ir")
     eOPT=("-t $trainTestTuples" "-r" "item_recommendation" "-p" "$ir" "-m")
     canK "$ir"
     if [ $CANSETK -eq 1 ] && [ "$KRANGE" != "" ]; then
       for i in $(seq $KRANGE); do
-        pOPT+=("-k k=$i")
-        pOPT+=("$QUIET")
+        pOPT+=("-k" "$i")
+        eOPT+=("-k" "$i")
+        pOPT+=("$CLEAN" "$QUIET")
         predictNevaluate pOPT[@] eOPT[@]
       done
     else
-      pOPT+=("$QUIET")
+      pOPT+=("$CLEAN" "$QUIET")
       predictNevaluate pOPT[@] eOPT[@]
     fi
   done
@@ -170,17 +171,18 @@ fi
 if [ "$RANKRECOMMENDERS" != "" ]; then
   for ir in $RANKRECOMMENDERS
   do
-    pOPT=("-t $trainTestTuples" "-r" "rating_prediction" "-p" "$ir" "$CLEAN")
+    pOPT=("-t $trainTestTuples" "-r" "rating_prediction" "-p" "$ir")
     eOPT=("-t $trainTestTuples" "-r" "rating_prediction" "-p" "$ir" "-m")
     canK "$ir"
     if [ $CANSETK -eq 1 ] && [ "$KRANGE" != "" ]; then
       for i in $(seq $KRANGE); do
-        pOPT+=("-k k=$i")
-        pOPT+=("$QUIET")
+        pOPT+=("-k" "$i")
+        eOPT+=("-k" "$i")
+        pOPT+=("$CLEAN" "$QUIET")
         predictNevaluate pOPT[@] eOPT[@]
       done
     else
-      pOPT+=("$QUIET")
+      pOPT+=("$CLEAN" "$QUIET")
       predictNevaluate pOPT[@] eOPT[@]
     fi
   done

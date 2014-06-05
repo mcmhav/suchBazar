@@ -89,7 +89,6 @@ def getPredictionStats(actual, predicted, eventData, topk=20):
         for a_user_ratings in actual.get(key, []):
             for p_rating in p_user_ratings[:min(len(p_user_ratings), topk)]:
                 if a_user_ratings[1] == p_rating[1]:
-                    print('Yes!')
                     eventType = getEventType(key, p_rating[1], eventData)
                     if eventType > 0 and eventType < 4:
                         counts[eventType-1] += 1
@@ -181,25 +180,23 @@ def compute(actual, predicted, k):
 
     eventData = readEventTypeData()
     #Build hashmaps for better speed
-    #Move to evaluation.compute?
     eventData = helpers.buildDictByIndex(eventData, 0)
-    actual = helpers.buildDictByIndex(actual, 0)
-    predicted = helpers.buildDictByIndex(predicted, 0)
-
     #predicted = filterNonTestUsersFromPredicted(actual, predicted)
 
     aCounts = getActualStats(actual, eventData)
     pCounts = getPredictionStats(actual, predicted, eventData, k)
     recall = compute_recall(aCounts, pCounts)
+    
     events = extractRatingsByEventType(actual, eventData)
+    
     t, p = preprocessMeanAvgPrecision(events[1], predicted, k)
     map_c = map.mapk(t, p, k)
+    
     t, p = preprocessMeanAvgPrecision(events[2], predicted, k)
     map_w = map.mapk(t, p, k)
+    
     t, p = preprocessMeanAvgPrecision(events[3], predicted, k)
     map_p = map.mapk(t, p, k)
-
-
 
     #test_p(actual, predicted)
     print(datetime.now()-startTime)

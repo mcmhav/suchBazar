@@ -72,15 +72,18 @@ for ttt in $TTT
 do
     set -- "$ttt"
     IFS=":"; declare -a Array=($*)
-    PREDFILE="$PREDICTIONS/${Array[0]}-${Array[1]}--h-$RECOMMENDER.predictions"
+    TRAINFILE="${Array[0]}";
+    TESTFILE="${Array[1]}";
+    OUTFILE="$PREDICTIONS/${Array[0]}--mahout-$RECOMMENDER.predictions"
+    set -x
     if [ ! -f "$PREDFILE" ] || [ $CLEAN -eq 1 ]; then
       if [ $QUIET -eq 1 ]; then
-        cat "$RATINGS/${Array[1]}" >> "$RATINGS/${Array[0]}"
-        java TopKRecommendations $RATINGS "${Array[0]}" $RECOMMENDER  $PREDFILE >/dev/null 2>/dev/null &
+        java TopKRecommendations $RATINGS $TRAINFILE $RECOMMENDER  $OUTFILE $TESTFILE >/dev/null 2>/dev/null &
       else
-        java TopKRecommendations $RATINGS $TRAINFILE $TESTFILE $RECOMMENDER $OUTFILE &
+        java TopKRecommendations $RATINGS $TRAINFILE $RECOMMENDER $OUTFILE $TESTFILE &
       fi
     fi
+    set +x;
 done
 wait;
 echo "Done making Mahout items predictions with $RECOMMENDER";

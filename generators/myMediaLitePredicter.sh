@@ -53,7 +53,9 @@ while getopts "ct:ir:qp:k:" o; do
       QUIET=1
       ;;
     k)
-      KVAL="${OPTARG}"
+      KVAL="--recommender-options=k=${OPTARG} correlation=Jaccard"
+      #KVAL="--recommender-options=k=${OPTARG}"
+      KVALSINGLE="${OPTARG}"
       ;;
     *)
       usage
@@ -85,9 +87,9 @@ if [ "$RECTYPE" !=  "" ]; then
       OPT=(--training-file "$ROOT/generated/splits/${Array[0]}");
       OPT+=(--test-file "$ROOT/generated/splits/${Array[1]}");
       OPT+=(--recommender $RECOMMENDER);
-      OPT+=(--recommender-options k=10);
-
-      PREDFILE="$PREDICTIONS/${Array[0]}-${Array[1]}--																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																				$RECTYPE-$RECOMMENDER.predictions"
+      OPT+=($KVAL);
+      # Do item predictions
+      PREDFILE="$PREDICTIONS/${Array[0]}-$KVALSINGLE-$RECTYPE-$RECOMMENDER.predictions"
       OPT+=(--prediction-file "$PREDFILE");
       if [ ! -f "$PREDFILE" ] || [ $CLEAN -eq 1 ]; then
         if [ $QUIET -eq 1 ]; then

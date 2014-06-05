@@ -13,7 +13,9 @@ last_event = defaultdict(lambda: datetime.min)
 oldest_event = defaultdict(lambda: datetime.max)
 oldest_event_globally = defaultdict(lambda: datetime.max)
 most_recent_globally = defaultdict(lambda: datetime.min)
-ignored = 0
+product_popularity = defaultdict(float)
+product_count = defaultdict(int)
+avg_popularity = 0.0
 
 def normalize(score,xmax=100,xmin=0,a=0,b=5):
   # From http://en.wikipedia.org/wiki/Normalization_(statistics)#Examples
@@ -84,7 +86,7 @@ def parse_eventline(row, users, config):
       'timestamp': t,
       'product_id': product_id,
       'user_id': user_id,
-      'price': price
+      'price': float(price)
     })
 
     # Most recent event on this item.
@@ -145,8 +147,6 @@ def fx_naive(events):
   rating = 0
   for event in events:
     if not event['event_id'] in multipliers:
-      global ignored
-      ignored += 1
       continue
     # The number of times we've seen this event for this user
     freq = count[event['event_id']]
@@ -319,6 +319,96 @@ def fx_count(events, config, avg_num_events):
     ratings[event['product_id']] = r
   return ratings
 
+def init_calc(users):
+  # First pass, count products.
+  for uid, products in users.iteritems():
+    for pid, events in products.iteritems():
+      product_count[pid] += 1
+
+  # Sort by count, as list of tuples.
+  sorted_prodcount = sorted(product_count.iteritems(), key=operator.itemgetter(1))
+  num_products = float(len(product_count))
+
+  for i, product in enumerate(sorted_prodcount):
+    pid = product[0]
+    product_popularity[pid] = i / num_products
+
+  # Second pass, find average popularity
+  popularities = []
+  for uid, products in users.iteritems():
+    for pid, events in products.iteritems():
+      p = product_popularity[pid]
+      popularities.append(p)
+
+  global avg_popularity
+  avg_popularity = np.average(popularities)
+  print "Set avg_popularity to %.4f" % avg_popularity
+
+def get_popularity_rating(pop):
+  """
+    Returns a number between 0 and rmax.
+  """
+  a = -12.353336986688191
+  b = 19.272762696836708
+  c = -9.49625639913711
+  d = 2.0931143246693296
+  e = 0.48841143839214785
+  f = a * math.pow(pop, 4) + b * math.pow(pop, 3) + c * math.pow(pop, 2) + d * pop + e
+  return max(f,0.0)
+
+def fx_popularity(events, config):
+  MAX_RATING = 5.0
+  MIN_RATING = 1.0
+
+  rating = 0.0
+  for event in events:
+    pid = event["product_id"]
+
+    pop = product_popularity[pid]
+    penalization = 1 - get_popularity_rating(pop)
+    r = MAX_RATING - (MAX_RATING - MIN_RATING) * penalization
+    norm_rating = normalize(r,a=1.0,b=5.0,xmin=1.02,xmax=4.79)
+    rating = max(rating, norm_rating)
+    if rating == 1.0:
+      print pop, penalization, r, rating
+  return rating
+
+def get_price_penalization(diff, maxprice):
+  # Do not penalize being cheap, that much.
+  if diff < 0:
+    diff = abs(diff)/2
+
+  p = min(1, diff/maxprice)
+  return p
+
+def fx_price(events, config):
+  # Max penalization price
+  MAX_PEN_PRICE = 1500
+  MAX_SCORE = 100
+  MIN_SCORE = 0
+
+  # First find average price for all items that this user has interacted on.
+  # Hence, we need to first group by product.
+  products = {}
+  for event in events:
+    products[event["product_id"]] = event["price"]
+  avg_price = np.average(products.values())
+
+  # Then for each product find penalization based on difference in price to the avg.
+  ratings = {}
+  for event in events:
+    product_id = event["product_id"]
+    price = event["price"]
+
+    diff = price - avg_price
+    penalization = get_price_penalization(diff, MAX_PEN_PRICE)
+    score = MAX_SCORE - ((MAX_SCORE - MIN_SCORE) * penalization)
+
+    norm_score = normalize(score,a=1,b=5,xmin=MIN_SCORE,xmax=MAX_SCORE)
+    r = max(ratings.get(product_id, 0), norm_score)
+    ratings[product_id] = r
+  return ratings
+
 def get_ratings_from_user(user_id, events, f, config):
   """
     Generates a list of ratings for user_id, based on events in products.
@@ -331,18 +421,20 @@ def get_ratings_from_user(user_id, events, f, config):
   """
   ratings = {}
   today = datetime.now()
-  if config["method"] == 'count':
+  if config["method"] in ('count', 'price'):
     # This method needs to work on all events for all items that this user has
     # interacted on, and not one and one product_id. Thus, handle all events in
     # one array.
     avg = np.mean([len(e) for e in events.items()])
-    return fx_count([e for product_id, evt in events.items() for e in evt], config, avg)
+    events = [e for product_id, evt in events.items() for e in evt]
+    if config["method"] == "count":
+      return fx_count(events, config, avg)
+    return fx_price(events, config)
   else:
 
     median = None
     if config.get("sigmoid_constant_average", None):
       day_diffs = [(today - e["timestamp"]).days for pid, evts in events.iteritems() for e in evts]
-      #median = np.median(day_diffs)
       median = np.average(day_diffs)
 
     for product_id, evts in events.items():
@@ -352,6 +444,8 @@ def get_ratings_from_user(user_id, events, f, config):
         rating = fx_recentness(evts, config, median=median)
       elif config["method"] == 'naive':
         rating = fx_naive(evts)
+      elif config["method"] == 'popularity':
+        rating = fx_popularity(evts, config)
       if rating:
         ratings[product_id] = rating
   return ratings

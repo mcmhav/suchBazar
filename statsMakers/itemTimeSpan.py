@@ -23,8 +23,8 @@ def plotItemTimeSpansSortedOnCount(groups):
     '''
     '''
     # doublePlotLol(groups)
-    # doublePlotAVG(groups)
-    plotAVGforCOuntAtleast(groups)
+    doublePlotAVG(groups)
+    # plotAVGforCOuntAtleast(groups)
 
 def plotAVGforCOuntAtleast(groups):
     '''
@@ -46,12 +46,13 @@ def plotAVGforCOuntAtleast(groups):
     bars = [0] * (maxikus + 1)
     c = 1
     itemS = 0
-    total =
+    tc = 0
     for x in range(1,maxikus+1):
-        print ("tot: %s\t bars: %s\t count: %s" % (tot[x-1],bars[x-1],c))
+        # print ("tot: %s\t bars: %s\t count: %s" % (tot[x-1],bars[x-1],c))
         if tot[x-1] != 0:
             itemS += ccount[x-2]
-            tmp = (tot[x-1] + bars[x-1])/
+            tc += tot[x-1]
+            tmp = tc/c
             bars[x] = tmp
             c += 1
         else:
@@ -85,19 +86,26 @@ def doublePlotAVG(groups):
         tmp = int(g['count'])
         tot[tmp] += (g['max'] - g['min'])
         ccount[tmp] += 1
-        if (g['count']) > 100:
-            print (g)
 
     bars = []
+    reBars = []
+    xr = []
     for x in range(0,maxikus):
         if ccount[x] != 0:
             tmp = (tot[x]/ccount[x])/(1000*60*60*24*7)
             bars.append(tmp)
+            reBars.append(tmp)
+            xr.append(x)
+        else:
+            bars.append(0)
 
     x = range(0,len(bars))
-    y = bars[::-1]
+    y = bars
 
-    fit = polyfit(x,y,1)
+    yr = reBars
+    xr = xr
+
+    fit = polyfit(xr,yr,1)
     # fit_fn is now a function which takes in x and returns an estimate for y
     fit_fn = poly1d(fit)
 
@@ -108,14 +116,10 @@ def doublePlotAVG(groups):
 
     ax1.bar(x, y, width)
     ax1.set_ylabel('Average lifetime in weeks')
+    ax1.set_xlabel('Event count on item')
     ax1.axis([0, len(y), 0, max(y)])
 
-    ax2 = ax1.twinx()
-    # ax2.set_ylabel('Event count on items', color='b')
-    ax2.plot(x,y, 'yo', x, fit_fn(x), '--k',color='r',markersize=0)
-    ax2.axis([0, len(y), 0, max(y)])
-    for tl in ax2.get_yticklabels():
-            tl.set_color('b')
+    plot(xr,yr, 'yo', xr, fit_fn(xr), '--k',color='r',markersize=0)
 
     plt.show()
     location = os.path.dirname(os.path.abspath(__file__)) + "/../../muchBazar/src/image/itemTimeSpansortedoneventcount.png"

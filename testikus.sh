@@ -19,18 +19,26 @@ SPLIT=""
 BINARY=0
 
 # Available Item Recommenders:
-# 'BPRMF' 'ItemAttributeKNN' 'ItemKNN' 'MostPopular' 'Random' 'UserAttributeKNN' 'UserKNN' 'WRMF' 'Zero' 'MultiCoreBPRMF' 'SoftMarginRankingMF' 'WeightedBPRMF' 'BPRLinear' 'MostPopularByAttributes' 'BPRSLIM' 'LeastSquareSLIM'
-#ITEMRECOMMENDERS="UserKNN ItemKNN MostPopular Random"
+# 'BPRMF' 'ItemAttributeKNN' 'ItemKNN' 'MostPopular' 'Random'
+# 'UserAttributeKNN' 'UserKNN' 'WRMF' 'Zero' 'MultiCoreBPRMF'
+# 'SoftMarginRankingMF' 'WeightedBPRMF' 'BPRLinear' 'MostPopularByAttributes'
+# 'BPRSLIM' 'LeastSquareSLIM'
 ITEMRECOMMENDERS=""
 
-# Available Rank Recommenders:
-# 'BiPolarSlopeOne' 'GlobalAverage' 'ItemAttributeKNN' 'ItemAverage' 'ItemKNN' 'MatrixFactorization' 'SlopeOne' 'UserAttributeKNN' 'UserAverage' 'UserItemBaseline' 'UserKNN' 'TimeAwareBaseline' 'TimeAwareBaselineWithFrequencies' 'CoClustering' 'Random' 'Constant' 'LatentFeatureLogLinearModel' 'BiasedMatrixFactorization' 'SVDPlusPlus' 'SigmoidSVDPlusPlus' 'SocialMF' 'SigmoidItemAsymmetricFactorModel' 'SigmoidUserAsymmetricFactorModel' 'SigmoidCombinedAsymmetricFactorModel' 'NaiveBayes' 'ExternalRatingPredictor' 'GSVDPlusPlus'
-#RANKRECOMMENDERS="UserKNN ItemKNN"
+# Available Rank Recommenders: 
+# 'BiPolarSlopeOne' 'GlobalAverage' 'ItemAttributeKNN' 'ItemAverage' 'ItemKNN'
+# 'MatrixFactorization' 'SlopeOne' 'UserAttributeKNN' 'UserAverage'
+# 'UserItemBaseline' 'UserKNN' 'TimeAwareBaseline'
+# 'TimeAwareBaselineWithFrequencies' 'CoClustering' 'Random' 'Constant'
+# 'LatentFeatureLogLinearModel' 'BiasedMatrixFactorization' 'SVDPlusPlus'
+# 'SigmoidSVDPlusPlus' 'SocialMF' 'SigmoidItemAsymmetricFactorModel'
+# 'SigmoidUserAsymmetricFactorModel' 'SigmoidCombinedAsymmetricFactorModel'
+# 'NaiveBayes' 'ExternalRatingPredictor' 'GSVDPlusPlus'
+RANKRECOMMENDERS=""
 
 #Available Mahout recommenders
-# 'svd' ...
-
-#MAHOUTRECOMMENDERS="itemuseraverage "
+# 'svd', 'itembased', 'userbased', itemuseraverage', 'svd', 'loglikelihood',
+# 'itemaverage'
 MAHOUTRECOMMENDERS=""
 
 QUIET=""
@@ -94,7 +102,7 @@ main() {
     FILENAME_NOEXT="${FILENAME%%.*}";
     if [ -n "$SPLIT" ]; then
         if [ "$SPLIT" == "random" ]; then
-            split "$FILE" "$ROOT/generated/splits" "$FILENAME" "random";
+            split "$FILE" "$GENERATED/splits" "$FILENAME" "random";
             TESTFILE="${FILENAME_NOEXT}-1.txt";
             TRAINFILE="${FILENAME_NOEXT}-9.txt";
             trainTestTuples+="${TRAINFILE}:${TESTFILE} "
@@ -114,7 +122,7 @@ main() {
           trainTestTuples+="blend_usertrain1.txt:blend_usertest1.txt "
           trainTestTuples+="blend_usertrain2.txt:blend_usertest2.txt "
           trainTestTuples+="blend_usertrain3.txt:blend_usertest3.txt"
-          python2.7 $ROOT/evaluation/evaluation.py --coldstart-split $ROOT/generated/ratings/blend.txt --feature-file $ROOT/data/product_features.txt -t -fb '1,1,1,1,0';
+          python2.7 $ROOT/evaluation/evaluation.py --coldstart-split $GENERATED/ratings/blend.txt --feature-file $ROOT/data/product_features.txt -t -fb '1,1,1,1,0';
         fi
     else
       echo "Getting tuples, no splitting"
@@ -143,7 +151,7 @@ main() {
   if [ "$MAHOUTRECOMMENDERS" != "" ]; then
     for ir in $MAHOUTRECOMMENDERS; do
       # make predictions
-      /bin/bash $ROOT/generators/mahoutPredict.sh -t "$trainTestTuples" -h -p $ir $CLEAN $QUIET;
+      /bin/bash $GENERATED/mahoutPredict.sh -t "$trainTestTuples" -h -p $ir $CLEAN $QUIET;
 
       # evaluate predicted values
       predictNeval "mahout" $ir
@@ -157,28 +165,8 @@ main() {
 ###
 ### Functions
 ###
-predictNevaluate() {
-  echo "------------------------------"
-  # make predictions
-  ptmp=( "${!1}" )
-  etmp=( "${!2}" )
-  arr=("LeastSquareSLIM" "UserAttributeKNN" "UserKNN" "ItemKNN")
-  if [[ " ${arr[@]} " =~ " ${3} " ]] && [ "$KRANGE" != "" ]; then
-    for i in $KRANGE; do
-      ptmp+=("-k" "$i")
-      etmp+=("-k" "$i")
-      ptmp+=("$CLEAN" "$QUIET")
-    done
-  else
-    ptmp+=("$CLEAN" "$QUIET")
-  fi
-  /bin/bash $ROOT/generators/myMediaLitePredicter.sh "${ptmp[@]}";
-  # evaluate predicted values
-  /bin/bash $ROOT/evaluation/evaluate.sh "${etmp[@]}";
-  echo "------------------------------"
-}
 
-predictNeval(){
+predictNevaluate() {
   for ttt in $trainTuples; do
     # Possitional argument, indicating recommender system.
     RECOMMENDERSYS="${0}";
@@ -188,19 +176,18 @@ predictNeval(){
     IFS=":" read -a Array <<< $ttt;
     TRAIN="${Array[0]}";
     TEST="${Array[1]}";
-    TRAIN_FILE="$ROOT/generated/splits/${TRAIN}";
-    TEST_FILE="$ROOT/generated/splits/${TEST}";
+    TRAIN_FILE="$GENERATED/splits/${TRAIN}";
+    TEST_FILE="$GENERATED/splits/${TEST}";
 
     PRED_FILE="$PREDFOLDER/${TRAIN}-$KVAL-$RECOMMENDERSYS-$RECOMMENDER.predictions";
 
     OPT=(--training-file $TRAIN_FILE);
     OPT+=(--test-file $TEST_FILE);
     OPT+=(--prediction-file $PRED_FILE);
-    set -x
+
     python2.7 $ROOT/evaluation/evaluation.py -b 2 -k 20 "${OPT[@]}" -m;
   done
 }
-
 
 split() {
   # Argument #1: Input filename. File to split.

@@ -216,7 +216,8 @@ def getIdsFromFileName(f):
     ids.append(getRecommenderSystem(f))
     ids.append(getRatingFile(f))
     ids.append(getRecommenderAlg(f))
-
+    print (ids)
+    print (f)
     return ids
 
 def getRecommenderAlg(filename):
@@ -242,6 +243,7 @@ def getRatingFile(f):
 def ratingFileNames():
     return {
         'count_linear':'Count linear',
+        'count_sigmoid':'Count sigmoid',
         'recentness_linear':'Recentness linear',
         'recentness_sigmoid':'Recentness sigmoid',
         'count_sigmoid':'Count sigmoid',

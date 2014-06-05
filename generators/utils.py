@@ -105,7 +105,7 @@ def parse_eventline(row, users, config):
 def parse_mongo(users, config):
   client = pymongo.MongoClient()
   db = client.mydb
-  col = db['negValuesNew']
+  col = db['sessionsNew']
   mongoDB = col.find()
   for instance in mongoDB:
     row = [''] * 17
@@ -204,9 +204,9 @@ def get_penalization(n, num, config, average=0.0, median=None):
 
 def get_multipliers():
   return {
-    'negative_event': [0,4],
+    # 'negative_event': [0,4],
     # 'featured_product_clicked': [20,60],
-    'product_detail_clicked': [4,62],
+    'product_detail_clicked': [0,62],
     'product_wanted': [62,95],
     'product_purchase_intended': [95,100],
     # 'product_purchased': [80,100]

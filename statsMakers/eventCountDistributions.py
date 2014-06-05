@@ -11,140 +11,167 @@ import math
 def main(sessDB='sessionsNew'):
     show = False
 
-    k = 'product_id'
-    groups = helpers.getKGroups(k,sessDB)
-    ks, counts = preprocessGroups(k,groups)
-    ks,xss,xticks = groupProductsOnCounts(ks,counts,cap=50)
-    helpers.makePlot(k + 'cum',
-                     ks,
-                     yaxis=xss,
-                     # title='Cumulative distribution of events on products',
-                     ylabel='Product count',
-                     xlabel='Event count',
-                     show=show,
-                     xticks=[xticks,xticks],
-                     )
-    k = 'event_id'
-    groups = helpers.getKGroups(k,sessDB)
-    groups = removeLowVals(groups,k,200,addCapToOther=True)
-    groups = sorted(groups, key=lambda k: k['count'],reverse=True)
-    ks, counts = preprocessGroups(k,groups)
-    helpers.makePlot(k,
-                     counts,
-                     yaxis=ks,
-                     # title='Event id distribution',
-                     ylabel='Event id count',
-                     xlabel='Event id',
-                     show=show,
-                     steps=len(ks)
-                     )
+    # k = 'product_id'
+    # groups = helpers.getKGroups(k,sessDB)
+    # ks, counts = preprocessGroups(k,groups)
+    # ks,xss,xticks = groupProductsOnCounts(ks,counts,cap=50)
+    # helpers.makePlot(k + 'cum',
+    #                  ks,
+    #                  yaxis=xss,
+    #                  # title='Cumulative distribution of events on products',
+    #                  ylabel='Product count',
+    #                  xlabel='Event count',
+    #                  show=show,
+    #                  xticks=[xticks,xticks],
+    #                  )
+    # k = 'event_id'
+    # groups = helpers.getKGroups(k,sessDB)
+    # groups = removeLowVals(groups,k,200,addCapToOther=True)
+    # groups = sorted(groups, key=lambda k: k['count'],reverse=True)
+    # ks, counts = preprocessGroups(k,groups)
+    # helpers.makePlot(k,
+    #                  counts,
+    #                  yaxis=ks,
+    #                  # title='Event id distribution',
+    #                  ylabel='Event id count',
+    #                  xlabel='Event id',
+    #                  show=True,
+    #                  steps=len(ks)
+    #                  )
 
-    k = 'storefront_name'
-    groups = helpers.getKGroups(k,sessDB)
-    ks,counts = preprocessGroups(k,groups)
-    ks,counts = handleStoreFront(ks,counts)
-    helpers.makePlot(k,
-                     counts,
-                     yaxis=ks,
-                     # title='Distribution of events on stores',
-                     ylabel='Event count',
-                     xlabel='Store name',
-                     show=show,
-                     labels=ks,
-                     xticks=[]
-                     )
+    # k = 'storefront_name'
+    # groups = helpers.getKGroups(k,sessDB)
+    # ks,counts = preprocessGroups(k,groups)
+    # ks,counts = handleStoreFront(ks,counts)
+    # helpers.makePlot(k,
+    #                  counts,
+    #                  yaxis=ks,
+    #                  # title='Distribution of events on stores',
+    #                  ylabel='Event count',
+    #                  xlabel='Store name',
+    #                  show=show,
+    #                  labels=ks,
+    #                  xticks=[]
+    #                  )
 
-    eventsOnStorDistr(k,ks,counts,sessDB)
+    # eventsOnStorDistr(k,ks,counts,sessDB)
 
-    k = 'retailer_brand'
-    groups = helpers.getKGroups(k,sessDB)
-    ks, counts = preprocessGroups(k,groups)
-    labels = handleRetailerBrand(ks)
-    helpers.makePlot(k,
-                     counts,
-                     yaxis=ks,
-                     # title='Distribution of events on retailer brands',
-                     ylabel='Event count',
-                     xlabel='Brand name',
-                     labels=labels,
-                     show=show,
-                     xticks=[],
-                     steps=len(ks)
-                     )
+    # k = 'retailer_brand'
+    # groups = helpers.getKGroups(k,sessDB)
+    # ks, counts = preprocessGroups(k,groups)
+    # labels = handleRetailerBrand(ks)
+    # helpers.makePlot(k,
+    #                  counts,
+    #                  yaxis=ks,
+    #                  # title='Distribution of events on retailer brands',
+    #                  ylabel='Event count',
+    #                  xlabel='Brand name',
+    #                  labels=labels,
+    #                  show=show,
+    #                  xticks=[],
+    #                  steps=len(ks)
+    #                  )
 
-    k = 'hr'
-    groups = helpers.getKGroups(k,sessDB)
-    ks, counts = preprocessGroups(k,groups)
-    ks, counts = sortHours(k,ks,counts)
-    helpers.makePlot(k,
-                     counts,
-                     yaxis=ks,
-                     # title='Distribution of events on hours',
-                     ylabel='Event count',
-                     xlabel='Time of day',
-                     labels=ks,
-                     show=show,
-                     xticks=[]
-                     )
+    # k = 'hr'
+    # groups = helpers.getKGroups(k,sessDB)
+    # ks, counts = preprocessGroups(k,groups)
+    # ks, counts = sortHours(k,ks,counts)
+    # helpers.makePlot(k,
+    #                  counts,
+    #                  yaxis=ks,
+    #                  # title='Distribution of events on hours',
+    #                  ylabel='Event count',
+    #                  xlabel='Time of day',
+    #                  labels=ks,
+    #                  show=show,
+    #                  xticks=[]
+    #                  )
 
-    k = 'user_id'
-    maximum = 250
+    # k = 'user_id'
+    # maximum = 250
+    # groups = helpers.getKGroups(k,sessDB)
+    # ks, counts = preprocessGroups(k,groups)
+    # ks = sortUsersOnEvenCount(ks,counts,maximum)
+    # xTicks = makeTicks(yMax=maximum)
+    # helpers.makePlot(
+    #                     k,
+    #                     ks,
+    #                     yaxis=ks,
+    #                     # title='Distribution of events for users',
+    #                     ylabel='User count',
+    #                     xlabel='Event count',
+    #                     show=show,
+    #                     grid=True,
+    #                     xticks=[xTicks,xTicks]
+    #                     # labels=[1,5,10],
+    #                     # ticks=[[1,5,10],[1,5,10]]
+    #                 )
+
+    # k = 'user_id'
+    # maximum = 250
+    # groups = helpers.getKGroups(k,sessDB)
+    # ks, counts = preprocessGroups(k,groups)
+    # ks,yTicks,xTicks = sortUsersOnEvenCountCum(ks,counts,maximum)
+    # helpers.makePlot(
+    #                     k + 'cum',
+    #                     ks,
+    #                     yaxis=ks,
+    #                     # title='Cumulative distribution of events for users',
+    #                     ylabel='Percentage of users',
+    #                     xlabel='Event count',
+    #                     show=show,
+    #                     grid=True,
+    #                     yticks=yTicks,
+    #                     xticks=xTicks,
+    #                     # labels=[1,5,10],
+    #                     # ticks=[[1,5,10],[1,5,10]]
+    #                 )
+
+    k = 'session'
+    maximum = 30
+    # groups = helpers.getKGroups(k,sessDB)
+    # groups[:] = [d for d in groups if d.get('session') != 0.0]
+    # ks, counts = preprocessGroups(k,groups,True)
+    # ks,counts = sortCountOnKS(counts,ks,maximum)
+    # xTicks = makeTicks(yMax=maximum)
+    # yTicks = []
+    # yTicksSteps = makeTicks(yMax=max(ks),steps=10)
+    # yTicksLabes = makeTicks(yMax=100,steps=10)
+    # yTicks.append(yTicksSteps)
+    # yTicks.append(yTicksLabes)
+    # helpers.makePlot(
+    #                     k + 'cum',
+    #                     ks,
+    #                     yaxis=ks,
+    #                     # title='Cumulative distribution of sessions for users',
+    #                     ylabel='Percentage of users',
+    #                     xlabel='Session count',
+    #                     show=show,
+    #                     grid=True,
+    #                     xticks=[xTicks,xTicks],
+    #                     yticks=yTicks
+    #                     # labels=[1,5,10],
+    #                     # ticks=[[1,5,10],[1,5,10]]
+    #                 )
+
+    k = 'session'
+    # maximum = 50
     groups = helpers.getKGroups(k,sessDB)
-    ks, counts = preprocessGroups(k,groups)
-    ks = sortUsersOnEvenCount(ks,counts,maximum)
+    groups[:] = [d for d in groups if d.get('session') != 0.0]
+    ks, counts = preprocessGroups(k,groups,True)
+    ks,counts = sortCountOnKSS(counts,ks,maximum)
     xTicks = makeTicks(yMax=maximum)
+    yTicks = []
+    yTicksSteps = makeTicks(yMax=max(ks),steps=10)
+    yTicksLabes = yTicksSteps
+    yTicks.append(yTicksSteps)
+    yTicks.append(yTicksLabes)
     helpers.makePlot(
                         k,
                         ks,
                         yaxis=ks,
-                        # title='Distribution of events for users',
-                        ylabel='User count',
-                        xlabel='Event count',
-                        show=show,
-                        grid=True,
-                        xticks=[xTicks,xTicks]
-                        # labels=[1,5,10],
-                        # ticks=[[1,5,10],[1,5,10]]
-                    )
-
-    k = 'user_id'
-    maximum = 250
-    groups = helpers.getKGroups(k,sessDB)
-    ks, counts = preprocessGroups(k,groups)
-    ks,yTicks,xTicks = sortUsersOnEvenCountCum(ks,counts,maximum)
-    helpers.makePlot(
-                        k + 'cum',
-                        ks,
-                        yaxis=ks,
-                        # title='Cumulative distribution of events for users',
-                        ylabel='Percentage of users',
-                        xlabel='Event count',
-                        show=show,
-                        grid=True,
-                        yticks=yTicks,
-                        xticks=xTicks,
-                        # labels=[1,5,10],
-                        # ticks=[[1,5,10],[1,5,10]]
-                    )
-
-    k = 'session'
-    maximum = 100
-    groups = helpers.getKGroups(k,sessDB)
-    groups[:] = [d for d in groups if d.get('session') != 0.0]
-    ks, counts = preprocessGroups(k,groups,True)
-    ks,counts = sortCountOnKS(counts,ks,maximum)
-    xTicks = makeTicks(yMax=maximum)
-    yTicks = []
-    yTicksSteps = makeTicks(yMax=max(ks),steps=10)
-    yTicksLabes = makeTicks(yMax=100,steps=10)
-    yTicks.append(yTicksSteps)
-    yTicks.append(yTicksLabes)
-    helpers.makePlot(
-                        k + 'cum',
-                        ks,
-                        yaxis=ks,
                         # title='Cumulative distribution of sessions for users',
-                        ylabel='Percentage of users',
+                        ylabel='Amount of users',
                         xlabel='Session count',
                         show=show,
                         grid=True,
@@ -275,6 +302,34 @@ def sortHours(k,ks,counts):
     ks_sorted = sorted(ks)
     return ks_sorted,counts_sorted
 
+def sortCountOnKSS(ks,counts,cap):
+    ks = sorted(ks,reverse=False)
+    counts = sorted(counts,reverse=False)
+    print (ks)
+    tmp = []
+    cv = 0
+    prev = 0
+    for k in ks:
+        if prev != k:
+            tmp.append(k - prev)
+            cv += (k)
+        else:
+            tmp.append(0)
+        prev = k
+    # sys.exit()
+    print (tmp)
+    tmp_count = []
+    for c in counts:
+        if c > cap:
+            continue
+        tmp_count.append(c)
+    ks = tmp[::-1]
+    ks = ks[:len(tmp_count)]
+    print (ks)
+    print (sum(ks))
+    sys.exit()
+    return ks,tmp_count
+
 def sortCountOnKS(ks,counts,cap):
     ks = sorted(ks,reverse=True)
     counts = sorted(counts)
@@ -289,9 +344,12 @@ def sortCountOnKS(ks,counts,cap):
 
 def sortUsersOnEvenCount(ks,counts,cap,reverse=False):
     i = 0
+    tot = 0
     for c in counts:
         if c > cap:
             counts[i] = cap
+        else:
+            tot += 1
         i += 1
 
     counts_sorted = sorted(counts,reverse=reverse)

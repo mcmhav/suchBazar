@@ -9,13 +9,6 @@ trap 'echo interrupted; kill $(jobs -p); exit' INT
 # Usage function, describing the parameters to the user.
 usage() { echo "Usage: $0 -i sobazar_input.tab"; exit 1; }
 
-canK () {
-  local e
-  array=("LeastSquareSLIM" "UserAttributeKNN" "UserKNN" "ItemKNN")
-  for e in "${array[@]}"; do [[ "$e" == "$1" ]] && CANSETK=0; done
-  CANSETK=1
-}
-
 # Save the current path
 ROOT=$( cd "$( dirname "$0" )" && pwd );
 
@@ -38,7 +31,6 @@ ITEMRECOMMENDERS=""
 # 'svd' ...
 
 #MAHOUTRECOMMENDERS="itemuseraverage "
-
 MAHOUTRECOMMENDERS=""
 
 QUIET=""
@@ -142,9 +134,21 @@ echo $trainTestTuples
 predictNevaluate() {
   echo "------------------------------"
   # make predictions
-  /bin/bash $ROOT/generators/myMediaLitePredicter.sh "${!1}";
+  ptmp=( "${!1}" )
+  etmp=( "${!2}" )
+  arr=("LeastSquareSLIM" "UserAttributeKNN" "UserKNN" "ItemKNN")
+  if [[ " ${arr[@]} " =~ " ${3} " ]] && [ "$KRANGE" != "" ]; then
+    for i in $KRANGE; do
+      ptmp+=("-k" "$i")
+      etmp+=("-k" "$i")
+      ptmp+=("$CLEAN" "$QUIET")
+    done
+  else
+    ptmp+=("$CLEAN" "$QUIET")
+  fi
+  /bin/bash $ROOT/generators/myMediaLitePredicter.sh "${ptmp[@]}";
   # evaluate predicted values
-  /bin/bash $ROOT/evaluation/evaluate.sh "${!2}";
+  /bin/bash $ROOT/evaluation/evaluate.sh "${etmp[@]}";
   echo "------------------------------"
 }
 
@@ -153,18 +157,7 @@ if [ "$ITEMRECOMMENDERS" != "" ]; then
   do
     pOPT=("-t $trainTestTuples" "-r" "item_recommendation" "-p" "$ir")
     eOPT=("-t $trainTestTuples" "-r" "item_recommendation" "-p" "$ir" "-m")
-    canK "$ir"
-    if [ $CANSETK -eq 1 ] && [ "$KRANGE" != "" ]; then
-      for i in $(seq $KRANGE); do
-        pOPT+=("-k" "$i")
-        eOPT+=("-k" "$i")
-        pOPT+=("$CLEAN" "$QUIET")
-        predictNevaluate pOPT[@] eOPT[@]
-      done
-    else
-      pOPT+=("$CLEAN" "$QUIET")
-      predictNevaluate pOPT[@] eOPT[@]
-    fi
+    predictNevaluate pOPT[@] eOPT[@] "$ir"
   done
 fi
 
@@ -172,19 +165,8 @@ if [ "$RANKRECOMMENDERS" != "" ]; then
   for ir in $RANKRECOMMENDERS
   do
     pOPT=("-t $trainTestTuples" "-r" "rating_prediction" "-p" "$ir")
-    eOPT=("-t $trainTestTuples" "-r" "rating_prediction" "-p" "$ir" "-m")
-    canK "$ir"
-    if [ $CANSETK -eq 1 ] && [ "$KRANGE" != "" ]; then
-      for i in $(seq $KRANGE); do
-        pOPT+=("-k" "$i")
-        eOPT+=("-k" "$i")
-        pOPT+=("$CLEAN" "$QUIET")
-        predictNevaluate pOPT[@] eOPT[@]
-      done
-    else
-      pOPT+=("$CLEAN" "$QUIET")
-      predictNevaluate pOPT[@] eOPT[@]
-    fi
+    eOPT=("-t $trainTestTuples" "-r" "rating_prediction" "-p" "$ir")
+    predictNevaluate pOPT[@] eOPT[@] "$ir"
   done
 fi
 

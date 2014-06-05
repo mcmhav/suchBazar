@@ -23,8 +23,9 @@ RECOMMENDER_LOCATION="$ROOT/mahout"
 QUIET=0
 DIR=""
 CLEAN=0
+KVAL=""
 
-while getopts "cdt:hp:l:q" o; do
+while getopts "cdt:hp:l:qk:" o; do
   case "${o}" in
     c)
       CLEAN=1
@@ -46,6 +47,9 @@ while getopts "cdt:hp:l:q" o; do
       ;;
     q)
       QUIET=1
+      ;;
+    k)
+      KVAL="${OPTARG}"
       ;;
     *)
       usage
@@ -74,16 +78,14 @@ do
     IFS=":"; declare -a Array=($*)
     TRAINFILE="${Array[0]}";
     TESTFILE="${Array[1]}";
-    OUTFILE="$PREDICTIONS/${Array[0]}--mahout-$RECOMMENDER.predictions"
-    set -x
-    if [ ! -f "$PREDFILE" ] || [ $CLEAN -eq 1 ]; then
+    OUTFILE="$PREDICTIONS/${Array[0]}-$KVAL-mahout-$RECOMMENDER.predictions"
+    if [ ! -f "$OUTFILE" ] || [ $CLEAN -eq 1 ]; then
       if [ $QUIET -eq 1 ]; then
         java TopKRecommendations $RATINGS $TRAINFILE $RECOMMENDER  $OUTFILE $TESTFILE >/dev/null 2>/dev/null &
       else
         java TopKRecommendations $RATINGS $TRAINFILE $RECOMMENDER $OUTFILE $TESTFILE &
       fi
     fi
-    set +x;
 done
 wait;
 echo "Done making Mahout items predictions with $RECOMMENDER";

@@ -12,11 +12,11 @@ from pylab import *
 
 
 def main(sessDB='sessionsNew'):
-    groups = makeGroups(sessDB)
+    groups = makeGroups(sessDB,'product_id')
 
     timeSpans = [int(x['timespan']) for x in groups]
     counts = [int(x['count']) for x in groups]
-    # plotItemTimeSpans(timeSpans)
+    plotItemTimeSpans(timeSpans)
     plotItemTimeSpansSortedOnCount(groups)
 
 def plotItemTimeSpansSortedOnCount(groups):
@@ -71,7 +71,7 @@ def plotAVGforCOuntAtleast(groups):
         # xticks=[helpers.makeTicks(yMax=len(bars)),list(helpers.makeTicks(yMax=maxikus))[::-1]],
         ylabel='Average lifetime in weeks',
         xlabel='Count of event',
-        show=True
+        show=False
     )
 
 
@@ -254,7 +254,7 @@ def makeObjectForJson(groups):
     e.write("]")
     e.close()
 
-def makeGroups(sessDB):
+def makeGroups(sessDB,k):
     col = helpers.getCollection(sessDB)
     reducer = Code("""
                     function (cur,result) {
@@ -269,11 +269,14 @@ def makeGroups(sessDB):
                         result.avgTime = result.timespan/result.count;
                     }
                    """)
-
     groups = col.group(
-        key={'product_id':1},
+        key={k:1},
         condition={
-            'product_id':{'$ne':'NULL'},
+            '$and':[
+                {k:{'$ne':'NULL'}},
+                {k:{'$ne':'N/A'}},
+                {k:{'$ne':''}},
+            ],
             'ts': { '$gt': 1383283951000 }
         },
         reduce=reducer,

@@ -133,7 +133,7 @@ def getKGroups(k,sessDB):
                            condition={'$and':[
                                 {k:{'$ne':'NULL'}},
                                 {k:{'$ne':'N/A'}},
-                                {k:{'$ne':''}}
+                                {k:{'$ne':''}},
                             ]},
                            reduce=reducer,
                            initial={'count':0}

@@ -43,10 +43,10 @@ public class TopKRecommendations {
         long startTime = System.currentTimeMillis();
 
         DataModel model = new FileDataModel(new File(dataPath + "/" + filename));
-       
+
         //PreferenceArray user_test = model.getPreferencesFromUser(userId);
         //System.out.print(user_test);
-        
+
         RecommenderBuilder builder = new RecommenderBuilder() {
             public Recommender buildRecommender(DataModel model) throws TasteException {
                 if (recommender.equals("itembased")) {
@@ -74,26 +74,26 @@ public class TopKRecommendations {
         Recommender r = builder.buildRecommender(model);
         DataModel test = new FileDataModel(new File(dataPath + "/" + testFile));
         LongPrimitiveIterator test_users = test.getUserIDs();
-        
+
         PrintWriter w = new PrintWriter(predictionFile);
         w.print("");
         w.close();
-        
+
         PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(predictionFile, true)));
-        
+
         Long i = (long) 0;
         Long ui = (long) 0;
-        
+
         //System.out.print("\n");
         while (test_users.hasNext()) {
         	//System.out.print("\rUser " + i);
         	i++;
             long user = test_users.next();
             //System.out.println("USER:" +user);
-            
+
             LongPrimitiveIterator items = model.getItemIDs();
-            
-            
+
+
             while (items.hasNext()){
             	long item = items.next();
 
@@ -114,7 +114,7 @@ public class TopKRecommendations {
             		found = true;
             		//System.out.println(e);
             	}
-            	
+
             	if(found == false){
             		//System.out.println(user + " " + item + " " + ui);
             		Float rating = (float) r.estimatePreference(user, item);
@@ -126,7 +126,7 @@ public class TopKRecommendations {
         }
         writer.close();
     }
-    
+
     public void appendToRatingFile(Long userID, Long itemID, Float rating, PrintWriter writer){
         String f = userID.toString() + '\t' + itemID.toString() + '\t' + rating.toString();
         writer.println(f);
@@ -143,13 +143,23 @@ public class TopKRecommendations {
         PrintWriter writer = new PrintWriter(predictionFile, "UTF-8");
 
         Iterator it = topKForUsers.entrySet().iterator();
+        int max = 0;
+        Object maxUser = 0;
         while (it.hasNext()) {
             Map.Entry pairs = (Map.Entry)it.next();
+            int i = 0;
             for (RecommendedItem ri :((List<RecommendedItem>)pairs.getValue())) {
                 writer.println(pairs.getKey() + ", " + ri.getItemID() + ", " + ri.getValue());
+                i ++;
+            }
+            if (i > max) {
+                max = i;
+                maxUser = pairs.getKey();
             }
             it.remove();
         }
+        System.out.println(max);
+        System.out.println(maxUser);
         writer.close();
     }
 
@@ -199,16 +209,4 @@ public class TopKRecommendations {
         TopKRecommendations tp = new TopKRecommendations();
         tp.start(args);
     }
-
-/*===================== testur========================
-RMSE: 1.2692955172180542
-AvgDiff: 0.9100378792394291
-Precision: 0.034020521509931324
-Recall: 0.003581286484268638
-F1Measure: 0.006480392319969338
-nDCG: 0.034084846430383786
-Reach: 0.396240138756784
-FallOut: 1.4278112033939378E-4
-Took 9403990ms to calculate 1-fold cross-validation
-===========================================================*/
 }

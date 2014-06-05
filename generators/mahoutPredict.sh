@@ -23,8 +23,9 @@ RECOMMENDER_LOCATION="$ROOT/mahout"
 QUIET=0
 DIR=""
 CLEAN=0
+KVAL=""
 
-while getopts "cdt:hp:l:q" o; do
+while getopts "cdt:hp:l:qk:" o; do
   case "${o}" in
     c)
       CLEAN=1
@@ -46,6 +47,9 @@ while getopts "cdt:hp:l:q" o; do
       ;;
     q)
       QUIET=1
+      ;;
+    k)
+      KVAL="${OPTARG}"
       ;;
     *)
       usage
@@ -72,7 +76,7 @@ for ttt in $TTT
 do
     set -- "$ttt"
     IFS=":"; declare -a Array=($*)
-    PREDFILE="$PREDICTIONS/${Array[0]}-mahout-$RECOMMENDER.predictions"
+    PREDFILE="$PREDICTIONS/${Array[0]}-$KVAL-mahout-$RECOMMENDER.predictions"
     if [ ! -f "$PREDFILE" ] || [ $CLEAN -eq 1 ]; then
       if [ $QUIET -eq 1 ]; then
         java TopKRecommendations $RATINGS "${Array[0]}" $RECOMMENDER  $PREDFILE >/dev/null 2>/dev/null &

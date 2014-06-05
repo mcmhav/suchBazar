@@ -73,7 +73,7 @@ public class TopKRecommendations {
 
         while (users.hasNext()) {
             long user = users.next();
-            List<RecommendedItem> topK = r.recommend(user,20);
+            List<RecommendedItem> topK = r.recommend(user,20000);
 
             topKForUsers.put(user,topK);
         }
@@ -92,13 +92,23 @@ public class TopKRecommendations {
         PrintWriter writer = new PrintWriter(predictionFile, "UTF-8");
 
         Iterator it = topKForUsers.entrySet().iterator();
+        int max = 0;
+        Object maxUser = 0;
         while (it.hasNext()) {
             Map.Entry pairs = (Map.Entry)it.next();
+            int i = 0;
             for (RecommendedItem ri :((List<RecommendedItem>)pairs.getValue())) {
                 writer.println(pairs.getKey() + ", " + ri.getItemID() + ", " + ri.getValue());
+                i ++;
+            }
+            if (i > max) {
+                max = i;
+                maxUser = pairs.getKey();
             }
             it.remove();
         }
+        System.out.println(max);
+        System.out.println(maxUser);
         writer.close();
     }
 
@@ -128,8 +138,8 @@ public class TopKRecommendations {
             System.out.print("Needs arguments: <ratings-folder> <method> <rating-file> <predictionfile>\n");
             System.out.print("Defaulting to: ../generators/ratings itembased\n");
             vals[0] = "../generated/splits";
-            vals[1] = "recentness_sigmoid_fixed_sr-3.5.txt.9.txt";
-            vals[2] = "loglikelihood";
+            vals[1] = "count_linear.txt.9.txt";
+            vals[2] = "userbased";
             vals[3] = "../generated/predictions/tmp.predictions";
         } else {
             vals = args;

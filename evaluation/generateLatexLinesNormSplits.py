@@ -216,6 +216,8 @@ def getIdsFromFileName(f):
     ids.append(getRecommenderSystem(f))
     ids.append(getRatingFile(f))
     ids.append(getRecommenderAlg(f))
+    print (ids)
+    print (f)
     return ids
 
 def getRecommenderAlg(filename):

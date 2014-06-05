@@ -286,7 +286,6 @@ mahoutPredict() {
       fi
     else
       echo "Already had $OUTFILE and thus, I did not predict anything new...";
-      exit 1;
     fi
   done;
   cd -

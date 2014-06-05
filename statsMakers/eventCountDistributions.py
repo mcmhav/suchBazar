@@ -127,8 +127,8 @@ def main(sessDB='sessionsNew'):
     #                     # ticks=[[1,5,10],[1,5,10]]
     #                 )
 
-    # k = 'session'
-    # maximum = 100
+    k = 'session'
+    maximum = 30
     # groups = helpers.getKGroups(k,sessDB)
     # groups[:] = [d for d in groups if d.get('session') != 0.0]
     # ks, counts = preprocessGroups(k,groups,True)
@@ -155,16 +155,15 @@ def main(sessDB='sessionsNew'):
     #                 )
 
     k = 'session'
-    maximum = 100
+    # maximum = 50
     groups = helpers.getKGroups(k,sessDB)
     groups[:] = [d for d in groups if d.get('session') != 0.0]
     ks, counts = preprocessGroups(k,groups,True)
     ks,counts = sortCountOnKSS(counts,ks,maximum)
-    sys.exit()
     xTicks = makeTicks(yMax=maximum)
     yTicks = []
     yTicksSteps = makeTicks(yMax=max(ks),steps=10)
-    yTicksLabes = makeTicks(yMax=100,steps=10)
+    yTicksLabes = yTicksSteps
     yTicks.append(yTicksSteps)
     yTicks.append(yTicksLabes)
     helpers.makePlot(
@@ -172,7 +171,7 @@ def main(sessDB='sessionsNew'):
                         ks,
                         yaxis=ks,
                         # title='Cumulative distribution of sessions for users',
-                        ylabel='Percentage of users',
+                        ylabel='Amount of users',
                         xlabel='Session count',
                         show=show,
                         grid=True,
@@ -305,26 +304,30 @@ def sortHours(k,ks,counts):
 
 def sortCountOnKSS(ks,counts,cap):
     ks = sorted(ks,reverse=False)
-    counts = sorted(counts,reverse=True)
+    counts = sorted(counts,reverse=False)
     print (ks)
-    # print (counts)
     tmp = []
     cv = 0
+    prev = 0
     for k in ks:
-        if cv != k:
-            tmp.append(k-cv)
-            cv = (k - cv)
+        if prev != k:
+            tmp.append(k - prev)
+            cv += (k)
         else:
             tmp.append(0)
+        prev = k
+    # sys.exit()
     print (tmp)
-    sys.exit()
     tmp_count = []
     for c in counts:
         if c > cap:
             continue
         tmp_count.append(c)
+    ks = tmp[::-1]
     ks = ks[:len(tmp_count)]
-
+    print (ks)
+    print (sum(ks))
+    sys.exit()
     return ks,tmp_count
 
 def sortCountOnKS(ks,counts,cap):

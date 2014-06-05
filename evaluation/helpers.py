@@ -229,7 +229,7 @@ def sortDictByRatings(predictions):
     Sorts a the ratings for each user (key)
     in descending order
     '''
-    
+
     for user in predictions:
         predictions[user] = sorted(predictions[user], key=itemgetter(2), reverse=True)
     return predictions
@@ -262,15 +262,17 @@ def buildDictByIndex(X, index=0):
     '''
 
     d = {}
-
     for x in X:
-        i = int(x[index])
-        if i in d:
-            d[i].append(x)
-        else:
-            d[i] = list()
-            d[i].append(x)
-
+        try:
+            if isinstance(x,list):
+                i = int(x[index])
+                if not i in d:
+                    d[i] = list()
+                d[i].append(x)
+        except:
+            print (x)
+            print ("buildDictByIndex error")
+            sys.exit()
     return d
 
 def getUniqueItemList(ratings):
@@ -309,7 +311,7 @@ def preprocessMAP(a, p, k):
                 upred.append(p[user][j][1])
             test.append(utest)
             pred.append(upred)
-    print(len(test), len(pred))       
+    print(len(test), len(pred))
     return test, pred
 
 def preprocessMeanAvgPrecision(events, predicted, k):

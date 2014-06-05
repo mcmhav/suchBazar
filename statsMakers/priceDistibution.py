@@ -12,39 +12,40 @@ import operator
 def main(sessDB='sessionsNew', writeLocation='data/stats/priceDistribution'):
     priceCounts = findPriceForItems(sessDB)
 
-    buckets=51
-    maxPrice=4000
+    buckets=25
+    bucketSize=100
+    maxPrice=bucketSize*buckets
 
-    # priceBuckets = makeBuckets(priceCounts,buckets,maxPrice)
-    # makePlot(priceBuckets,buckets,maxPrice)
+    priceBuckets = makeBuckets(priceCounts,buckets,maxPrice)
+    yTicksl = helpers.makeTicks(yMax=maxPrice,steps=10)
+    makePlot(priceBuckets,maxPrice,yTicksl,"priceDistribution")
 
-    priceBuckets = makeCumBuckets(priceCounts,buckets,maxPrice)
+    priceBuckets = makeCumBuckets(priceCounts,buckets,bucketSize)
+    yTicksl = helpers.makeTicks(yMax=100,steps=10)
+    makePlot(priceBuckets,maxPrice,yTicksl,"cumpriceDistribution")
+
+def makePlot(priceBuckets,maxPrice,yTicksl,name):
     xticks = helpers.makeTicks(yMax=len(priceBuckets))
-    xticksl = helpers.makeTicks(yMax=max(priceBuckets))
-    # makePlot(priceBuckets,buckets,maxPrice)
+    xticksl = helpers.makeTicks(yMax=maxPrice)
+    yTicks = helpers.makeTicks(yMax=max(priceBuckets),steps=10)
 
     helpers.makePlot(
-                    "cumpriceDistribution",
+                    name,
                     priceBuckets,
                     # yaxis=priceBuckets,
                     # title='Cumulative distribution of sessions for users',
-                    ylabel='Amount of users',
-                    xlabel='Session count',
-                    show=True,
+                    ylabel='Percentage of products',
+                    xlabel='Price',
+                    # show=True,
                     grid=True,
                     xticks=[xticks,xticksl],
-                    # yticks=yTicks
+                    yticks=[yTicks,yTicksl]
                     # labels=[1,5,10],
                     # ticks=[[1,5,10],[1,5,10]]
                 )
 
-def makePlot(priceBuckets,buckets,maxCount):
-    yaxis,maxPrice = makeYaxis(priceBuckets)
-    plotIt(priceBuckets,yaxis,buckets,maxCount,maxPrice)
-
-def makeCumBuckets(priceCounts,buckets,maxPrice):
+def makeCumBuckets(priceCounts,buckets,bucketSize):
     priceBuckets = [0] * buckets
-    bucketSize = 100
     for p in priceCounts:
         for x in range(0,len(priceBuckets)):
             if p > bucketSize*x:

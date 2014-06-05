@@ -189,10 +189,10 @@ public class TopKRecommendations {
             System.out.print("Needs arguments: <ratings-folder> <method> <rating-file> <predictionfile>\n");
             System.out.print("Defaulting to: ../generators/ratings itembased\n");
             vals[0] = "../generated/splits";
-            vals[1] = "count_linear.txt_timetrain.txt";
+            vals[1] = "blend-9.txt";
             vals[2] = "itembased";
             vals[3] = "../generated/predictions/tmp.predictions";
-            vals[4] = "count_linear.txt_timetest.txt";
+            vals[4] = "blend-1.txt";
         } else {
             vals = args;
         }

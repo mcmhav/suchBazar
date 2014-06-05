@@ -69,12 +69,13 @@ def coldStartSplits():
 
 def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
 
-    start = time.time()    
+    start = time.time()
 
     train = helpers.readRatingsFromFile(trainFile, convert=False)
     test = helpers.readRatingsFromFile(testFile, convert=False)
+
     if not predictionFile:
-        train = fb.addFilterBotRatings(train, [1, 1, 1, 1, 0])
+        train = fb.addFilterBotRatings(train, featurefile='', fbots=[1, 1, 1, 1, 0])
         #predictions = itemAverage.itemAverage(train, test)
         predictions = itemAverage.mostPopular(train, test)
 
@@ -86,7 +87,7 @@ def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
 
     us_coverage, is_coverage = coverage.compute(train, predictions)
     candidateItems = helpers.getUniqueItemList(train)
-    
+
     #Build Hashmaps
     train = helpers.buildDictByIndex(train, 0)
     test = helpers.buildDictByIndex(test, 0)
@@ -108,7 +109,7 @@ def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
     #print('MAP%d: %.4f' %(k, mapk))
     #print('nDCG%d: %.4f' %(l, nDCG))
     #print('HLU%d: %.4f' %(beta, hluB))
-    
+
     print('Evaluation took %.2f seconds.'%(time.time()-start))
 
 
@@ -124,7 +125,7 @@ def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
 
 def createColdStartSplits(ratingFile, timestamps, featurefile, fbConfig):
 
-    ratings = helpers.readRatingsFromFileSmart(ratingFile, True)
+    ratings = helpers.readRatingsFromFileSmart(ratingFile, False)
     filename = ratingFile.split('/')[-1].split('.')[0]
     procs = []
 

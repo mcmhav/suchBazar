@@ -136,8 +136,8 @@ def readRatingsFromFileSmart(path, convert=False):
     with open(path, 'r') as file:
 
         dialect = csv.Sniffer().sniff(file.read(1024))
-        reader =  csv.reader(file, delimiter=dialect.delimiter)
-
+        reader = csv.reader(file, delimiter=dialect.delimiter)
+        print (dialect)
         for rating in reader:
             try:
                 if len(rating) == 3:
@@ -154,6 +154,8 @@ def readRatingsFromFileSmart(path, convert=False):
             except:
                 print (rating)
                 print ("readRatingsFromFileSmart")
+                print (traceback.format_exc())
+                sys.exit()
     return ratings
 
 def readRatings(path, timestamps):

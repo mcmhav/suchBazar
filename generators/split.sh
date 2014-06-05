@@ -6,10 +6,12 @@ split() {
   # Argument #1: Input filename. File to split.
   # Argument #2: Output directory. Absolute path to directory.
   # Argument #3: Output filename.
-  ABSPATH="${2}/${3}";
+  FILENAME="${3}"
+  NOEXT="${FILENAME%%.*}";
+  ABSPATH="${2}/${NOEXT}";
   awk '
     BEGIN { srand() }
-    {f = rand() <= 0.9 ? "'"${ABSPATH}"'.9.txt" : "'"${ABSPATH}"'.1.txt"; print > f}
+    {f = rand() <= 0.9 ? "'"${ABSPATH}"'-9.txt" : "'"${ABSPATH}"'-1.txt"; print > f}
   ' $1
 }
 

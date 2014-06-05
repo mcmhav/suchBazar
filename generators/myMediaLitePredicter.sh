@@ -91,6 +91,7 @@ if [ "$RECTYPE" !=  "" ]; then
       # Do item predictions
       PREDFILE="$PREDICTIONS/${Array[0]}-$KVALSINGLE-$RECTYPE-$RECOMMENDER.predictions"
       OPT+=(--prediction-file "$PREDFILE");
+      echo ${OPT[@]}
       if [ ! -f "$PREDFILE" ] || [ $CLEAN -eq 1 ]; then
         if [ $QUIET -eq 1 ]; then
           $RECTYPE ${OPT[@]} >/dev/null &

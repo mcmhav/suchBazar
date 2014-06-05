@@ -48,7 +48,7 @@ def criticBot(ratings, num_critics=20, recentness=False):
     inject their average ratings directly into the user-item matrix
     '''
     start = time.time()
-    print('Generating criticBot Ratings...')
+    #print('Generating criticBot Ratings...')
 
     criticBotId = 1339
     userRatings = {}
@@ -83,7 +83,7 @@ def criticBot(ratings, num_critics=20, recentness=False):
     for item in itemRatings:
         criticBotRatings.append([criticBotId, item, itemRatings[item]])
 
-    print('criticBot used %d seconds to generate %d ratings' %(time.time()-start, len(criticBotRatings)))
+    #print('criticBot used %d seconds to generate %d ratings' %(time.time()-start, len(criticBotRatings)))
 
     return criticBotRatings
 
@@ -105,7 +105,7 @@ def brandBot(ratings, item_attributes):
     Inject average brand rating for each item
     '''
     start = time.time()
-    print('Generating brandBot Ratings...')
+    #print('Generating brandBot Ratings...')
 
     brandBotId = 1337
     brandAverage = {}
@@ -131,7 +131,7 @@ def brandBot(ratings, item_attributes):
         if brandAverage.get(int(item_attributes[item]), None):
             botRatings.append([brandBotId, item[0], brandAverage[int(item_attributes[item])]])
 
-    print('brandBot used %d seconds to generate %d ratings' %(time.time()-start, len(botRatings)))
+    #print('brandBot used %d seconds to generate %d ratings' %(time.time()-start, len(botRatings)))
     return botRatings
 
 
@@ -173,7 +173,7 @@ def rateItemsByBrand(items, item_attributes, userId, brandId):
         if brand == brandId:
             botRatings.append([userId, itemid, 5.0])
 
-    print(len(botRatings))
+    #print(len(botRatings))
     return botRatings
 
 def brandBots(ratings, item_attributes):
@@ -184,7 +184,7 @@ def brandBots(ratings, item_attributes):
     '''
 
     start = time.time()
-    print('Generating multiple brand bots...')
+    #print('Generating multiple brand bots...')
 
     botRatings = []
     brands = getUniqueBrandList(item_attributes)
@@ -195,7 +195,7 @@ def brandBots(ratings, item_attributes):
         botRatings.extend(rateItemsByBrand(items, item_attributes, x, y))
         print('processed bot %d of %d ' % (len(botIds) -(max(botIds) - x), len(botIds)))
 
-    print('brandBotUsers used %d seconds to generate %d ratings' %(time.time()-start, len(botRatings)))
+    #print('brandBotUsers used %d seconds to generate %d ratings' %(time.time()-start, len(botRatings)))
     return botRatings
 
 
@@ -205,7 +205,7 @@ def averageBot(ratings):
     '''
 
     start = time.time()
-    print('Generating averageBot Ratings...')
+    #print('Generating averageBot Ratings...')
 
     averageItemBotId = 1336
     itemAverage = {}
@@ -225,7 +225,7 @@ def averageBot(ratings):
     for item in itemAverage:
         averageItemRatings.append([averageItemBotId, item, itemAverage[item]])
 
-    print('averageBot used %d seconds to generate %d ratings' %(time.time()-start, len(averageItemRatings)))
+    #print('averageBot used %d seconds to generate %d ratings' %(time.time()-start, len(averageItemRatings)))
     return averageItemRatings
 
 
@@ -237,7 +237,7 @@ def popularityBot(ratings, max_rating, rating_limit=3, recentness=False):
     u(i) = V_i * normalization factor that caps the rating at 5
     '''
     start = time.time()
-    print('Generating popularityBot Ratings...')
+    #print('Generating popularityBot Ratings...')
 
     if recentness:
         ratings = filterOutOldRatings(ratings,4)
@@ -258,7 +258,7 @@ def popularityBot(ratings, max_rating, rating_limit=3, recentness=False):
             rating = (value/mostPopularCount)*(2)+3
             VTBotRatings.append([VTBotId, key, rating])
 
-    print('popularityBot used %d seconds to generate %d ratings' %(time.time()-start, len(VTBotRatings)))
+    #print('popularityBot used %d seconds to generate %d ratings' %(time.time()-start, len(VTBotRatings)))
     return VTBotRatings
 
 
@@ -268,7 +268,7 @@ def conformityBot(ratings, threshold=4.5):
     '''
 
     start = time.time()
-    print('Generating conformityBot Ratings...')
+    #print('Generating conformityBot Ratings...')
 
     botId = 1334
     boughtCounter = Counter()
@@ -282,7 +282,7 @@ def conformityBot(ratings, threshold=4.5):
         if boughtCounter[item] > 1:
             botRatings.append([botId, item, 5.0])
 
-    print('conformityBot used %d seconds to generate %d ratings' %(time.time()-start, len(botRatings)))
+    #print('conformityBot used %d seconds to generate %d ratings' %(time.time()-start, len(botRatings)))
     return botRatings
 
 
@@ -306,7 +306,7 @@ def writeRatingsToFile(fileName, data, delimiter=','):
 
 def readItemAttributes(path):
     itemAttributes = []
-    print (path)
+    #print (path)
     with open(path, 'r') as f:
         reader =  csv.reader(f, delimiter='\t')
         for item in reader:

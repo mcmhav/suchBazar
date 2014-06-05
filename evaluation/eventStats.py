@@ -179,9 +179,7 @@ def compute(actual, predicted, k):
     startTime = datetime.now()
 
     eventData = readEventTypeData()
-    #Build hashmaps for better speed
     eventData = helpers.buildDictByIndex(eventData, 0)
-    #predicted = filterNonTestUsersFromPredicted(actual, predicted)
 
     aCounts = getActualStats(actual, eventData)
     pCounts = getPredictionStats(actual, predicted, eventData, k)

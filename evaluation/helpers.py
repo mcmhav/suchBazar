@@ -229,6 +229,7 @@ def sortDictByRatings(predictions):
     Sorts a the ratings for each user (key)
     in descending order
     '''
+    
     for user in predictions:
         predictions[user] = sorted(predictions[user], key=itemgetter(2), reverse=True)
     return predictions
@@ -288,14 +289,12 @@ def appendZeroRatings(user, predictions, candidateItems):
     return predictions
 '''
 
-def preprocessMAP(actual, predictions, k):
+def preprocessMAP(a, p, k):
     '''
     Preprocessing nMAP calculations
     Extracts the top k list of item-ids from each user
     '''
 
-    a = buildDictByIndex(actual, 0)
-    p = buildDictByIndex(predictions, 0)
     pred = []
     test = []
 
@@ -305,13 +304,38 @@ def preprocessMAP(actual, predictions, k):
             utest.append(a[user][i][1])
         if user in p:
             upred = []
-            p[user] = sorted(p[user], key=itemgetter(2), reverse=True)
+            #p[user] = sorted(p[user], key=itemgetter(2), reverse=True)
             for j in range(min(len(p[user]), k)):
                 upred.append(p[user][j][1])
             test.append(utest)
             pred.append(upred)
+    print(len(test), len(pred))       
     return test, pred
 
+def preprocessMeanAvgPrecision(events, predicted, k):
+
+    test = []
+    predictions = []
+
+    for user, user_pred_ratings in predicted.iteritems():
+        #predictions.append(user_ratings)
+        user_test_items = []
+        user_pred_items = []
+
+        for rating in events:
+            if rating[0] == user:
+                user_test_items.append(rating[1])
+
+        #If the user is in the test set
+        if len(user_test_items) > 0:
+
+            for rating in user_pred_ratings[:min(len(user_pred_ratings), k)]:
+                user_pred_items.append(rating[1])
+
+            test.append(user_test_items)
+            predictions.append(user_pred_items)
+
+    return test, predictions
 
 def preprocessDCG(actual, predictions, k):
     '''

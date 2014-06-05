@@ -1,3 +1,4 @@
+import org.apache.mahout.cf.taste.common.NoSuchUserException;
 import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.eval.IRStatistics;
 import org.apache.mahout.cf.taste.eval.RecommenderBuilder;
@@ -99,13 +100,19 @@ public class TopKRecommendations {
             	//System.out.println("Switched to next item: " + item);
             	boolean found = false;
             	//System.out.println("ITEM:" +item);
-            	LongPrimitiveIterator items_user = model.getItemIDsFromUser(user).iterator();
-            	while (items_user.hasNext()){
-            		ui = items_user.next();
-            		//System.out.print(user + " " + item + " vs. " + ui + " equals " + (ui == item) + "\n");
-            		if (ui == item){
-            			found = true;
-            		}
+            	try{
+            		LongPrimitiveIterator items_user = model.getItemIDsFromUser(user).iterator();
+            		while (items_user.hasNext()){
+                		ui = items_user.next();
+                		//System.out.print(user + " " + item + " vs. " + ui + " equals " + (ui == item) + "\n");
+                		if (ui == item){
+                			found = true;
+                		}
+                	}
+            		
+            	} catch(NoSuchUserException e){
+            		found = true;
+            		//System.out.println(e);
             	}
             	
             	if(found == false){

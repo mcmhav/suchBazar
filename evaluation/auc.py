@@ -61,10 +61,10 @@ def compute(train_users, test_users, predictions, candidateItems):
             AUC += auc(predictions[user], test_users[user], numDroppedItems)
             num_users += 1
 
-    if nonRankedItems > 0:
-        print ('Warning: %s items have been ranked!' % nonRankedItems)
+    #if nonRankedItems > 0:
+        #print ('Warning: %s items have been ranked!' % nonRankedItems)
     if (float(num_users) == 0):
-        print ("Lol, num_users are 0, try again")
+        print ("Error: Zero Test Users")
         return -1
     return AUC/float(num_users)
 

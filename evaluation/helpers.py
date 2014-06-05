@@ -27,12 +27,11 @@ def prepareEvauationScoreToLaTeX(filename,us_coverage,is_coverage,auc,mapk,eStat
     GENERATED_LOCATION = 'generated'
     SAVE_FOLDER = 'evaluationScore'
     folder = ROOT_FOLDER + '/' + GENERATED_LOCATION + '/' + SAVE_FOLDER + '/'
-
+    
     if not os.path.exists(folder):
         os.makedirs(folder)
-
+        
     saveName = folder + k  + "-" + filename + ".score"
-    print(eStats)
     f = open(saveName, 'w')
     f.write('01auc:' + auc + "\n")
     f.write('02map:' + mapk + "\n")
@@ -308,8 +307,7 @@ def preprocessMAP(a, p, k):
             for j in range(min(len(p[user]), k)):
                 upred.append(p[user][j][1])
             test.append(utest)
-            pred.append(upred)
-    print(len(test), len(pred))       
+            pred.append(upred)      
     return test, pred
 
 def preprocessMeanAvgPrecision(events, predicted, k):

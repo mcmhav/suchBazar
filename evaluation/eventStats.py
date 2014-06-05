@@ -37,7 +37,7 @@ def getEventType(userId, itemId, eventTypes):
         for event in eventTypes[userId]:
             if int(itemId) == int(event[1]):
                 return int(event[2])
-    print('ehhh..')
+    
     return 0
 
 def getActualItems(actual, userId):

@@ -90,7 +90,7 @@ def evaluate(trainFile, testFile, predictionFile, k, l, beta, m):
         else:
             predictions = helpers.readRatingsFromFileSmart(predictionFile)
          
-    k = 200  
+     
            
     us_coverage, is_coverage = coverage.compute(train, predictions)
     candidateItems = helpers.getUniqueItemList(train)

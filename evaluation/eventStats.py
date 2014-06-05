@@ -7,7 +7,6 @@ import csv
 import os
 import helpers
 import sys
-from datetime import datetime
 
 import map
 
@@ -71,7 +70,7 @@ def getActualStats(actual, eventData):
             elif eventType == 3:
                 counts[2] += 1
 
-    print(counts)
+    
     return counts
 
 def itemInList(item, list):
@@ -176,13 +175,10 @@ def preprocessMeanAvgPrecision(events, predicted, k):
 
 def compute(actual, predicted, k):
 
-    startTime = datetime.now()
+   
 
     eventData = readEventTypeData()
     eventData = helpers.buildDictByIndex(eventData, 0)
-
-    actual = helpers.buildDictByIndex(actual, 0)
-    predicted = helpers.buildDictByIndex(predicted, 0)
 
     aCounts = getActualStats(actual, eventData)
     pCounts = getPredictionStats(actual, predicted, eventData, k)
@@ -199,20 +195,7 @@ def compute(actual, predicted, k):
     t, p = preprocessMeanAvgPrecision(events[3], predicted, k)
     map_p = map.mapk(t, p, k)
 
-    #test_p(actual, predicted)
-    print(datetime.now()-startTime)
-
-    print('*** RESULTS ***')
-    print('Predicted list recall (true-positives)')
-    print(pCounts)
-    print('Test list event distribution')
-    print(aCounts)
-    print('Recall at %d' %k)
-    print(recall)
-
-    print('MAP at %d clicked: %.6f' %(k, map_c))
-    print('MAP at %d wanted: %.6f' %(k, map_w))
-    print('MAP at %d purchased: %.6f' %(k, map_p))
+    
 
     return generateResultList(aCounts, pCounts, recall, map_c, map_w, map_p)
 

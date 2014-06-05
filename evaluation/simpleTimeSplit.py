@@ -27,6 +27,7 @@ def timeSplit(inputFile, test_ratio):
     train = ratings[:-num_test_ratings]
     
     input = inputFile.split('/')[-1]
+    input = "-".join(input.split('.')[:-1])
     
     helpers.writeRatingsToFile('%s%s_timetrain.txt' %(folder, input), train, )
     helpers.writeRatingsToFile('%s%s_timetest.txt' %(folder, input), test)
@@ -34,7 +35,7 @@ def timeSplit(inputFile, test_ratio):
 
 parser = argparse.ArgumentParser(description='Create time-based dataset split')
 parser.add_argument('-i', dest='i', type=str, help="Defaulting to ...")
-parser.add_argument('-s', dest='s', type=float, default=0.1, help='Defaulting to 0.1')
+parser.add_argument('-s', dest='s', type=float, default=0.2, help='Defaulting to 0.1')
 args = parser.parse_args()
 
 if not args.i:

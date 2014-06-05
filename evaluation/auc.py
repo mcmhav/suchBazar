@@ -15,9 +15,6 @@ def appendZeroRatings(train, predictions, itemIds):
     count = 0
     keyError = 0
 
-    print (len(train))
-    print (len(predictions))
-
     if len(train) == len(predictions):
         return predictions
 

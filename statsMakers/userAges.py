@@ -60,7 +60,7 @@ def doublePlotAVG(groups):
 
     ax1.bar(x, y, width)
     ax1.set_ylabel('Average lifetime in weeks')
-    ax1.set_xlabel('Event count on item')
+    ax1.set_xlabel('Event count of user')
     ax1.axis([0, len(y)+(len(y)/80), 0, max(y)+(max(y)/80)])
 
     plot(xr,yr, 'yo', xr, fit_fn(xr), '--k',color='r',markersize=0)
@@ -93,7 +93,7 @@ def plotItemTimeSpans(timeSpans):
         buckets,
         yaxis=ks,
         # title='Time between first event on item till the last',
-        ylabel='Amount of items',
+        ylabel='Amount of users',
         xlabel='Time in weeks',
         show=False,
         grid=True,

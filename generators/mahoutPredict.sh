@@ -79,7 +79,7 @@ do
     TRAINFILE="${Array[0]}";
     TESTFILE="${Array[1]}";
     OUTFILE="$PREDICTIONS/${Array[0]}-$KVAL-mahout-$RECOMMENDER.predictions"
-    if [ ! -f "$PREDFILE" ] || [ $CLEAN -eq 1 ]; then
+    if [ ! -f "$OUTFILE" ] || [ $CLEAN -eq 1 ]; then
       if [ $QUIET -eq 1 ]; then
         java TopKRecommendations $RATINGS $TRAINFILE $RECOMMENDER  $OUTFILE $TESTFILE >/dev/null 2>/dev/null &
       else

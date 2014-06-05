@@ -190,12 +190,12 @@ evaluate() {
     arr=("LeastSquareSLIM" "UserAttributeKNN" "UserKNN" "ItemKNN")
     if [[ " ${arr[@]} " =~ " ${RECOMMENDER} " ]] && [ "$KVAL" != "" ]; then
       for K in "$KVAL"; do
-        PRED_FILE="$GENERATED/predictions/${TRAIN}-$KVAL-$RECOMMENDERSYS-$RECOMMENDER.predictions";
+        PRED_FILE="$GENERATED/predictions/${TRAIN}-$KVAL-$SPLIT-$RECOMMENDERSYS-$RECOMMENDER.predictions";
         OPT+=(--prediction-file $PRED_FILE);
         bar OPT[@] $RECOMMENDERSYS
       done
     else
-      PRED_FILE="$GENERATED/predictions/${TRAIN}--$RECOMMENDERSYS-$RECOMMENDER.predictions";
+      PRED_FILE="$GENERATED/predictions/${TRAIN}--$SPLIT-$RECOMMENDERSYS-$RECOMMENDER.predictions";
       OPT+=(--prediction-file $PRED_FILE);
       bar OPT[@] $RECOMMENDERSYS
     fi
@@ -252,7 +252,7 @@ foo() {
   RECTYPE="$3"
   K="$4"
 
-  PREDFILE="$GENERATED/predictions/${TRAIN}-$K-$RECTYPE-$RECOMMENDER.predictions"
+  PREDFILE="$GENERATED/predictions/${TRAIN}-$K-$SPLIT-$RECTYPE-$RECOMMENDER.predictions"
   OPTS+=" --prediction-file $PREDFILE";
 
   if [ ! -f "$PREDFILE" ] || [ "$CLEAN" == "-c" ]; then
@@ -277,7 +277,7 @@ mahoutPredict() {
     IFS=":" read -a Array <<< $ttt;
     TRAINFILE="${Array[0]}";
     TESTFILE="${Array[1]}";
-    OUTFILE="$GENERATED/predictions/${Array[0]}--mahout-$RECOMMENDER.predictions"
+    OUTFILE="$GENERATED/predictions/${Array[0]}--$SPLIT-mahout-$RECOMMENDER.predictions"
     if [ ! -f "$OUTFILE" ] || [ "$CLEAN" == "-c" ]; then
       if [ "$QUIET" == "-q" ]; then
         java TopKRecommendations "$GENERATED/splits" $TRAINFILE $RECOMMENDER $OUTFILE $TESTFILE >/dev/null 2>/dev/null &

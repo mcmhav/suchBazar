@@ -141,42 +141,51 @@ main() {
 
   # Splitting into training and test sets
   trainTestTuples=""
-  for FILE in "$GENERATED"/ratings/*; do
-    FILENAME=$(basename $FILE);
-    FILENAME_NOEXT="${FILENAME%%.*}";
-    if [ -n "$SPLIT" ]; then
-        if [ "$SPLIT" == "random" ]; then
-            split "$FILE" "$GENERATED/splits" "$FILENAME" "random";
-            TESTFILE="${FILENAME_NOEXT}-1.txt";
-            TRAINFILE="${FILENAME_NOEXT}-9.txt";
-            trainTestTuples+="${TRAINFILE}:${TESTFILE} "
-        elif [ "$SPLIT" == "time" ]; then
-            python2.7 $ROOT/evaluation/simpleTimeSplit.py -i $FILE;
-            TESTFILE="${FILENAME_NOEXT}_timetest.txt";
-            TRAINFILE="${FILENAME_NOEXT}_timetrain.txt";
-            trainTestTuples+="${TRAINFILE}:${TESTFILE} "
-        elif [ "$SPLIT" == "cold" ]; then
-          # Cold start split
-          trainTestTuples="blend_itemtrain1.txt:blend_itemtest1.txt "
-          trainTestTuples+="blend_itemtrain2.txt:blend_itemtest2.txt "
-          trainTestTuples+="blend_itemtrain3.txt:blend_itemtest3.txt "
-          trainTestTuples+="blend_systemtrain1.txt:blend_systemtest.txt "
-          trainTestTuples+="blend_systemtrain2.txt:blend_systemtest.txt "
-          trainTestTuples+="blend_systemtrain3.txt:blend_systemtest.txt "
-          trainTestTuples+="blend_usertrain1.txt:blend_usertest1.txt "
-          trainTestTuples+="blend_usertrain2.txt:blend_usertest2.txt "
-          trainTestTuples+="blend_usertrain3.txt:blend_usertest3.txt "
-          OPT=(--coldstart-split $GENERATED/ratings/blend.txt);
-          OPT=(--feature-file $GENERATED/data/product_features.txt);
-          python2.7 $ROOT/evaluation/evaluation.py $OPT[@] -t -fb '1,1,1,1,1';
-        fi
-    else
-      echo "No split method specified with -s, thus I default to using those found in $GENERATED/ratings"
-      TESTFILE="${FILENAME_NOEXT}-1.txt";
-      TRAINFILE="${FILENAME_NOEXT}-9.txt";
-      trainTestTuples+="${TRAINFILE}:${TESTFILE} "
+  if [ -z "$SPLIT" ]; then
+    echo "You need to specify split with -s <type of split>. Available splits are: 'cold', 'time' and 'random'. Aborting.";
+    exit 1;
+  elif [ "$SPLIT" == "cold" ]; then
+    # Where to find blend file.
+    BLEND_FILE="$GENERATED/ratings/blend.txt";
+
+    # Check that necessary files are OK.
+    if [ ! -f "$FEATURE_FILE" ]; then
+      echo "Need featurefile defined with '-f <featurefile>' in order to do cold start splits. Aborting."; exit 1;
     fi
-  done
+    if [ ! -f "$BLEND_FILE" ]; then
+      echo "Need blend file ($BLEND_FILE) in order to do cold start splits. Aborting."; exit 1;
+    fi
+
+    # Cold start split
+    trainTestTuples="blend_itemtrain1.txt:blend_itemtest1.txt "
+    trainTestTuples+="blend_itemtrain2.txt:blend_itemtest2.txt "
+    trainTestTuples+="blend_itemtrain3.txt:blend_itemtest3.txt "
+    trainTestTuples+="blend_systemtrain1.txt:blend_systemtest.txt "
+    trainTestTuples+="blend_systemtrain2.txt:blend_systemtest.txt "
+    trainTestTuples+="blend_systemtrain3.txt:blend_systemtest.txt "
+    trainTestTuples+="blend_usertrain1.txt:blend_usertest1.txt "
+    trainTestTuples+="blend_usertrain2.txt:blend_usertest2.txt "
+    trainTestTuples+="blend_usertrain3.txt:blend_usertest3.txt "
+    OPT=(--coldstart-split $BLEND_FILE);
+    OPT=(--feature-file $FEATURE_FILE);
+    python2.7 $ROOT/evaluation/evaluation.py $OPT[@] -t -fb '1,1,1,1,1';
+  else
+    for FILE in "$GENERATED"/ratings/*; do
+      FILENAME=$(basename $FILE);
+      FILENAME_NOEXT="${FILENAME%%.*}";
+      if [ "$SPLIT" == "random" ]; then
+          split "$FILE" "$GENERATED/splits" "$FILENAME" "random";
+          TESTFILE="${FILENAME_NOEXT}-1.txt";
+          TRAINFILE="${FILENAME_NOEXT}-9.txt";
+          trainTestTuples+="${TRAINFILE}:${TESTFILE} "
+      elif [ "$SPLIT" == "time" ]; then
+          python2.7 $ROOT/evaluation/simpleTimeSplit.py -i $FILE;
+          TESTFILE="${FILENAME_NOEXT}_timetest.txt";
+          TRAINFILE="${FILENAME_NOEXT}_timetrain.txt";
+          trainTestTuples+="${TRAINFILE}:${TESTFILE} "
+      fi
+    done
+  fi
 
   # Recommending with item_recommendation (MyMediaLite)
   if [ "$ITEMRECOMMENDERS" != "" ]; then

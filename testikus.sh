@@ -75,35 +75,14 @@ GENERATED="$ROOT/generated"
 # Some parameters changable in the opts.
 INFILE="../datasets/v3/sobazar_events_prod_cleaned_formatted.tab"
 FEATURE_FILE="$GENERATED/itemFeatures.txt"
-CLEAN=""
+CLEAN=0
 SPLIT=""
 BINARY=0
-
-# Available Item Recommenders:
-# 'BPRMF' 'ItemAttributeKNN' 'ItemKNN' 'MostPopular' 'Random'
-# 'UserAttributeKNN' 'UserKNN' 'WRMF' 'Zero' 'MultiCoreBPRMF'
-# 'SoftMarginRankingMF' 'WeightedBPRMF' 'BPRLinear' 'MostPopularByAttributes'
-# 'BPRSLIM' 'LeastSquareSLIM'
-ITEMRECOMMENDERS=""
-
-# Available Rank Recommenders:
-# 'BiPolarSlopeOne' 'GlobalAverage' 'ItemAttributeKNN' 'ItemAverage' 'ItemKNN'
-# 'MatrixFactorization' 'SlopeOne' 'UserAttributeKNN' 'UserAverage'
-# 'UserItemBaseline' 'UserKNN' 'TimeAwareBaseline'
-# 'TimeAwareBaselineWithFrequencies' 'CoClustering' 'Random' 'Constant'
-# 'LatentFeatureLogLinearModel' 'BiasedMatrixFactorization' 'SVDPlusPlus'
-# 'SigmoidSVDPlusPlus' 'SocialMF' 'SigmoidItemAsymmetricFactorModel'
-# 'SigmoidUserAsymmetricFactorModel' 'SigmoidCombinedAsymmetricFactorModel'
-# 'NaiveBayes' 'ExternalRatingPredictor' 'GSVDPlusPlus'
-RANKRECOMMENDERS=""
-
-#Available Mahout recommenders
-# 'svd', 'itembased', 'userbased', itemuseraverage', 'svd', 'loglikelihood',
-# 'itemaverage'
-MAHOUTRECOMMENDERS=""
-
-QUIET=""
+QUIET=0
 KRANGE=""
+ITEMRECOMMENDERS=""
+RANKRECOMMENDERS=""
+MAHOUTRECOMMENDERS=""
 
 while getopts "i:p:s:f:r:m:k:bcqh" o; do
   case "${o}" in
@@ -111,7 +90,7 @@ while getopts "i:p:s:f:r:m:k:bcqh" o; do
       INFILE="${OPTARG}"
       ;;
     c)
-      CLEAN="-c"
+      CLEAN=1
       ;;
     p)
       ITEMRECOMMENDERS="${OPTARG}"
@@ -129,7 +108,7 @@ while getopts "i:p:s:f:r:m:k:bcqh" o; do
       BINARY=1
       ;;
     q)
-      QUIET="-q"
+      QUIET=1
       ;;
     k)
       KRANGE="${OPTARG}"
@@ -145,12 +124,11 @@ while getopts "i:p:s:f:r:m:k:bcqh" o; do
       ;;
   esac
 done
-
-OPTS="-i $INFILE $CLEAN"
-
 main() {
   # Generate ratings (blending and timestamps enabled by default)
-  /bin/bash $ROOT/generators/generate_implicit.sh -t -b $OPTS;
+  C=""
+  if [ $CLEAN -eq 1 ]; then C="-q"; fi
+  /bin/bash $ROOT/generators/generate_implicit.sh -t -b -i $INFILE $C;
 
   # Check if we want binary ratings instead, making all ratings 1.
   if [ $BINARY -eq 1 ]; then
@@ -188,10 +166,12 @@ main() {
           trainTestTuples+="blend_usertrain1.txt:blend_usertest1.txt "
           trainTestTuples+="blend_usertrain2.txt:blend_usertest2.txt "
           trainTestTuples+="blend_usertrain3.txt:blend_usertest3.txt "
-          python2.7 $ROOT/evaluation/evaluation.py --coldstart-split $GENERATED/ratings/blend.txt --feature-file $ROOT/data/product_features.txt -t -fb '1,1,1,1,1';
+          OPT=(--coldstart-split $GENERATED/ratings/blend.txt);
+          OPT=(--feature-file $GENERATED/data/product_features.txt);
+          python2.7 $ROOT/evaluation/evaluation.py $OPT[@] -t -fb '1,1,1,1,1';
         fi
     else
-      echo "Getting tuples, no splitting"
+      echo "No split method specified with -s, thus I default to using those found in $GENERATED/ratings"
       TESTFILE="${FILENAME_NOEXT}-1.txt";
       TRAINFILE="${FILENAME_NOEXT}-9.txt";
       trainTestTuples+="${TRAINFILE}:${TESTFILE} "
@@ -288,7 +268,6 @@ medialitePredict() {
   KVAL="${3}";
 
   echo "Recommending with $RECTYPE using $RECOMMENDER"
-
   for ttt in $trainTestTuples; do
     # Split 'train.txt:test.txt' on ':', and insert to Array.
     IFS=":" read -a Array <<< $ttt;
@@ -322,8 +301,11 @@ execute_medialite() {
   PREDFILE="$GENERATED/predictions/${TRAIN}-$K-$SPLIT-$RECTYPE-$RECOMMENDER.predictions"
   OPTS+=" --prediction-file $PREDFILE";
 
-  if [ ! -f "$PREDFILE" ] || [ "$CLEAN" == "-c" ]; then
-    if [ "$QUIET" == "-q" ]; then
+  # Check that the binary exists (is installed)
+  hash $RECTYPE 2>/dev/null || { echo >&2 "You need medialite installed to run ${RECTYPE}. Aborting."; exit 1; }
+
+  if [ ! -f "$PREDFILE" ] || [ $CLEAN -eq 1 ]; then
+    if [ $QUIET -eq 1 ]; then
       $RECTYPE ${OPTS} >/dev/null &
     else
       $RECTYPE ${OPTS} &
@@ -345,8 +327,8 @@ mahoutPredict() {
     TRAINFILE="${Array[0]}";
     TESTFILE="${Array[1]}";
     OUTFILE="$GENERATED/predictions/${Array[0]}--$SPLIT-mahout-$RECOMMENDER.predictions"
-    if [ ! -f "$OUTFILE" ] || [ "$CLEAN" == "-c" ]; then
-      if [ "$QUIET" == "-q" ]; then
+    if [ ! -f "$OUTFILE" ] || [ $CLEAN -eq 1 ]; then
+      if [ $QUIET -eq 1 ]; then
         java TopKRecommendations "$GENERATED/splits" $TRAINFILE $RECOMMENDER $OUTFILE $TESTFILE >/dev/null 2>/dev/null &
       else
         java TopKRecommendations "$GENERATED/splits" $TRAINFILE $RECOMMENDER $OUTFILE $TESTFILE &

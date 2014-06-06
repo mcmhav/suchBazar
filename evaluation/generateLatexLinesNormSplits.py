@@ -94,46 +94,18 @@ def makeLaTeXTableColdstart(preLatexObj):
 
 def makeLineFromDict(dictL):
     line = ''
-    ignoreList = {'beta', 'k', 'l'}
+    ignoreList = {'beta', 'k', 'l','16is_coverage','15us_coverage'}
     dict_sorted = sorted(dictL.items(), key=operator.itemgetter(0))
     for k in dict_sorted:
         for s in k[1]:
             if k[0] not in ignoreList:
-                line += "\t&\t" + ('%.4f' % (float(s.rstrip())))
+                tmp = str(('%.6f' % (float(s))))
+                tmp = tmp.rstrip('0').rstrip('.') if '.' in tmp else tmp
+                line += "\t&\t" + tmp
     return line
 
 
-def getIDFromFileName(filename):
-    '''
-    Get the id of the score from the filename
-    '''
-    ids = []
-    fs = filename.split('-')
-    if len(fs) == 6:
-        headNumber = helpers.determineLatexHeaderNumber(filename)
-        ids.append(headNumber)
-        coldName = getColdstartNameFromFileName(filename)
-        ids.append(coldName)
-        recommender = getRecommenderAlg(filename)
-        recSys = fs[4]
-        ids.append(recSys + '-' + recommender)
-        ids.append(recSys)
-    else:
-        ids.append('old format')
-        ids.append('old format')
-        ids.append('old format')
-        # ids.append('old format')
-    # check if on the freshest form
-    #     ids.append(getRecommender(fs) + '-' + getRecommenderAlg(filename))
-    #     ids.append(getRatingFile(fs))
-    #     ids.append(getSplit(filename))
-    # else:
-    #     ids.append("old format")
-    #     ids.append("old format")
-    #     ids.append("old format")
-    #     ids.append("old format")
 
-    return ids
 
 def getRecommenderSystem(filename):
     '''
@@ -151,16 +123,16 @@ def getRecommenderidNames():
         'mahout':'mahout',
     }
 
-def getRecommender(filename):
-    '''
-    Super dependent on the predictionfile name structure, not perfect
-    '''
-    recNames = {'item_recommendation', 'rating_prediction', 'mahout'}
+# def getRecommender(filename):
+#     '''
+#     Super dependent on the predictionfile name structure, not perfect
+#     '''
+#     recNames = {'item_recommendation', 'rating_prediction', 'mahout'}
 
-    tmp = filename.split('.')
-    testur = tmp[2].split('-')[-1]
+#     tmp = filename.split('.')
+#     testur = tmp[2].split('-')[-1]
 
-    return testur
+#     return testur
 
 def getColdstartNameFromFileName(filename):
     '''
@@ -192,16 +164,17 @@ def readFromScoreFolder(path):
     preLatexObj = {}
 
     for f in files:
-        if isColdSplit(f):
-            ids = getIDFromFileName(f)
-            # scoreId,scoreName,recommender,recSys
-            if ids[2] not in preColdLatexObj:
-                preColdLatexObj[ids[2]] = {}
-            if ids[1] not in preColdLatexObj[ids[2]]:
-                preColdLatexObj[ids[2]][ids[1]] = {}
-            preColdLatexObj[ids[2]][ids[1]][ids[0]] = readFromScoreFile(path,f)
-        else:
-            ids = getIdsFromFileName(f)
+        # if isColdSplit(f):
+        #     ids = getIDFromFileName(f)
+        #     # scoreId,scoreName,recommender,recSys
+        #     if ids[2] not in preColdLatexObj:
+        #         preColdLatexObj[ids[2]] = {}
+        #     if ids[1] not in preColdLatexObj[ids[2]]:
+        #         preColdLatexObj[ids[2]][ids[1]] = {}
+        #     preColdLatexObj[ids[2]][ids[1]][ids[0]] = readFromScoreFile(path,f)
+        # else:
+        ids = getIdsFromFileName(f)
+        if (ids[0] != 'old format'):
             if ids[0] not in preLatexObj:
                 preLatexObj[ids[0]] = {}
             if ids[2] not in preLatexObj[ids[0]]:
@@ -250,15 +223,42 @@ def getIdsFromFileName(f):
         ids.append(getRecommender(fs) + '-' + getRecommenderAlg(f))
         ids.append(getRatingFile(fs))
         ids.append(getSplit(fs))
+    elif len(fs) == 6:
+        ids = getIDFromFileName(f)
     else:
         ids.append("old format")
         ids.append("old format")
         ids.append("old format")
         ids.append("old format")
+
+    print (ids)
+    return ids
+
+def getIDFromFileName(filename):
+    '''
+    Get the id of the score from the filename
+    '''
+    ids = []
+    fs = filename.split('-')
+    if len(fs) == 6:
+        recommender = getRecommenderAlg(filename)
+        recSys = getRecommenderSystem(fs[4])
+        ids.append(recSys + '-' + recommender)
+
+        headNumber = helpers.determineLatexHeaderNumber(filename)
+        coldName = getColdstartNameFromFileName(filename)
+        ids.append(coldName  + '-' + str(headNumber))
+
+        ids.append('cold')
+        # ids.append(recSys)
+    else:
+        ids.append('old format')
+        ids.append('old format')
+        ids.append('old format')
     return ids
 
 def getRecommender(fs):
-    recommender = fs[5]
+    recommender = getRecommenderSystem(fs[5])
     if fs[3] != '':
         recommender += '-' + fs[3]
     return recommender

@@ -16,11 +16,11 @@ def main(sessDB='sessionsNew'):
 
     xaxis = groupEventCountsOnCount(counts,cap)
 
-    plotRatingCounts(xaxis,'ratingsPerUser',ylabel='Amount of Users',xlabel='Amount of implicit ratings')
+    plotRatingCounts(xaxis,'ratingsPerUser',ylabel='Amount of Users',xlabel='Amount of item interactions')
 
     xaxis = groupEventCountsOnCountCum(counts,len(xaxis))
     yticks = [helpers.makeTicks(yMax=max(xaxis),steps=10),helpers.makeTicks(yMax=100,steps=10)]
-    plotRatingCounts(xaxis,'ratingsPerUsercum',ylabel='Percentage of Users',xlabel='Amount of implicit ratings',yticks=yticks)
+    plotRatingCounts(xaxis,'ratingsPerUsercum',ylabel='Percentage of Users',xlabel='Amount of item interactions',yticks=yticks)
 
 def getCounts(sessDB):
     ueic = getUserEventOnItemCounts(sessDB)

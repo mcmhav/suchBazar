@@ -7,7 +7,66 @@ set -e
 trap 'echo interrupted; kill $(jobs -p); exit' INT
 
 # Usage function, describing the parameters to the user.
-usage() { echo "Usage: $0 -i sobazar_input.tab"; exit 1; }
+usage() { 
+cat <<EOL
+Usage: $0 [options]
+
+This program can do the following depending on the options provided:
+  - Generate a set of implicit ratings based on an event log.
+  - Recommend based on methods provided either by Mahout or MyMediaLite.
+  - Evaluate the results yielding MAP@20, AUC and ROC.
+  - Write the result to a latex-table, for easy exporting to a report.
+
+OPTIONS:
+  -i <input file>         The absolute path to the event log file.
+  -f <product features>   The absolute path to file containing all product
+                          features obtained from the product DB.
+  -r <rank recommenders>  Which rank recommenders to user with MyMediaLite.
+  -p <item recommenders>  Which item recommenders to use with MyMediaLite.
+  -m <mahout algorithms>  Which recommender algorithms to use with mahout.
+  -s <split type>         How to split test and training. Options: 'cold',
+                          'time' or 'random'.
+  -k <k values>           When using ItemKNN, control which k-values to use, as
+                          a string of integers. E.g. '10 20 50'
+  -b                      Convert all ratings to binary (all ratings to 1)
+  -c                      Clean existing rating, prediction and scoring files
+                          before running.
+  -q                      Send stdout and stderr to /dev/null (except result)
+  -h                      Display this help-information.
+
+RANK RECOMMENDERS:
+  The following algorithms are available to use with the rank recommender
+  provided by MyMediaLite:
+    BiPolarSlopeOne, GlobalAverage, ItemAttributeKNN, ItemAverage, ItemKNN
+    MatrixFactorization, SlopeOne, UserAttributeKNN, UserAverage
+    UserItemBaseline, UserKNN, TimeAwareBaseline
+    TimeAwareBaselineWithFrequencies, CoClustering, Random, Constant
+    LatentFeatureLogLinearModel, BiasedMatrixFactorization, SVDPlusPlus
+    SigmoidSVDPlusPlus, SocialMF, SigmoidItemAsymmetricFactorModel
+    SigmoidUserAsymmetricFactorModel, SigmoidCombinedAsymmetricFactorModel
+    NaiveBayes, ExternalRatingPredictor, GSVDPlusPlus
+
+ITEM RECOMMENDERS:
+  The following algorithms are available to use with the item recommender
+  provided by MyMediaLite:
+    BPRMF, ItemAttributeKNN, ItemKNN, MostPopular, Random 
+    UserAttributeKNN, UserKNN, WRMF, Zero, MultiCoreBPRMF 
+    SoftMarginRankingMF, WeightedBPRMF, BPRLinear, MostPopularByAttributes 
+    BPRSLIM, LeastSquareSLIM
+
+MAHOUT RECOMMENDERS:
+  The following methods are available when using Mahout:
+    svd, itembased, userbased, itemuseraverage, svd, loglikelihood, itemaverage
+    
+Examples:
+  Split randomly and calculate the itemaverage with mahout:
+  $0 -i ../somefile.tab -s random -m 'itemaverage'
+
+  Split on time and use itemKNN with various K-values to do recommendations:
+  $0 -i ../somefile.tab -s time -p 'ItemKNN' -k '10 20 50'
+EOL
+exit 1; 
+}
 
 # Save the current path
 ROOT=$( cd "$( dirname "$0" )" && pwd );
@@ -46,7 +105,7 @@ MAHOUTRECOMMENDERS=""
 QUIET=""
 KRANGE=""
 
-while getopts "i:cp:s:f:r:m:qbk:" o; do
+while getopts "i:p:s:f:r:m:k:bcqh" o; do
   case "${o}" in
     i)
       INFILE="${OPTARG}"
@@ -77,6 +136,9 @@ while getopts "i:cp:s:f:r:m:qbk:" o; do
       ;;
     f)
       FEATUREFILE="${OPTARG}"
+      ;;
+    h)
+      usage
       ;;
     *)
       usage

@@ -167,8 +167,8 @@ main() {
     trainTestTuples+="blend_usertrain2.txt:blend_usertest2.txt "
     trainTestTuples+="blend_usertrain3.txt:blend_usertest3.txt "
     OPT=(--coldstart-split $BLEND_FILE);
-    OPT=(--feature-file $FEATURE_FILE);
-    python2.7 $ROOT/evaluation/evaluation.py $OPT[@] -t -fb '1,1,1,1,1';
+    OPT+=(--feature-file $FEATURE_FILE);
+    python2.7 $ROOT/evaluation/evaluation.py OPT[@] -t -fb '1,1,1,1,1';
   else
     for FILE in "$GENERATED"/ratings/*; do
       FILENAME=$(basename $FILE);

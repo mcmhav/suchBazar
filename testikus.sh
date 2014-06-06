@@ -127,7 +127,7 @@ done
 main() {
   # Generate ratings (blending and timestamps enabled by default)
   C=""
-  if [ $CLEAN -eq 1 ]; then C="-q"; fi
+  if [ $CLEAN -eq 1 ]; then C="-c"; fi
   /bin/bash $ROOT/generators/generate_implicit.sh -t -b -i $INFILE $C;
 
   # Check if we want binary ratings instead, making all ratings 1.

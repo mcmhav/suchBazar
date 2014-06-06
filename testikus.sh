@@ -175,7 +175,7 @@ main() {
     trainTestTuples+="blend_usertrain3.txt:blend_usertest3.txt ";
     OPT=(--coldstart-split $BLEND_FILE);
     OPT+=(--feature-file $FEATURE_FILE);
-    python2.7 $ROOT/evaluation/evaluation.py "${OPT[@]}" -t -fb '1,1,1,1,1';
+    python2.7 $ROOT/evaluation/evaluation.py "${OPT[@]}" -fb '0,0,0,0,0';
   else
     for FILE in "$GENERATED"/ratings/*; do
       FILENAME=$(basename $FILE);
@@ -196,17 +196,17 @@ main() {
 
   # Recommending with item_recommendation (MyMediaLite)
   if [ "$ITEMRECOMMENDERS" != "" ]; then
-    for ir in $ITEMRECOMMENDERS; do
-      medialitePredict "item_recommendation" $ir $KRANGE;
-      evaluate "item_recommendation" $ir;
+    for rectype in $ITEMRECOMMENDERS; do
+      medialitePredict "item_recommendation" $rectype $KRANGE;
+      evaluate "item_recommendation" $rectype;
     done
   fi
 
   # Recommending with rating predictions (MyMediaLite)
   if [ "$RANKRECOMMENDERS" != "" ]; then
-    for ir in $RANKRECOMMENDERS; do
-      medialitePredict "rating_prediction" $ir $KRANGE;
-      evaluate "rating_prediction" "$ir";
+    for rectype in $RANKRECOMMENDERS; do
+      medialitePredict "rating_prediction" $rectype $KRANGE;
+      evaluate "rating_prediction" "$rectype";
     done
   fi
 
@@ -240,11 +240,21 @@ evaluate() {
   for ttt in $trainTestTuples; do
 
     # Split 'train.txt:test.txt' on ':', and insert to Array.
-    IFS=":" read -a Array <<< $ttt;
+    IFS=":" Array=($ttt); unset IFS;
     TRAIN="${Array[0]}";
     TEST="${Array[1]}";
     TRAIN_FILE="$GENERATED/splits/${TRAIN}";
     TEST_FILE="$GENERATED/splits/${TEST}";
+    if [ ! -f "$TRAIN_FILE" ]; then
+      echo "Did not find training file: $TRAIN_FILE. Please try again. Aborting.";
+      exit 1;
+    fi
+    if [ ! -f "$TEST_FILE" ]; then
+      echo "Did not find test file: $TEST_FILE. Please try again. Aborting.";
+      exit 1;
+    fi
+    exit 1;
+
     OPT=(--training-file $TRAIN_FILE);
     OPT+=(--feature-file $FEATURE_FILE);
     OPT+=(--test-file $TEST_FILE);
@@ -285,11 +295,21 @@ medialitePredict() {
   echo "Recommending with $RECTYPE using $RECOMMENDER";
   for ttt in $trainTestTuples; do
     # Split 'train.txt:test.txt' on ':', and insert to Array.
-    IFS=":" read -a Array <<< $ttt;
-    TRAIN="${Array[0]}";
-    TEST="${Array[1]}";
-    OPT=(--training-file "$ROOT/generated/splits/${TRAIN}");
-    OPT+=(--test-file "$ROOT/generated/splits/${TEST}");
+    IFS=":" Array=($ttt); unset IFS;
+    TRAIN="$GENERATED/splits/${Array[0]}";
+    TEST="$GENERATED/splits/${Array[1]}";
+    if [ ! -f "$TRAIN" ]; then
+      echo "Did not find training file: $TRAIN. Please try again. Aborting.";
+      exit 1;
+    fi
+    if [ ! -f "$TEST" ]; then
+      echo "Did not find test file: $TEST. Please try again. Aborting.";
+      exit 1;
+    fi
+
+    # Arguments to recommender program.
+    OPT=(--training-file "${TRAIN}");
+    OPT+=(--test-file "${TEST}");
     OPT+=(--recommender $RECOMMENDER);
 
     # Do item predictions
@@ -338,7 +358,7 @@ mahoutPredict() {
   javac TopKRecommendations.java
   for ttt in $trainTestTuples; do
     # Split 'train.txt:test.txt' on ':', and insert to Array.
-    IFS=":" read -a Array <<< $ttt;
+    IFS=":" Array=($ttt); unset IFS;
     TRAINFILE="${Array[0]}";
     TESTFILE="${Array[1]}";
     OUTFILE="$GENERATED/predictions/${Array[0]}--$SPLIT-mahout-$RECOMMENDER.predictions"

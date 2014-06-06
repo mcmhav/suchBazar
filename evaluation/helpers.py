@@ -32,9 +32,11 @@ def prepareEvauationScoreToLaTeX(filename,us_coverage,is_coverage,auc,mapk,eStat
     if not os.path.exists(folder):
         os.makedirs(folder)
 
-    # if os.path.isfile(saveName):
-    #     old = readFromScoreFile(folder,saveName)
-    #     sys.exit()
+    if os.path.isfile(folder + saveName):
+        old = readFromScoreFile(folder,saveName)
+        print (old)
+        print (eStats)
+        sys.exit()
 
     f = open(folder + saveName, 'w')
     f.write('01auc:' + auc + "\n")

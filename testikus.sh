@@ -32,6 +32,7 @@ OPTIONS:
   -c                      Clean existing rating, prediction and scoring files
                           before running.
   -q                      Send stdout and stderr to /dev/null (except result)
+  -t                      Split coldstart on time
   -h                      Display this help-information.
 
 RANK RECOMMENDERS:
@@ -56,7 +57,7 @@ ITEM RECOMMENDERS:
 
 MAHOUT RECOMMENDERS:
   The following methods are available when using Mahout:
-    svd, itembased, userbased, itemuseraverage, svd, loglikelihood, itemaverage
+    svd, itembased, userbased, itemuseraverage, loglikelihood, itemaverage
 
 Examples:
   Split randomly and calculate the itemaverage with mahout:
@@ -83,8 +84,9 @@ KRANGE=""
 ITEMRECOMMENDERS=""
 RANKRECOMMENDERS=""
 MAHOUTRECOMMENDERS=""
+COLDTIME=""
 
-while getopts "i:p:s:f:r:m:k:bcqh" o; do
+while getopts "i:p:s:f:r:m:k:bcqht:" o; do
   case "${o}" in
     i)
       INFILE="${OPTARG}"
@@ -115,6 +117,9 @@ while getopts "i:p:s:f:r:m:k:bcqh" o; do
       ;;
     f)
       FEATUREFILE="${OPTARG}"
+      ;;
+    t)
+      COLDTIME="-t"
       ;;
     h)
       usage
@@ -175,7 +180,7 @@ main() {
     trainTestTuples+="blend_usertrain3.txt:blend_usertest3.txt ";
     OPT=(--coldstart-split $BLEND_FILE);
     OPT+=(--feature-file $FEATURE_FILE);
-    python2.7 $ROOT/evaluation/evaluation.py "${OPT[@]}" -t -fb '1,1,1,1,1';
+    python2.7 $ROOT/evaluation/evaluation.py "${OPT[@]}" "$COLDTIME" -fb '0,0,0,0,1';
   else
     for FILE in "$GENERATED"/ratings/*; do
       FILENAME=$(basename $FILE);

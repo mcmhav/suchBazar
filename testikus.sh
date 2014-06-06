@@ -127,7 +127,7 @@ done
 
 main() {
   # Check that the infile exists.
-  if [ ! -f $INFILE ]; then
+  if [ ! -f $INFILE ] && [ "$INFILE" != "mongo" ]; then
     echo "Did not find $INFILE. Please specify event log with '-i eventlog.tab'. Aborting.";
     exit 1;
   fi

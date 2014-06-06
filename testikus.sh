@@ -133,16 +133,16 @@ main() {
   fi
 
   # Generate ratings (blending and timestamps enabled by default)
-  C=""
+  C="";
   if [ $CLEAN -eq 1 ]; then C="-c"; fi
   /bin/bash $ROOT/generators/generate_implicit.sh -t -b -i $INFILE $C;
 
   # Check if we want binary ratings instead, making all ratings 1.
   if [ $BINARY -eq 1 ]; then
     for FILE in "$GENERATED"/ratings/*; do
-      FILENAME=$(basename "$FILE")
-      cat "$FILE" | awk '{$3=1;print}' FS='\t' OFS='\t' > /tmp/"$FILENAME"
-      mv /tmp/"$FILENAME" $FILE
+      FILENAME=$(basename "$FILE");
+      cat "$FILE" | awk '{$3=1;print}' FS='\t' OFS='\t' > /tmp/"$FILENAME";
+      mv /tmp/"$FILENAME" $FILE;
     done
   fi
 
@@ -164,15 +164,15 @@ main() {
     fi
 
     # Cold start split
-    trainTestTuples="blend_itemtrain1.txt:blend_itemtest1.txt "
-    trainTestTuples+="blend_itemtrain2.txt:blend_itemtest2.txt "
-    trainTestTuples+="blend_itemtrain3.txt:blend_itemtest3.txt "
-    trainTestTuples+="blend_systemtrain1.txt:blend_systemtest.txt "
-    trainTestTuples+="blend_systemtrain2.txt:blend_systemtest.txt "
-    trainTestTuples+="blend_systemtrain3.txt:blend_systemtest.txt "
-    trainTestTuples+="blend_usertrain1.txt:blend_usertest1.txt "
-    trainTestTuples+="blend_usertrain2.txt:blend_usertest2.txt "
-    trainTestTuples+="blend_usertrain3.txt:blend_usertest3.txt "
+    trainTestTuples="blend_itemtrain1.txt:blend_itemtest1.txt ";
+    trainTestTuples+="blend_itemtrain2.txt:blend_itemtest2.txt ";
+    trainTestTuples+="blend_itemtrain3.txt:blend_itemtest3.txt ";
+    trainTestTuples+="blend_systemtrain1.txt:blend_systemtest.txt ";
+    trainTestTuples+="blend_systemtrain2.txt:blend_systemtest.txt ";
+    trainTestTuples+="blend_systemtrain3.txt:blend_systemtest.txt ";
+    trainTestTuples+="blend_usertrain1.txt:blend_usertest1.txt ";
+    trainTestTuples+="blend_usertrain2.txt:blend_usertest2.txt ";
+    trainTestTuples+="blend_usertrain3.txt:blend_usertest3.txt ";
     OPT=(--coldstart-split $BLEND_FILE);
     OPT+=(--feature-file $FEATURE_FILE);
     python2.7 $ROOT/evaluation/evaluation.py "${OPT[@]}" -t -fb '1,1,1,1,1';
@@ -184,12 +184,12 @@ main() {
           split "$FILE" "$GENERATED/splits" "$FILENAME" "random";
           TESTFILE="${FILENAME_NOEXT}-1.txt";
           TRAINFILE="${FILENAME_NOEXT}-9.txt";
-          trainTestTuples+="${TRAINFILE}:${TESTFILE} "
+          trainTestTuples+="${TRAINFILE}:${TESTFILE} ";
       elif [ "$SPLIT" == "time" ]; then
           python2.7 $ROOT/evaluation/simpleTimeSplit.py -i $FILE;
           TESTFILE="${FILENAME_NOEXT}_timetest.txt";
           TRAINFILE="${FILENAME_NOEXT}_timetrain.txt";
-          trainTestTuples+="${TRAINFILE}:${TESTFILE} "
+          trainTestTuples+="${TRAINFILE}:${TESTFILE} ";
       fi
     done
   fi
@@ -197,16 +197,16 @@ main() {
   # Recommending with item_recommendation (MyMediaLite)
   if [ "$ITEMRECOMMENDERS" != "" ]; then
     for ir in $ITEMRECOMMENDERS; do
-      medialitePredict "item_recommendation" $ir $KRANGE
-      evaluate "item_recommendation" $ir
+      medialitePredict "item_recommendation" $ir $KRANGE;
+      evaluate "item_recommendation" $ir;
     done
   fi
 
   # Recommending with rating predictions (MyMediaLite)
   if [ "$RANKRECOMMENDERS" != "" ]; then
     for ir in $RANKRECOMMENDERS; do
-      medialitePredict "rating_prediction" $ir $KRANGE
-      evaluate "rating_prediction" "$ir"
+      medialitePredict "rating_prediction" $ir $KRANGE;
+      evaluate "rating_prediction" "$ir";
     done
   fi
 
@@ -214,15 +214,15 @@ main() {
   if [ "$MAHOUTRECOMMENDERS" != "" ]; then
     for ir in $MAHOUTRECOMMENDERS; do
       # make predictions
-      mahoutPredict $ir
+      mahoutPredict $ir;
 
       # evaluate predicted values
-      evaluate "mahout" $ir
+      evaluate "mahout" $ir;
     done
   fi
 
   # Generate Latex-lines based on scoring files.
-  python $ROOT/evaluation/generateLatexLinesNormSplits.py
+  python $ROOT/evaluation/generateLatexLinesNormSplits.py;
 }
 
 ###
@@ -254,12 +254,12 @@ evaluate() {
       for K in "$KVAL"; do
         PRED_FILE="$GENERATED/predictions/${TRAIN}-$KVAL-$SPLIT-$RECOMMENDERSYS-$RECOMMENDER.predictions";
         OPT+=(--prediction-file $PRED_FILE);
-        execute_eval OPT[@] $RECOMMENDERSYS
+        execute_eval OPT[@] $RECOMMENDERSYS;
       done
     else
       PRED_FILE="$GENERATED/predictions/${TRAIN}--$SPLIT-$RECOMMENDERSYS-$RECOMMENDER.predictions";
       OPT+=(--prediction-file $PRED_FILE);
-      execute_eval OPT[@] $RECOMMENDERSYS
+      execute_eval OPT[@] $RECOMMENDERSYS;
     fi
   done;
   wait;
@@ -278,11 +278,11 @@ execute_eval() {
 
 medialitePredict() {
   # Get arguments
-  RECTYPE="${1}"
+  RECTYPE="${1}";
   RECOMMENDER="${2}";
   KVAL="${3}";
 
-  echo "Recommending with $RECTYPE using $RECOMMENDER"
+  echo "Recommending with $RECTYPE using $RECOMMENDER";
   for ttt in $trainTestTuples; do
     # Split 'train.txt:test.txt' on ':', and insert to Array.
     IFS=":" read -a Array <<< $ttt;
@@ -293,27 +293,27 @@ medialitePredict() {
     OPT+=(--recommender $RECOMMENDER);
 
     # Do item predictions
-    arr=("LeastSquareSLIM" "UserAttributeKNN" "UserKNN" "ItemKNN")
+    arr=("LeastSquareSLIM" "UserAttributeKNN" "UserKNN" "ItemKNN");
     if [[ " ${arr[@]} " =~ " ${RECOMMENDER} " ]] && [ "$KVAL" != "" ]; then
       for K in "$KVAL"; do
         OPT+=("--recommender-options k=$K");
         OPT+=("--recommender-options correlation=Jaccard");
-        execute_medialite OPT[@] "$PREDFILE" "$RECTYPE" "$K"
+        execute_medialite OPT[@] "$PREDFILE" "$RECTYPE" "$K";
       done
     else
-      execute_medialite OPT[@] "$PREDFILE" "$RECTYPE"
+      execute_medialite OPT[@] "$PREDFILE" "$RECTYPE";
     fi
   done;
   wait;
 }
 
 execute_medialite() {
-  OPTS="${!1}"
-  PREDFILE="$2"
-  RECTYPE="$3"
-  K="$4"
+  OPTS="${!1}";
+  PREDFILE="$2";
+  RECTYPE="$3";
+  K="$4";
 
-  PREDFILE="$GENERATED/predictions/${TRAIN}-$K-$SPLIT-$RECTYPE-$RECOMMENDER.predictions"
+  PREDFILE="$GENERATED/predictions/${TRAIN}-$K-$SPLIT-$RECTYPE-$RECOMMENDER.predictions";
   OPTS+=" --prediction-file $PREDFILE";
 
   # Check that the binary exists (is installed)
@@ -332,9 +332,9 @@ mahoutPredict() {
   # Get arguments
   RECOMMENDER=${1};
 
-  echo "Recommending with Mahout using $RECOMMENDER"
-  echo "$trainTestTuples"
-  cd "$ROOT/mahout"
+  echo "Recommending with Mahout using $RECOMMENDER";
+  echo "$trainTestTuples";
+  cd "$ROOT/mahout";
   javac TopKRecommendations.java
   for ttt in $trainTestTuples; do
     # Split 'train.txt:test.txt' on ':', and insert to Array.
@@ -360,9 +360,9 @@ split() {
   # Argument #1: Input filename. File to split.
   # Argument #2: Output directory. Absolute path to directory.
   # Argument #3: Output filename.
-  FILETOSPLIT="${1}"
-  OUTDIR="${2}"
-  OUTFILENAME="${3}"
+  FILETOSPLIT="${1}";
+  OUTDIR="${2}";
+  OUTFILENAME="${3}";
   OUTPUT="${2}/${OUTFILENAME%%.*}";
 
   METHOD="${4}";
@@ -382,4 +382,4 @@ split() {
 }
 
 # Run main function
-main
+main;

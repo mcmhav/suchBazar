@@ -197,18 +197,18 @@ evaluate() {
       for K in "$KVAL"; do
         PRED_FILE="$GENERATED/predictions/${TRAIN}-$KVAL-$SPLIT-$RECOMMENDERSYS-$RECOMMENDER.predictions";
         OPT+=(--prediction-file $PRED_FILE);
-        bar OPT[@] $RECOMMENDERSYS
+        execute_eval OPT[@] $RECOMMENDERSYS
       done
     else
       PRED_FILE="$GENERATED/predictions/${TRAIN}--$SPLIT-$RECOMMENDERSYS-$RECOMMENDER.predictions";
       OPT+=(--prediction-file $PRED_FILE);
-      bar OPT[@] $RECOMMENDERSYS
+      execute_eval OPT[@] $RECOMMENDERSYS
     fi
   done;
   wait;
 }
 
-bar() {
+execute_eval() {
   OPTS="${!1}"
   RECOMMENDERSYS="${2}"
 
@@ -242,16 +242,16 @@ medialitePredict() {
       for K in "$KVAL"; do
         OPT+=("--recommender-options k=$K");
         OPT+=("--recommender-options correlation=Jaccard");
-        foo OPT[@] "$PREDFILE" "$RECTYPE" "$K"
+        execute_medialite OPT[@] "$PREDFILE" "$RECTYPE" "$K"
       done
     else
-      foo OPT[@] "$PREDFILE" "$RECTYPE"
+      execute_medialite OPT[@] "$PREDFILE" "$RECTYPE"
     fi
   done;
   wait;
 }
 
-foo() {
+execute_medialite() {
   OPTS="${!1}"
   PREDFILE="$2"
   RECTYPE="$3"

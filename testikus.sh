@@ -116,7 +116,7 @@ while getopts "i:p:s:f:r:m:k:bcqht:" o; do
       KRANGE="${OPTARG}"
       ;;
     f)
-      FEATUREFILE="${OPTARG}"
+      FEATURE_FILE="${OPTARG}"
       ;;
     t)
       COLDTIME="-t"
@@ -162,7 +162,7 @@ main() {
 
     # Check that necessary files are OK.
     if [ ! -f "$FEATURE_FILE" ]; then
-      echo "Need featurefile defined with '-f <featurefile>' in order to do cold start splits. Aborting."; exit 1;
+      echo "Need featurefile defined with '-f <featurefile>' in order to do cold start splits. $FEATURE_FILE not found. Aborting."; exit 1;
     fi
     if [ ! -f "$BLEND_FILE" ]; then
       echo "Need blend file ($BLEND_FILE) in order to do cold start splits. Aborting."; exit 1;

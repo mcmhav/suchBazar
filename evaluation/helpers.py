@@ -156,7 +156,7 @@ def readRatingsFromFileSmart(path, convert=False):
     ratings = []
     with open(path, 'r') as file:
 
-        dialect = csv.Sniffer().sniff(file.read(1024))
+        dialect = csv.Sniffer().sniff(file.read(2048))
         reader = csv.reader(file, delimiter=dialect.delimiter)
         for rating in reader:
             try:

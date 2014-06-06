@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import csv
 import json
 from collections import Counter
@@ -502,14 +503,16 @@ def main():
     ROOT_FOLDER = os.path.dirname(SCRIPT_FOLDER)
     GENERATED_LOCATION = 'generated'
 
-    PRODUCT_FILE = '../rest/products.txt'
-
     RATING_FILE = ROOT_FOLDER + '/' + GENERATED_LOCATION + '/' + 'ratings/blend.txt'
     OUT_FILE = ROOT_FOLDER + '/' + GENERATED_LOCATION + '/' + 'itemFeatures.txt'
-
-
-    MONGO_DB, col = True, 'items'
     products_json = None
+
+    # Check if we want to generate from file or mongodb
+    MONGO_DB, col = True, 'items'
+    PRODUCT_FILE = ''
+    if len(sys.argv) > 1:
+      PRODUCT_FILE = sys.argv[1]
+      MONGO_DB, col = False, None
 
     # Read the JSON-data of product descriptions from file or DB.
     if MONGO_DB:

@@ -131,11 +131,11 @@ def createColdStartSplits(ratingFile, timestamps, featurefile, fbConfig):
     filename = ratingFile.split('/')[-1].split('.')[0]
     procs = []
 
-    print('Generating cold-start user dataset splits...')
+    print('Generating cold-start user dataset splits', 'timestamps', timestamps)
     addToParallelRun(procs, coldStart.generateColdStartSplits, filename, ratings, 'user', 0.1, 20, featurefile, [0.10, 0.40, 0.75], timestamps, fbConfig)
-    print('Generating cold-start item dataset splits...')
+    print('Generating cold-start item dataset splits', 'timestamps', timestamps)
     addToParallelRun(procs, coldStart.generateColdStartSplits, filename, ratings, 'item', 0.05, 15, featurefile, [0.10, 0.40, 0.75], timestamps, fbConfig)
-    print('Generating cold-start system dataset splits...')
+    print('Generating cold-start system dataset splits', 'timestamps', timestamps)
     addToParallelRun(procs, coldStart.generateColdStartSystemSplits, filename, ratings, 0.20, featurefile, [0.4, 0.6, 0.8], timestamps, fbConfig)
 
     # combine jobs

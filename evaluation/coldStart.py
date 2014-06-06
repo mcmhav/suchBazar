@@ -47,33 +47,35 @@ def generateColdStartSplits(filename, ratings, type, test_ratio, rating_limit, f
     if time_stamps == True:
         if(len(ratings[0]) < 4):
             print('Warning: No timestamps found')
-
+    
     X = helpers.buildDictByIndex(ratings, index)                                        #Build dictionary where item id is used as key                                                  #Minimum number of ratings for test users
     X_train, y_test = generateSplitFromRatingLimit(X, test_ratio, rating_limit)         #Split items into training and test items
-
     #TODO: How to make this shorter?
-    train = []
+    X_pool = []
     for user in X_train:
         for rating in X[user]:
-            train.append(rating)
+            X_pool.append(rating)
 
     for i in range(len(rating_splits)):
+        train = X_pool
         test = []                                                                       #Add all ratings given by training users to training set
         for y in y_test:                                                                #For each test item
             if time_stamps:
                 r = selectRatingsByTimeStamp(X[y], rating_splits[i])
             else:
-                #r = random.sample(range(len(X[y])), rating_splits[i])                  #Select a random subset of the ratings for the current user
-                r = selectTopRatings(X[y], rating_splits[i])
+                r = random.sample(range(len(X[y])), int(rating_splits[i]*len(X[y])))                  #Select a random subset of the ratings for the current user
+                #r = selectTopRatings(X[y], rating_splits[i])
             for j in range(len(X[y])):
                 if j in r:
                     train.append(X[y][j])                                              #Add these ratings to the training set
                 else:
                     test.append(X[y][j])                                             #Add the remaining ratings to the test set
+        
+        num_ratings = len(train)                       
         if fbots:
-            X_train = fb.addFilterBotRatings(train, featurefile, fbots)
-
-        helpers.writeRatingsToFile('%s/%s_%strain%d.txt' % (folder, filename,  prefix, i+1), X_train, '\t')
+            train = fb.addFilterBotRatings(train, featurefile, fbots)
+        print('Added', len(train)-num_ratings, 'filterbot ratings', type, fbots, time_stamps)
+        helpers.writeRatingsToFile('%s/%s_%strain%d.txt' % (folder, filename,  prefix, i+1), train, '\t')
         helpers.writeRatingsToFile('%s/%s_%stest%d.txt' % (folder,filename, prefix, i+1), test, '\t')
 
 
@@ -91,15 +93,16 @@ def generateColdStartSystemSplits(filename, ratings, test_ratio, featurefile, ra
             print('Warning: No timestamps found')
 
     num_ratings = len(ratings)
-
     if not time_stamps:                                                                           #Read ratings
         r = random.sample(range(len(ratings)), int(test_ratio*len(ratings)))                      #Randomly select test ratings
         y_test = [ratings[i] for i in r]                                                          #Put ratings in testset
         X_pool = [i for j, i in enumerate(ratings) if j not in r]                                 #Put the remaining in the testset
         for i in range(len(ratios)):                                                              #For each training ratio supplied
             X_train = generateDatasetSplit(X_pool, ratios[i], num_ratings)                        #Generate a split of size ratios[i]
+            num_ratings = len(X_train) 
             if fbots:
                 X_train = fb.addFilterBotRatings(X_train, featurefile, fbots)
+            print('Added', len(X_train)-num_ratings, 'filterbot ratings', 'system', fbots, time_stamps)
             helpers.writeRatingsToFile('%s/%s_systemtrain%d.txt' %(folder, filename, i+1), X_train, delimiter='\t')
         helpers.writeRatingsToFile('%s/%s_systemtest.txt' %(folder, filename), y_test, delimiter='\t')
 
@@ -110,13 +113,15 @@ def generateColdStartSystemSplits(filename, ratings, test_ratio, featurefile, ra
         X_pool = ratings[:-num_test_ratings]                                                      #Put the remainding in the training set pool
         for i in range(len(ratios)):                                                              #For each training ratio supplied
             X_train = generateDatasetSplit(X_pool, ratios[i], num_ratings)                               #Generate a split of size ratios[i]
+            num_ratings = len(X_train) 
             if fbots:
                 X_train = fb.addFilterBotRatings(X_train, featurefile, fbots)
+            print('Added', len(X_train)-num_ratings, 'filterbot ratings', 'system', fbots, time_stamps)
             helpers.writeRatingsToFile('%s/%s_systemtrain%d.txt' %(folder, filename, i+1), X_train, delimiter='\t')
         helpers.writeRatingsToFile('%s/%s_systemtest.txt' %(folder, filename), y_test, delimiter='\t')
 
 
-def generateDatasetSplit(trainingset, ratio, num_total_ratings, rand=True, fbots=False):
+def generateDatasetSplit(trainingset, ratio, num_total_ratings, rand=True):
     '''
     Function for extracting a random subset of
     size ratio*num_total_ratings from the training set.
@@ -126,7 +131,7 @@ def generateDatasetSplit(trainingset, ratio, num_total_ratings, rand=True, fbots
     ratings of the training set
 
     '''
-
+ 
     if rand:
         #Alt 1:
         random.shuffle(trainingset)
@@ -184,7 +189,7 @@ def selectRatingsByTimeStamp(ratings, num_ratings):
 
     #If percentage of ratings used
     if num_ratings < 1.0:
-        num_ratings = int((1-num_ratings)*len(ratings))
+        num_ratings = int(num_ratings*len(ratings))
         for i in range(num_ratings):
             r.append(selected[i][0])
     #If hard limits are used

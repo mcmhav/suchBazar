@@ -7,7 +7,7 @@ set -e
 trap 'echo -e "Interrupted, killing\n $(jobs)"; kill $(jobs -p); exit' INT
 
 # Usage function, describing the parameters to the user.
-usage() { 
+usage() {
 cat <<EOL
 Usage: $0 [options]
 
@@ -49,15 +49,15 @@ RANK RECOMMENDERS:
 ITEM RECOMMENDERS:
   The following algorithms are available to use with the item recommender
   provided by MyMediaLite:
-    BPRMF, ItemAttributeKNN, ItemKNN, MostPopular, Random 
-    UserAttributeKNN, UserKNN, WRMF, Zero, MultiCoreBPRMF 
-    SoftMarginRankingMF, WeightedBPRMF, BPRLinear, MostPopularByAttributes 
+    BPRMF, ItemAttributeKNN, ItemKNN, MostPopular, Random
+    UserAttributeKNN, UserKNN, WRMF, Zero, MultiCoreBPRMF
+    SoftMarginRankingMF, WeightedBPRMF, BPRLinear, MostPopularByAttributes
     BPRSLIM, LeastSquareSLIM
 
 MAHOUT RECOMMENDERS:
   The following methods are available when using Mahout:
     svd, itembased, userbased, itemuseraverage, svd, loglikelihood, itemaverage
-    
+
 Examples:
   Split randomly and calculate the itemaverage with mahout:
   $0 -i ../somefile.tab -s random -m 'itemaverage'
@@ -65,7 +65,7 @@ Examples:
   Split on time and use itemKNN with various K-values to do recommendations:
   $0 -i ../somefile.tab -s time -p 'ItemKNN' -k '10 20 50'
 EOL
-exit 1; 
+exit 1;
 }
 
 # Save the current path
@@ -168,7 +168,7 @@ main() {
     trainTestTuples+="blend_usertrain3.txt:blend_usertest3.txt "
     OPT=(--coldstart-split $BLEND_FILE);
     OPT+=(--feature-file $FEATURE_FILE);
-    python2.7 $ROOT/evaluation/evaluation.py OPT[@] -t -fb '1,1,1,1,1';
+    python2.7 $ROOT/evaluation/evaluation.py "${OPT[@]}" -t -fb '1,1,1,1,1';
   else
     for FILE in "$GENERATED"/ratings/*; do
       FILENAME=$(basename $FILE);

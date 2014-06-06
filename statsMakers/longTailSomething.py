@@ -13,6 +13,7 @@ def main(sessDB='sessionsNew'):
     '''
     countsOnItems = helpers.getKGroups('product_id',sessDB)
     avgRC,iut,cut = findItemsUnder50Treshhold(countsOnItems)
+    print (cut)
     coverage = findCoverage(iut,cut,len(countsOnItems))
     ratingsPercentage = findRatingsPercentage(cut,countsOnItems)
     print (len(countsOnItems))
@@ -22,8 +23,8 @@ def main(sessDB='sessionsNew'):
     print ('Account for ratings: %s' % ratingsPercentage)
     print ()
     print ('Long tail')
-    print ('Threshold \t& Cut at \t& Account for ratings \\\\')
-    print ("- \t& \t %s \t&\t %s \\\\" % (len(countsOnItems)-len(cut),ratingsPercentage))
+    print ('Threshold \t& Cut  \t& Account for ratings \\\\')
+    print ("- \t& \t %s \t&\t %s \\\\" % (len(cut),ratingsPercentage))
 
     # 6027
     # 4194

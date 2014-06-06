@@ -25,7 +25,7 @@ def main(sessDB='sessionsNew'):
         ratingsPercentage = findRatingsPercentage(counts,countsOnItems)
         bars.append(len(counts))
         percentages.append(ratingsPercentage)
-        # print ("%s \t& \t %s \t&\t %s \\\\" % (t*100, len(counts),ratingsPercentage))
+        print ("%s \t& \t %s \t&\t %s \\\\" % (t*100, len(counts),ratingsPercentage))
         # print ("(%s, %s)" % (t*100, ratingsPercentage))
     # plotTwins(bars,percentages,thresholds)
 

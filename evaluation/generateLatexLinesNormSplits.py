@@ -28,8 +28,6 @@ def main():
     # makeLaTeXTableColdstart(preLatexObj)
     makeLaTeXTable(preLatexObj,tops)
 
-
-
 def makeLaTeXTable(preLatexObj,tops):
     '''
     input:
@@ -181,7 +179,12 @@ def readFromScoreFolder(path):
             if ids[1] not in preLatexObj[ids[0]][ids[2]]:
                 preLatexObj[ids[0]][ids[2]][ids[1]] = {}
             preLatexObj[ids[0]][ids[2]][ids[1]] = readFromScoreFile(path,f)
+    #         if ids[0] != 'old format':
+    #             print (preLatexObj)
+    #             sys.exit()
 
+    # sys.exit()
+    print (preLatexObj)
     tops = makeTops(readFromScoreFile(path,files[0]))
     return preLatexObj,tops
 
@@ -214,10 +217,30 @@ def getIdsFromFileName(f):
     '''
     '''
     ids = []
-    ids.append(getRecommenderSystem(f))
-    ids.append(getRatingFile(f))
-    ids.append(getRecommenderAlg(f))
+    fs = f.split('-')
+    # check if on the freshest form
+    if len(fs) == 7:
+        ids.append(getRecommender(fs) + '-' + getRecommenderAlg(f))
+        ids.append(getRatingFile(fs))
+        ids.append(getSplit(f))
+        print (ids)
+    else:
+        ids.append("old format")
+        ids.append("old format")
+        ids.append("old format")
+        ids.append("old format")
+    # print (f)
     return ids
+
+def getRecommender(fs):
+    recommender = fs[5]
+    if fs[3] != '':
+        recommender += '-' + fs[3]
+    return recommender
+
+def getSplit(f):
+    fs = f.split('-')
+    return fs[4]
 
 def getRecommenderAlg(filename):
     '''
@@ -230,16 +253,16 @@ def getRecommenderAlg(filename):
 
     return testur
 
-def getRatingFile(f):
+def getRatingFile(fs):
     '''
     '''
-    rfn = ratingFileNames()
-    for r in rfn:
-        if r in f:
-            return rfn[r]
-    return 'did not find'
+    # rfn = ratingFileNames()
+    # for r in rfn:
+    #     if r in f:
+    #         return rfn[r]
+    return ratingFileNames(fs[1])
 
-def ratingFileNames():
+def ratingFileNames(rf):
     return {
         'count_linear':'Count linear',
         'count_sigmoid':'Count sigmoid',
@@ -249,7 +272,7 @@ def ratingFileNames():
         'price_linear':'Price linear',
         'blend': 'Blend',
         'popularity_linear': 'Popularity Linear'
-    }
+    }.get(rf,rf)
 
 def isColdSplit(f):
     '''

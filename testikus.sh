@@ -124,7 +124,14 @@ while getopts "i:p:s:f:r:m:k:bcqh" o; do
       ;;
   esac
 done
+
 main() {
+  # Check that the infile exists.
+  if [ ! -f $INFILE ]; then
+    echo "Did not find $INFILE. Please specify event log with '-i eventlog.tab'. Aborting.";
+    exit 1;
+  fi
+
   # Generate ratings (blending and timestamps enabled by default)
   C=""
   if [ $CLEAN -eq 1 ]; then C="-c"; fi
@@ -207,7 +214,6 @@ main() {
   if [ "$MAHOUTRECOMMENDERS" != "" ]; then
     for ir in $MAHOUTRECOMMENDERS; do
       # make predictions
-      # /bin/bash $GENERATED/mahoutPredict.sh -t "$trainTestTuples" -h -p $ir $CLEAN $QUIET;
       mahoutPredict $ir
 
       # evaluate predicted values

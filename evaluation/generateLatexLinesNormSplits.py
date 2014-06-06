@@ -24,8 +24,8 @@ def main():
     Generate LaTeX lines
     '''
 
-    preLatexObj,tops = readFromScoreFolder(SCORE_PATH)
-    # makeLaTeXTableColdstart(preLatexObj)
+    preLatexObj,preLatexObjCold,tops = readFromScoreFolder(SCORE_PATH)
+    makeLaTeXTableColdstart(preLatexObjCold)
     makeLaTeXTable(preLatexObj,tops)
 
 def makeLaTeXTable(preLatexObj,tops):
@@ -70,6 +70,7 @@ def makeLaTeXTableColdstart(preLatexObj):
     systemScore = ""
     itemScore = ""
     userScore = ""
+
     for nameID in preLatexObj:
         keySorted = sorted(preLatexObj[nameID].items(), key=operator.itemgetter(0))
         for key in keySorted:
@@ -106,12 +107,33 @@ def getIDFromFileName(filename):
     '''
     Get the id of the score from the filename
     '''
-    headNumber = helpers.determineLatexHeaderNumber(filename)
-    coldName = getColdstartNameFromFileName(filename)
-    recommender = getRecommenderAlg(filename)
-    recSys = getRecommenderSystem(filename)
+    ids = []
+    fs = filename.split('-')
+    if len(fs) == 6:
+        headNumber = helpers.determineLatexHeaderNumber(filename)
+        ids.append(headNumber)
+        coldName = getColdstartNameFromFileName(filename)
+        ids.append(coldName)
+        recommender = getRecommenderAlg(filename)
+        recSys = fs[4]
+        ids.append(recSys + '-' + recommender)
+        ids.append(recSys)
+    else:
+        ids.append('old format')
+        ids.append('old format')
+        ids.append('old format')
+        # ids.append('old format')
+    # check if on the freshest form
+    #     ids.append(getRecommender(fs) + '-' + getRecommenderAlg(filename))
+    #     ids.append(getRatingFile(fs))
+    #     ids.append(getSplit(filename))
+    # else:
+    #     ids.append("old format")
+    #     ids.append("old format")
+    #     ids.append("old format")
+    #     ids.append("old format")
 
-    return headNumber,coldName,recommender,recSys
+    return ids
 
 def getRecommenderSystem(filename):
     '''
@@ -144,12 +166,19 @@ def getColdstartNameFromFileName(filename):
     '''
     Get the coldstart name from the file name
     '''
-
-    coldstartNames = {'item_recommendation', 'rating_prediction', 'system'}
+    coldstartNames = {'blend_item', 'blend_user', 'blend_system'}
+    # print (filename)
     for csn in coldstartNames:
         if csn in filename:
-            return csn
+            return coldNameMapper(csn)
     return "normal"
+
+def coldNameMapper(name):
+    return {
+        'blend_item':'item',
+        'blend_user':'user',
+        'blend_system':'system',
+    }.get(name,name)
 
 def readFromScoreFolder(path):
     '''
@@ -164,12 +193,13 @@ def readFromScoreFolder(path):
 
     for f in files:
         if isColdSplit(f):
-            scoreId,scoreName,recommender,recSys = getIDFromFileName(f)
-            if recommender not in preColdLatexObj:
-                preColdLatexObj[recommender] = {}
-            if scoreName not in preColdLatexObj[recommender]:
-                preColdLatexObj[recommender][scoreName] = {}
-            preColdLatexObj[recommender][scoreName][scoreId] = readFromScoreFile(path,f)
+            ids = getIDFromFileName(f)
+            # scoreId,scoreName,recommender,recSys
+            if ids[2] not in preColdLatexObj:
+                preColdLatexObj[ids[2]] = {}
+            if ids[1] not in preColdLatexObj[ids[2]]:
+                preColdLatexObj[ids[2]][ids[1]] = {}
+            preColdLatexObj[ids[2]][ids[1]][ids[0]] = readFromScoreFile(path,f)
         else:
             ids = getIdsFromFileName(f)
             if ids[0] not in preLatexObj:
@@ -179,14 +209,11 @@ def readFromScoreFolder(path):
             if ids[1] not in preLatexObj[ids[0]][ids[2]]:
                 preLatexObj[ids[0]][ids[2]][ids[1]] = {}
             preLatexObj[ids[0]][ids[2]][ids[1]] = readFromScoreFile(path,f)
-    #         if ids[0] != 'old format':
-    #             print (preLatexObj)
-    #             sys.exit()
 
+    # print (preColdLatexObj)
     # sys.exit()
-    print (preLatexObj)
     tops = makeTops(readFromScoreFile(path,files[0]))
-    return preLatexObj,tops
+    return preLatexObj,preColdLatexObj,tops
 
 def makeTops(s):
     ss = sorted(s.items(), key=operator.itemgetter(0))
@@ -222,14 +249,12 @@ def getIdsFromFileName(f):
     if len(fs) == 7:
         ids.append(getRecommender(fs) + '-' + getRecommenderAlg(f))
         ids.append(getRatingFile(fs))
-        ids.append(getSplit(f))
-        print (ids)
+        ids.append(getSplit(fs))
     else:
         ids.append("old format")
         ids.append("old format")
         ids.append("old format")
         ids.append("old format")
-    # print (f)
     return ids
 
 def getRecommender(fs):
@@ -238,8 +263,7 @@ def getRecommender(fs):
         recommender += '-' + fs[3]
     return recommender
 
-def getSplit(f):
-    fs = f.split('-')
+def getSplit(fs):
     return fs[4]
 
 def getRecommenderAlg(filename):

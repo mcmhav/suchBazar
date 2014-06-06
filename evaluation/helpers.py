@@ -27,12 +27,16 @@ def prepareEvauationScoreToLaTeX(filename,us_coverage,is_coverage,auc,mapk,eStat
     GENERATED_LOCATION = 'generated'
     SAVE_FOLDER = 'evaluationScore'
     folder = ROOT_FOLDER + '/' + GENERATED_LOCATION + '/' + SAVE_FOLDER + '/'
+    saveName = k  + "-" + filename + ".score"
 
     if not os.path.exists(folder):
         os.makedirs(folder)
 
-    saveName = folder + k  + "-" + filename + ".score"
-    f = open(saveName, 'w')
+    # if os.path.isfile(saveName):
+    #     old = readFromScoreFile(folder,saveName)
+    #     sys.exit()
+
+    f = open(folder + saveName, 'w')
     f.write('01auc:' + auc + "\n")
     f.write('02map:' + mapk + "\n")
     f.write('03T_c:' + str(eStats[0]) + "\n")
@@ -53,6 +57,23 @@ def prepareEvauationScoreToLaTeX(filename,us_coverage,is_coverage,auc,mapk,eStat
     f.close()
 
     print ("wrote to %s" % saveName)
+
+def readFromScoreFile(path,filename):
+    '''
+    Reads from the scorefile to get the scores based on the predictions
+    '''
+    scores = {}
+    f = open(path + filename, 'r+')
+    lines = f.readlines()
+    f.close()
+    for line in lines:
+        tmp = line.split(':')
+        scores[tmp[0]] = tmp[1].strip()
+    return scores
+
+def averageNewWithOld(old,new):
+    '''
+    '''
 
 def printProgress(count,total):
     progress = (count/total)*100

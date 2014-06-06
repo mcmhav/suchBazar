@@ -180,7 +180,7 @@ main() {
     trainTestTuples+="blend_usertrain3.txt:blend_usertest3.txt ";
     OPT=(--coldstart-split $BLEND_FILE);
     OPT+=(--feature-file $FEATURE_FILE);
-    python2.7 $ROOT/evaluation/evaluation.py "${OPT[@]}" "$COLDTIME" -fb '0,0,0,0,1';
+    python2.7 $ROOT/evaluation/evaluation.py "${OPT[@]}" $COLDTIME -fb '1,1,0,0,0';
   else
     for FILE in "$GENERATED"/ratings/*; do
       FILENAME=$(basename $FILE);

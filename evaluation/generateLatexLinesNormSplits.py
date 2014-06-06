@@ -181,11 +181,11 @@ def readFromScoreFolder(path):
                 preLatexObj[ids[0]][ids[2]] = {}
             if ids[1] not in preLatexObj[ids[0]][ids[2]]:
                 preLatexObj[ids[0]][ids[2]][ids[1]] = {}
-            preLatexObj[ids[0]][ids[2]][ids[1]] = readFromScoreFile(path,f)
+            preLatexObj[ids[0]][ids[2]][ids[1]] = helpers.readFromScoreFile(path,f)
 
     # print (preColdLatexObj)
     # sys.exit()
-    tops = makeTops(readFromScoreFile(path,files[0]))
+    tops = makeTops(helpers.readFromScoreFile(path,files[0]))
     return preLatexObj,preColdLatexObj,tops
 
 def makeTops(s):
@@ -231,7 +231,7 @@ def getIdsFromFileName(f):
         ids.append("old format")
         ids.append("old format")
 
-    print (ids)
+    # print (ids)
     return ids
 
 def getIDFromFileName(filename):
@@ -309,18 +309,7 @@ def isColdSplit(f):
     return False
 
 
-def readFromScoreFile(path,filename):
-    '''
-    Reads from the scorefile to get the scores based on the predictions
-    '''
-    scores = {}
-    f = open(path + filename, 'r+')
-    lines = f.readlines()
-    f.close()
-    for line in lines:
-        tmp = line.split(':')
-        scores[tmp[0]] = tmp[1].strip()
-    return scores
+
 
 if __name__ == "__main__":
     main()

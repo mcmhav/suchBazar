@@ -24,3 +24,4 @@ mahout/jars/*
 *.csv
 *.conf
 *.sh~
+evaluation/testur.py

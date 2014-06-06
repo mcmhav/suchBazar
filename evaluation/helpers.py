@@ -8,6 +8,7 @@ import time
 from operator import itemgetter
 import os
 import sys
+import operator
 import traceback
 f = ""
 
@@ -32,30 +33,35 @@ def prepareEvauationScoreToLaTeX(filename,us_coverage,is_coverage,auc,mapk,eStat
     if not os.path.exists(folder):
         os.makedirs(folder)
 
+    eStats.insert(0,mapk)
+    eStats.insert(0,auc)
+    eStats.append(us_coverage)
+    eStats.append(is_coverage)
+    eStats.append(k)
+
     if os.path.isfile(folder + saveName):
         old = readFromScoreFile(folder,saveName)
-        print (old)
-        print (eStats)
-        sys.exit()
+        eStats = averageNewWithOld(eStats,old)
+        print ("Added values to existing and averaged")
 
     f = open(folder + saveName, 'w')
-    f.write('01auc:' + auc + "\n")
-    f.write('02map:' + mapk + "\n")
-    f.write('03T_c:' + str(eStats[0]) + "\n")
-    f.write('04T_w:' + str(eStats[1]) + "\n")
-    f.write('05T_p:' + str(eStats[2]) + "\n")
-    f.write('06P_c:' + str(eStats[3]) + "\n")
-    f.write('07P_w:' + str(eStats[4]) + "\n")
-    f.write('08P_p:' + str(eStats[5]) + "\n")
-    f.write('09R_c:' + str(eStats[6]) + "\n")
-    f.write('10R_w:' + str(eStats[7]) + "\n")
-    f.write('11R_p:' + str(eStats[8]) + "\n")
-    f.write('12MAP_c:' + str(eStats[9]) + "\n")
-    f.write('13MAP_w:' + str(eStats[10]) + "\n")
-    f.write('14MAP_p:' + str(eStats[11]) + "\n")
-    f.write('15us_coverage:' + us_coverage + "\n")
-    f.write('16is_coverage:' + is_coverage + "\n")
-    f.write('k:' + k + "\n")
+    f.write('01auc:' + str(eStats[0]) + "\n")
+    f.write('02map:' + str(eStats[1]) + "\n")
+    f.write('03T_c:' + str(eStats[2]) + "\n")
+    f.write('04T_w:' + str(eStats[3]) + "\n")
+    f.write('05T_p:' + str(eStats[4]) + "\n")
+    f.write('06P_c:' + str(eStats[5]) + "\n")
+    f.write('07P_w:' + str(eStats[6]) + "\n")
+    f.write('08P_p:' + str(eStats[7]) + "\n")
+    f.write('09R_c:' + str(eStats[8]) + "\n")
+    f.write('10R_w:' + str(eStats[9]) + "\n")
+    f.write('11R_p:' + str(eStats[10]) + "\n")
+    f.write('12MAP_c:' + str(eStats[11]) + "\n")
+    f.write('13MAP_w:' + str(eStats[12]) + "\n")
+    f.write('14MAP_p:' + str(eStats[13]) + "\n")
+    f.write('15us_coverage:' + str(eStats[14]) + "\n")
+    f.write('16is_coverage:' + str(eStats[15]) + "\n")
+    f.write('k:' + str(eStats[15]) + "\n")
     f.close()
 
     print ("wrote to %s" % saveName)
@@ -73,9 +79,22 @@ def readFromScoreFile(path,filename):
         scores[tmp[0]] = tmp[1].strip()
     return scores
 
-def averageNewWithOld(old,new):
+def averageNewWithOld(new,old):
     '''
+    {'08P_p': '0', '12MAP_c': '0.00142816091954', '07P_w': '4', '13MAP_w': '0.000158371040724', '16is_coverage': '1.00159461375', '09R_c': '0.00693909020817', '06P_c': '9', '14MAP_p': '0.0', '02map': '0.00111550890074', '15us_coverage': '1.00667111408', '04T_w': '1215', '10R_w': '0.00329218106996', '01auc': '0.561192044295', '11R_p': '0', 'k': '20', '03T_c': '1297', '05T_p': '129'}
+    [1289, 1298, 131, 6, 2, 0, 0.004654771140418929, 0.0015408320493066256, 0, 0.0024824742214783133, 0.00010294117647058824, 0.0]
     '''
+    old_sorted = sorted(old.items(), key=operator.itemgetter(0))
+
+    c = 0
+    newAVG = []
+    for o in old_sorted:
+        tmp = (float(o[1]) + float(new[c])) / 2
+        newAVG.append(tmp)
+        c += 1
+
+    return newAVG
+
 
 def printProgress(count,total):
     progress = (count/total)*100

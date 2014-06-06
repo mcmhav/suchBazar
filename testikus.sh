@@ -258,8 +258,6 @@ evaluate() {
       echo "Did not find test file: $TEST_FILE. Please try again. Aborting.";
       exit 1;
     fi
-    exit 1;
-
     OPT=(--training-file $TRAIN_FILE);
     OPT+=(--feature-file $FEATURE_FILE);
     OPT+=(--test-file $TEST_FILE);
@@ -338,7 +336,7 @@ execute_medialite() {
   RECTYPE="$3";
   K="$4";
 
-  PREDFILE="$GENERATED/predictions/${TRAIN}-$K-$SPLIT-$RECTYPE-$RECOMMENDER.predictions";
+  PREDFILE="$GENERATED/predictions/${Array[0]}-$K-$SPLIT-$RECTYPE-$RECOMMENDER.predictions";
   OPTS+=" --prediction-file $PREDFILE";
 
   # Check that the binary exists (is installed)
@@ -358,7 +356,6 @@ mahoutPredict() {
   RECOMMENDER=${1};
 
   echo "Recommending with Mahout using $RECOMMENDER";
-  echo "$trainTestTuples";
   cd "$ROOT/mahout";
   javac TopKRecommendations.java
   for ttt in $trainTestTuples; do

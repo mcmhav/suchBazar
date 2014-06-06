@@ -14,7 +14,7 @@ set -e
 usage() { echo "Usage: $0 [-c (clean)] [-p (plot)] [-b (blend)] [-i (infile)] [-h (help)]"; exit 1; }
 
 # Check for ctrl+c
-trap 'echo interrupted; kill $(jobs -p); exit' INT
+trap 'echo -e "Generating ratings interrupted. Killing:\n $(jobs -l)"; kill $(jobs -p); exit' INT
 
 # Save the current path
 CWD=$( cd "$( dirname "$0" )" && pwd );

@@ -4,10 +4,10 @@
 set -e
 
 # Trap ctrl+c and abort all if it is entered
-trap 'echo interrupted; kill $(jobs -p); exit' INT
+trap 'echo -e "Interrupted, killing\n $(jobs)"; kill $(jobs -p); exit' INT
 
 # Usage function, describing the parameters to the user.
-usage() { 
+usage() {
 cat <<EOL
 Usage: $0 [options]
 
@@ -49,15 +49,15 @@ RANK RECOMMENDERS:
 ITEM RECOMMENDERS:
   The following algorithms are available to use with the item recommender
   provided by MyMediaLite:
-    BPRMF, ItemAttributeKNN, ItemKNN, MostPopular, Random 
-    UserAttributeKNN, UserKNN, WRMF, Zero, MultiCoreBPRMF 
-    SoftMarginRankingMF, WeightedBPRMF, BPRLinear, MostPopularByAttributes 
+    BPRMF, ItemAttributeKNN, ItemKNN, MostPopular, Random
+    UserAttributeKNN, UserKNN, WRMF, Zero, MultiCoreBPRMF
+    SoftMarginRankingMF, WeightedBPRMF, BPRLinear, MostPopularByAttributes
     BPRSLIM, LeastSquareSLIM
 
 MAHOUT RECOMMENDERS:
   The following methods are available when using Mahout:
     svd, itembased, userbased, itemuseraverage, svd, loglikelihood, itemaverage
-    
+
 Examples:
   Split randomly and calculate the itemaverage with mahout:
   $0 -i ../somefile.tab -s random -m 'itemaverage'
@@ -65,7 +65,7 @@ Examples:
   Split on time and use itemKNN with various K-values to do recommendations:
   $0 -i ../somefile.tab -s time -p 'ItemKNN' -k '10 20 50'
 EOL
-exit 1; 
+exit 1;
 }
 
 # Save the current path
@@ -75,35 +75,14 @@ GENERATED="$ROOT/generated"
 # Some parameters changable in the opts.
 INFILE="../datasets/v3/sobazar_events_prod_cleaned_formatted.tab"
 FEATURE_FILE="$GENERATED/itemFeatures.txt"
-CLEAN=""
+CLEAN=0
 SPLIT=""
 BINARY=0
-
-# Available Item Recommenders:
-# 'BPRMF' 'ItemAttributeKNN' 'ItemKNN' 'MostPopular' 'Random'
-# 'UserAttributeKNN' 'UserKNN' 'WRMF' 'Zero' 'MultiCoreBPRMF'
-# 'SoftMarginRankingMF' 'WeightedBPRMF' 'BPRLinear' 'MostPopularByAttributes'
-# 'BPRSLIM' 'LeastSquareSLIM'
-ITEMRECOMMENDERS=""
-
-# Available Rank Recommenders:
-# 'BiPolarSlopeOne' 'GlobalAverage' 'ItemAttributeKNN' 'ItemAverage' 'ItemKNN'
-# 'MatrixFactorization' 'SlopeOne' 'UserAttributeKNN' 'UserAverage'
-# 'UserItemBaseline' 'UserKNN' 'TimeAwareBaseline'
-# 'TimeAwareBaselineWithFrequencies' 'CoClustering' 'Random' 'Constant'
-# 'LatentFeatureLogLinearModel' 'BiasedMatrixFactorization' 'SVDPlusPlus'
-# 'SigmoidSVDPlusPlus' 'SocialMF' 'SigmoidItemAsymmetricFactorModel'
-# 'SigmoidUserAsymmetricFactorModel' 'SigmoidCombinedAsymmetricFactorModel'
-# 'NaiveBayes' 'ExternalRatingPredictor' 'GSVDPlusPlus'
-RANKRECOMMENDERS=""
-
-#Available Mahout recommenders
-# 'svd', 'itembased', 'userbased', itemuseraverage', 'svd', 'loglikelihood',
-# 'itemaverage'
-MAHOUTRECOMMENDERS=""
-
-QUIET=""
+QUIET=0
 KRANGE=""
+ITEMRECOMMENDERS=""
+RANKRECOMMENDERS=""
+MAHOUTRECOMMENDERS=""
 
 while getopts "i:p:s:f:r:m:k:bcqh" o; do
   case "${o}" in
@@ -111,7 +90,7 @@ while getopts "i:p:s:f:r:m:k:bcqh" o; do
       INFILE="${OPTARG}"
       ;;
     c)
-      CLEAN="-c"
+      CLEAN=1
       ;;
     p)
       ITEMRECOMMENDERS="${OPTARG}"
@@ -129,7 +108,7 @@ while getopts "i:p:s:f:r:m:k:bcqh" o; do
       BINARY=1
       ;;
     q)
-      QUIET="-q"
+      QUIET=1
       ;;
     k)
       KRANGE="${OPTARG}"
@@ -146,71 +125,88 @@ while getopts "i:p:s:f:r:m:k:bcqh" o; do
   esac
 done
 
-OPTS="-i $INFILE $CLEAN"
-
 main() {
+  # Check that the infile exists.
+  if [ ! -f $INFILE ] && [ "$INFILE" != "mongo" ]; then
+    echo "Did not find $INFILE. Please specify event log with '-i eventlog.tab'. Aborting.";
+    exit 1;
+  fi
+
   # Generate ratings (blending and timestamps enabled by default)
-  /bin/bash $ROOT/generators/generate_implicit.sh -t -b $OPTS;
+  C="";
+  if [ $CLEAN -eq 1 ]; then C="-c"; fi
+  /bin/bash $ROOT/generators/generate_implicit.sh -t -b -i $INFILE $C;
 
   # Check if we want binary ratings instead, making all ratings 1.
   if [ $BINARY -eq 1 ]; then
     for FILE in "$GENERATED"/ratings/*; do
-      FILENAME=$(basename "$FILE")
-      cat "$FILE" | awk '{$3=1;print}' FS='\t' OFS='\t' > /tmp/"$FILENAME"
-      mv /tmp/"$FILENAME" $FILE
+      FILENAME=$(basename "$FILE");
+      cat "$FILE" | awk '{$3=1;print}' FS='\t' OFS='\t' > /tmp/"$FILENAME";
+      mv /tmp/"$FILENAME" $FILE;
     done
   fi
 
   # Splitting into training and test sets
   trainTestTuples=""
-  for FILE in "$GENERATED"/ratings/*; do
-    FILENAME=$(basename $FILE);
-    FILENAME_NOEXT="${FILENAME%%.*}";
-    if [ -n "$SPLIT" ]; then
-        if [ "$SPLIT" == "random" ]; then
-            split "$FILE" "$GENERATED/splits" "$FILENAME" "random";
-            TESTFILE="${FILENAME_NOEXT}-1.txt";
-            TRAINFILE="${FILENAME_NOEXT}-9.txt";
-            trainTestTuples+="${TRAINFILE}:${TESTFILE} "
-        elif [ "$SPLIT" == "time" ]; then
-            python2.7 $ROOT/evaluation/simpleTimeSplit.py -i $FILE;
-            TESTFILE="${FILENAME_NOEXT}_timetest.txt";
-            TRAINFILE="${FILENAME_NOEXT}_timetrain.txt";
-            trainTestTuples+="${TRAINFILE}:${TESTFILE} "
-        elif [ "$SPLIT" == "cold" ]; then
-          # Cold start split
-          trainTestTuples="blend_itemtrain1.txt:blend_itemtest1.txt "
-          trainTestTuples+="blend_itemtrain2.txt:blend_itemtest2.txt "
-          trainTestTuples+="blend_itemtrain3.txt:blend_itemtest3.txt "
-          trainTestTuples+="blend_systemtrain1.txt:blend_systemtest.txt "
-          trainTestTuples+="blend_systemtrain2.txt:blend_systemtest.txt "
-          trainTestTuples+="blend_systemtrain3.txt:blend_systemtest.txt "
-          trainTestTuples+="blend_usertrain1.txt:blend_usertest1.txt "
-          trainTestTuples+="blend_usertrain2.txt:blend_usertest2.txt "
-          trainTestTuples+="blend_usertrain3.txt:blend_usertest3.txt "
-          python2.7 $ROOT/evaluation/evaluation.py --coldstart-split $GENERATED/ratings/blend.txt --feature-file $ROOT/data/product_features.txt -t -fb '1,1,1,1,1';
-        fi
-    else
-      echo "Getting tuples, no splitting"
-      TESTFILE="${FILENAME_NOEXT}-1.txt";
-      TRAINFILE="${FILENAME_NOEXT}-9.txt";
-      trainTestTuples+="${TRAINFILE}:${TESTFILE} "
+  if [ -z "$SPLIT" ]; then
+    echo "You need to specify split with -s <type of split>. Available splits are: 'cold', 'time' and 'random'. Aborting.";
+    exit 1;
+  elif [ "$SPLIT" == "cold" ]; then
+    # Where to find blend file.
+    BLEND_FILE="$GENERATED/ratings/blend.txt";
+
+    # Check that necessary files are OK.
+    if [ ! -f "$FEATURE_FILE" ]; then
+      echo "Need featurefile defined with '-f <featurefile>' in order to do cold start splits. Aborting."; exit 1;
     fi
-  done
+    if [ ! -f "$BLEND_FILE" ]; then
+      echo "Need blend file ($BLEND_FILE) in order to do cold start splits. Aborting."; exit 1;
+    fi
+
+    # Cold start split
+    trainTestTuples="blend_itemtrain1.txt:blend_itemtest1.txt ";
+    trainTestTuples+="blend_itemtrain2.txt:blend_itemtest2.txt ";
+    trainTestTuples+="blend_itemtrain3.txt:blend_itemtest3.txt ";
+    trainTestTuples+="blend_systemtrain1.txt:blend_systemtest.txt ";
+    trainTestTuples+="blend_systemtrain2.txt:blend_systemtest.txt ";
+    trainTestTuples+="blend_systemtrain3.txt:blend_systemtest.txt ";
+    trainTestTuples+="blend_usertrain1.txt:blend_usertest1.txt ";
+    trainTestTuples+="blend_usertrain2.txt:blend_usertest2.txt ";
+    trainTestTuples+="blend_usertrain3.txt:blend_usertest3.txt ";
+    OPT=(--coldstart-split $BLEND_FILE);
+    OPT+=(--feature-file $FEATURE_FILE);
+    python2.7 $ROOT/evaluation/evaluation.py "${OPT[@]}" -t -fb '1,1,1,1,1';
+  else
+    for FILE in "$GENERATED"/ratings/*; do
+      FILENAME=$(basename $FILE);
+      FILENAME_NOEXT="${FILENAME%%.*}";
+      if [ "$SPLIT" == "random" ]; then
+          split "$FILE" "$GENERATED/splits" "$FILENAME" "random";
+          TESTFILE="${FILENAME_NOEXT}-1.txt";
+          TRAINFILE="${FILENAME_NOEXT}-9.txt";
+          trainTestTuples+="${TRAINFILE}:${TESTFILE} ";
+      elif [ "$SPLIT" == "time" ]; then
+          python2.7 $ROOT/evaluation/simpleTimeSplit.py -i $FILE;
+          TESTFILE="${FILENAME_NOEXT}_timetest.txt";
+          TRAINFILE="${FILENAME_NOEXT}_timetrain.txt";
+          trainTestTuples+="${TRAINFILE}:${TESTFILE} ";
+      fi
+    done
+  fi
 
   # Recommending with item_recommendation (MyMediaLite)
   if [ "$ITEMRECOMMENDERS" != "" ]; then
     for ir in $ITEMRECOMMENDERS; do
-      medialitePredict "item_recommendation" $ir $KRANGE
-      evaluate "item_recommendation" $ir
+      medialitePredict "item_recommendation" $ir $KRANGE;
+      evaluate "item_recommendation" $ir;
     done
   fi
 
   # Recommending with rating predictions (MyMediaLite)
   if [ "$RANKRECOMMENDERS" != "" ]; then
     for ir in $RANKRECOMMENDERS; do
-      medialitePredict "rating_prediction" $ir $KRANGE
-      evaluate "rating_prediction" "$ir"
+      medialitePredict "rating_prediction" $ir $KRANGE;
+      evaluate "rating_prediction" "$ir";
     done
   fi
 
@@ -218,16 +214,15 @@ main() {
   if [ "$MAHOUTRECOMMENDERS" != "" ]; then
     for ir in $MAHOUTRECOMMENDERS; do
       # make predictions
-      # /bin/bash $GENERATED/mahoutPredict.sh -t "$trainTestTuples" -h -p $ir $CLEAN $QUIET;
-      mahoutPredict $ir
+      mahoutPredict $ir;
 
       # evaluate predicted values
-      evaluate "mahout" $ir
+      evaluate "mahout" $ir;
     done
   fi
 
   # Generate Latex-lines based on scoring files.
-  python $ROOT/evaluation/generateLatexLinesNormSplits.py
+  python $ROOT/evaluation/generateLatexLinesNormSplits.py;
 }
 
 ###
@@ -259,12 +254,12 @@ evaluate() {
       for K in "$KVAL"; do
         PRED_FILE="$GENERATED/predictions/${TRAIN}-$KVAL-$SPLIT-$RECOMMENDERSYS-$RECOMMENDER.predictions";
         OPT+=(--prediction-file $PRED_FILE);
-        execute_eval OPT[@] $RECOMMENDERSYS
+        execute_eval OPT[@] $RECOMMENDERSYS;
       done
     else
       PRED_FILE="$GENERATED/predictions/${TRAIN}--$SPLIT-$RECOMMENDERSYS-$RECOMMENDER.predictions";
       OPT+=(--prediction-file $PRED_FILE);
-      execute_eval OPT[@] $RECOMMENDERSYS
+      execute_eval OPT[@] $RECOMMENDERSYS;
     fi
   done;
   wait;
@@ -283,12 +278,11 @@ execute_eval() {
 
 medialitePredict() {
   # Get arguments
-  RECTYPE="${1}"
+  RECTYPE="${1}";
   RECOMMENDER="${2}";
   KVAL="${3}";
 
-  echo "Recommending with $RECTYPE using $RECOMMENDER"
-
+  echo "Recommending with $RECTYPE using $RECOMMENDER";
   for ttt in $trainTestTuples; do
     # Split 'train.txt:test.txt' on ':', and insert to Array.
     IFS=":" read -a Array <<< $ttt;
@@ -299,31 +293,34 @@ medialitePredict() {
     OPT+=(--recommender $RECOMMENDER);
 
     # Do item predictions
-    arr=("LeastSquareSLIM" "UserAttributeKNN" "UserKNN" "ItemKNN")
+    arr=("LeastSquareSLIM" "UserAttributeKNN" "UserKNN" "ItemKNN");
     if [[ " ${arr[@]} " =~ " ${RECOMMENDER} " ]] && [ "$KVAL" != "" ]; then
       for K in "$KVAL"; do
         OPT+=("--recommender-options k=$K");
         OPT+=("--recommender-options correlation=Jaccard");
-        execute_medialite OPT[@] "$PREDFILE" "$RECTYPE" "$K"
+        execute_medialite OPT[@] "$PREDFILE" "$RECTYPE" "$K";
       done
     else
-      execute_medialite OPT[@] "$PREDFILE" "$RECTYPE"
+      execute_medialite OPT[@] "$PREDFILE" "$RECTYPE";
     fi
   done;
   wait;
 }
 
 execute_medialite() {
-  OPTS="${!1}"
-  PREDFILE="$2"
-  RECTYPE="$3"
-  K="$4"
+  OPTS="${!1}";
+  PREDFILE="$2";
+  RECTYPE="$3";
+  K="$4";
 
-  PREDFILE="$GENERATED/predictions/${TRAIN}-$K-$SPLIT-$RECTYPE-$RECOMMENDER.predictions"
+  PREDFILE="$GENERATED/predictions/${TRAIN}-$K-$SPLIT-$RECTYPE-$RECOMMENDER.predictions";
   OPTS+=" --prediction-file $PREDFILE";
 
-  if [ ! -f "$PREDFILE" ] || [ "$CLEAN" == "-c" ]; then
-    if [ "$QUIET" == "-q" ]; then
+  # Check that the binary exists (is installed)
+  hash $RECTYPE 2>/dev/null || { echo >&2 "You need medialite installed to run ${RECTYPE}. Aborting."; exit 1; }
+
+  if [ ! -f "$PREDFILE" ] || [ $CLEAN -eq 1 ]; then
+    if [ $QUIET -eq 1 ]; then
       $RECTYPE ${OPTS} >/dev/null &
     else
       $RECTYPE ${OPTS} &
@@ -335,9 +332,9 @@ mahoutPredict() {
   # Get arguments
   RECOMMENDER=${1};
 
-  echo "Recommending with Mahout using $RECOMMENDER"
-  echo "$trainTestTuples"
-  cd "$ROOT/mahout"
+  echo "Recommending with Mahout using $RECOMMENDER";
+  echo "$trainTestTuples";
+  cd "$ROOT/mahout";
   javac TopKRecommendations.java
   for ttt in $trainTestTuples; do
     # Split 'train.txt:test.txt' on ':', and insert to Array.
@@ -345,8 +342,8 @@ mahoutPredict() {
     TRAINFILE="${Array[0]}";
     TESTFILE="${Array[1]}";
     OUTFILE="$GENERATED/predictions/${Array[0]}--$SPLIT-mahout-$RECOMMENDER.predictions"
-    if [ ! -f "$OUTFILE" ] || [ "$CLEAN" == "-c" ]; then
-      if [ "$QUIET" == "-q" ]; then
+    if [ ! -f "$OUTFILE" ] || [ $CLEAN -eq 1 ]; then
+      if [ $QUIET -eq 1 ]; then
         java TopKRecommendations "$GENERATED/splits" $TRAINFILE $RECOMMENDER $OUTFILE $TESTFILE >/dev/null 2>/dev/null &
       else
         java TopKRecommendations "$GENERATED/splits" $TRAINFILE $RECOMMENDER $OUTFILE $TESTFILE &
@@ -363,9 +360,9 @@ split() {
   # Argument #1: Input filename. File to split.
   # Argument #2: Output directory. Absolute path to directory.
   # Argument #3: Output filename.
-  FILETOSPLIT="${1}"
-  OUTDIR="${2}"
-  OUTFILENAME="${3}"
+  FILETOSPLIT="${1}";
+  OUTDIR="${2}";
+  OUTFILENAME="${3}";
   OUTPUT="${2}/${OUTFILENAME%%.*}";
 
   METHOD="${4}";
@@ -385,4 +382,4 @@ split() {
 }
 
 # Run main function
-main
+main;

@@ -16,14 +16,14 @@ def main(sessDB='sessionsNew'):
 
     timeSpans = [int(x['timespan']) for x in groups]
     counts = [int(x['count']) for x in groups]
-    plotItemTimeSpans(timeSpans)
+    # plotItemTimeSpans(timeSpans)
     plotItemTimeSpansSortedOnCount(groups)
 
 def plotItemTimeSpansSortedOnCount(groups):
     '''
     '''
     doublePlotLol(groups)
-    doublePlotAVG(groups)
+    # doublePlotAVG(groups)
     # plotAVGforCOuntAtleast(groups)
 
 def plotAVGforCOuntAtleast(groups):
@@ -154,13 +154,13 @@ def doublePlotLol(groups):
     width = 0.8
     index = np.arange(len(counts))
 
-    ax1.bar(index, timeSpans, width)
+    ax1.bar(index, timeSpans[::-1], width)
     ax1.set_ylabel('Timespan of item in weeks')
     ax1.axis([0, len(timeSpans), 0, max(timeSpans)])
 
     ax2 = ax1.twinx()
     ax2.set_ylabel('Event count on items', color='b')
-    ax2.plot(index, counts, '|', color='b',markersize=4)
+    ax2.plot(index, counts[::-1], '|', color='b',markersize=4)
     ax2.axis([0, len(counts), 0, max(counts)])
     for tl in ax2.get_yticklabels():
             tl.set_color('b')

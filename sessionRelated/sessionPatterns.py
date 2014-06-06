@@ -290,6 +290,8 @@ def drawCirclesAndStuff(uniqueSessions,reduced):
         if nodeFrom == 'A' and nodeTo not in nextFromInit:
             continue
         color = coloMapper(nodeFrom)
+        if edges[edge] < 100:
+            continue
         dot.edge(
             nodeFrom,
             nodeTo,
@@ -325,21 +327,21 @@ def reduceMapper(event):
 
 def coloMapper(node):
     return {
-        'A': 'blue',
-        'B': 'red',
-        'C': 'green',
+        'A': 'orange',
+        'B': 'orchid',
+        'C': 'violet',
         'D': 'black',
-        'E': 'yellow',
+        'E': 'red',
         'F': 'brown',
         'G': 'purple',
         'H': 'pink',
-        'I': 'orange',
+        'I': 'blue',
         'J': 'gold',
         'K': 'cyan',
         'L': 'gray',
         'M': 'indigo',
-        'N': 'violet',
-        'S': 'orchid',
+        'N': 'yellow',
+        'S': 'green',
         'O': 'purple',
     }.get(node, 'gold')
 

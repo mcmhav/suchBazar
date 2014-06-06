@@ -34,7 +34,7 @@ def findTimeFor(action,col):
         xlabel='View time',
         show=False,
         capAtEnd=True,
-        capVal=60,
+        capVal=70,
         # addCapped=True
     )
 

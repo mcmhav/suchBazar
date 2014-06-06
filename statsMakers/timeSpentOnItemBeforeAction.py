@@ -17,8 +17,9 @@ if not os.path.exists(folder):
 
 def main(sessDB='sessionsNew'):
     col = helpers.getCollection(sessDB)
-    actionTime('product_purchase_intended',col,"before purchase")
-    actionTime('product_wanted',col,"before want",capVal=8)
+    capVal=12
+    actionTime('product_purchase_intended',col,"before purchase",capVal=capVal)
+    actionTime('product_wanted',col,"before want",capVal=capVal)
 
 def actionTime(action,col,name,makeNew=False,capVal=0):
     cap = 2000
@@ -40,11 +41,18 @@ def actionTime(action,col,name,makeNew=False,capVal=0):
         action,
         # title='Time looked at item ' + name,
         ylabel='Amount of Users',
-        xlabel='View time',
+        xlabel='View time ',
         show=False,
         capAtEnd=True,
         capVal=capVal
     )
+
+# [70, 94, 78, 48, 43, 20, 28, 15, 12, 6, 12, 3, 6, 4, 2, 3, 4, 4, 0, 1]
+# [array([ 0,  2,  4,  6,  8, 10, 12, 14, 16, 18, 20]), array([ 0,  6, 12, 18, 24, 30, 36, 42, 48, 54])]
+# Distribution written to: /home/m/repos/suchBazar/../muchBazar/src/image/product_purchase_intendeddistribution.png
+# lol
+# [96, 112, 118, 104, 69, 59, 39, 24, 20, 12, 10, 4, 9, 3, 3, 3, 1, 4, 0, 1, 2, 1, 1]
+# [array([ 0,  3,  6,  9, 12, 15, 18, 21, 24]), array([ 0,  9, 18, 27, 36, 45, 54, 63, 72, 81, 90])]
 
 def makeUserAverage(action,cap,maxBucket,col):
     buckets = [0] * maxBucket

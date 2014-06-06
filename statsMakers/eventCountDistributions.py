@@ -59,23 +59,23 @@ def main(sessDB='sessionsNew'):
     #                  steps=len(ks)
     #                  )
 
-    k = 'storefront_name'
-    groups = helpers.getKGroups(k,sessDB)
-    ks,counts = preprocessGroups(k,groups)
-    ks,counts = handleStoreFront(ks,counts)
-    helpers.makePlot(k,
-                     counts,
-                     yaxis=ks,
-                     # title='Distribution of events on stores',
-                     ylabel='Event count',
-                     xlabel='Store name',
-                     show=show,
-                     labels=ks,
-                     xticks=[]
-                     )
+    # k = 'storefront_name'
+    # groups = helpers.getKGroups(k,sessDB)
+    # ks,counts = preprocessGroups(k,groups)
+    # ks,counts = handleStoreFront(ks,counts)
+    # helpers.makePlot(k,
+    #                  counts,
+    #                  yaxis=ks,
+    #                  # title='Distribution of events on stores',
+    #                  ylabel='Event count',
+    #                  xlabel='Store name',
+    #                  show=show,
+    #                  labels=ks,
+    #                  xticks=[]
+    #                  )
 
-    eventsOnStorDistr(k,ks,counts,sessDB)
-    sys.exit()
+    # eventsOnStorDistr(k,ks,counts,sessDB)
+    # sys.exit()
     # k = 'retailer_brand'
     # groups = helpers.getKGroups(k,sessDB)
     # ks, counts = preprocessGroups(k,groups)
@@ -96,6 +96,7 @@ def main(sessDB='sessionsNew'):
     # groups = helpers.getKGroups(k,sessDB)
     # ks, counts = preprocessGroups(k,groups)
     # ks, counts = sortHours(k,ks,counts)
+    # xticks = helpers.makeTicks(yMax=len(counts),steps=len(counts))
     # helpers.makePlot(k,
     #                  counts,
     #                  yaxis=ks,
@@ -103,8 +104,9 @@ def main(sessDB='sessionsNew'):
     #                  ylabel='Event count',
     #                  xlabel='Time of day',
     #                  labels=ks,
-    #                  show=show,
-    #                  xticks=[]
+    #                  show=True,
+    #                  xticks=[],
+    #                  steps=len(counts)
     #                  )
 
     # k = 'user_id'

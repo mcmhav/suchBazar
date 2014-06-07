@@ -26,3 +26,4 @@ mahout/jars/*
 *.sh~
 evaluation/testur.py
 yoloswag.sh
+*.html

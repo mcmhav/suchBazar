@@ -202,16 +202,16 @@ main() {
   # Recommending with item_recommendation (MyMediaLite)
   if [ "$ITEMRECOMMENDERS" != "" ]; then
     for rectype in $ITEMRECOMMENDERS; do
-      medialitePredict "item_recommendation" $rectype $KRANGE;
-      evaluate "item_recommendation" $rectype;
+      medialitePredict "item_recommendation" $rectype "$KRANGE";
+      evaluate "item_recommendation" $rectype "$KRANGE";
     done
   fi
 
   # Recommending with rating predictions (MyMediaLite)
   if [ "$RANKRECOMMENDERS" != "" ]; then
     for rectype in $RANKRECOMMENDERS; do
-      medialitePredict "rating_prediction" $rectype $KRANGE;
-      evaluate "rating_prediction" "$rectype";
+      medialitePredict "rating_prediction" $rectype "$KRANGE";
+      evaluate "rating_prediction" "$rectype" "$KRANGE";
     done
   fi
 
@@ -238,6 +238,7 @@ evaluate() {
   # Possitional argument, indicating recommender system.
   RECOMMENDERSYS="${1}";
   RECOMMENDER="${2}";
+  KRANGE="${3}";
 
   echo "Evaluating $RECOMMENDERSYS using $RECOMMENDER"
 
@@ -263,23 +264,25 @@ evaluate() {
     OPT+=(--test-file $TEST_FILE);
 
     arr=("LeastSquareSLIM" "UserAttributeKNN" "UserKNN" "ItemKNN")
-    if [[ " ${arr[@]} " =~ " ${RECOMMENDER} " ]] && [ "$KVAL" != "" ]; then
-      for K in "$KVAL"; do
-        PRED_FILE="$GENERATED/predictions/${TRAIN}-$KVAL-$SPLIT-$RECOMMENDERSYS-$RECOMMENDER.predictions";
-        OPT+=(--prediction-file $PRED_FILE);
-        execute_eval OPT[@] $RECOMMENDERSYS;
+    if [[ " ${arr[@]} " =~ " ${RECOMMENDER} " ]] && [ "$KRANGE" != "" ]; then
+      for K in $KRANGE; do
+        PRED_FILE="$GENERATED/predictions/${TRAIN}-$K-$SPLIT-$RECOMMENDERSYS-$RECOMMENDER.predictions";
+        tmp="${OPT[@]}";
+        tmp+=" --prediction-file $PRED_FILE";
+        execute_eval "${tmp[@]}" $RECOMMENDERSYS;
       done
     else
       PRED_FILE="$GENERATED/predictions/${TRAIN}--$SPLIT-$RECOMMENDERSYS-$RECOMMENDER.predictions";
-      OPT+=(--prediction-file $PRED_FILE);
-      execute_eval OPT[@] $RECOMMENDERSYS;
+      tmp="${OPT[@]}";
+      tmp+=" --prediction-file $PRED_FILE";
+      execute_eval "${tmp[@]}" $RECOMMENDERSYS;
     fi
   done;
   wait;
 }
 
 execute_eval() {
-  OPTS="${!1}"
+  OPTS="${1}"
   RECOMMENDERSYS="${2}"
 
   if [ $RECOMMENDERSYS == "item_recommendation" ]; then
@@ -293,7 +296,7 @@ medialitePredict() {
   # Get arguments
   RECTYPE="${1}";
   RECOMMENDER="${2}";
-  KVAL="${3}";
+  KRANGE="${3}";
 
   echo "Recommending with $RECTYPE using $RECOMMENDER";
   for ttt in $trainTestTuples; do
@@ -317,21 +320,23 @@ medialitePredict() {
 
     # Do item predictions
     arr=("LeastSquareSLIM" "UserAttributeKNN" "UserKNN" "ItemKNN");
-    if [[ " ${arr[@]} " =~ " ${RECOMMENDER} " ]] && [ "$KVAL" != "" ]; then
-      for K in "$KVAL"; do
-        OPT+=("--recommender-options k=$K");
-        OPT+=("--recommender-options correlation=Jaccard");
-        execute_medialite OPT[@] "$PREDFILE" "$RECTYPE" "$K";
+    if [[ " ${arr[@]} " =~ " ${RECOMMENDER} " ]] && [ "$KRANGE" != "" ]; then
+      for K in $KRANGE; do
+        tmp="${OPT[@]}"
+        tmp+=" --recommender-options k=$K";
+        tmp+=" --recommender-options correlation=Jaccard";
+        execute_medialite "${tmp[@]}" "$PREDFILE" "$RECTYPE" "$K";
       done
     else
-      execute_medialite OPT[@] "$PREDFILE" "$RECTYPE";
+      tmp="${OPT[@]}"
+      execute_medialite "${tmp[@]}" "$PREDFILE" "$RECTYPE";
     fi
   done;
   wait;
 }
 
 execute_medialite() {
-  OPTS="${!1}";
+  OPTS="${1}";
   PREDFILE="$2";
   RECTYPE="$3";
   K="$4";

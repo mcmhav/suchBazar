@@ -50,8 +50,8 @@ public class TopKRecommendations {
         RecommenderBuilder builder = new RecommenderBuilder() {
             public Recommender buildRecommender(DataModel model) throws TasteException {
                 if (recommender.equals("itembased")) {
-                    ItemSimilarity similarity = new LogLikelihoodSimilarity(model);
-                    //ItemSimilarity similarity = new PearsonCorrelationSimilarity(model);
+                    //ItemSimilarity similarity = new LogLikelihoodSimilarity(model);
+                    ItemSimilarity similarity = new PearsonCorrelationSimilarity(model);
                     return new GenericItemBasedRecommender(model, similarity);
                 } else if(recommender.equals("userbased")) {
                     UserSimilarity similarity = new PearsonCorrelationSimilarity(model);
@@ -60,7 +60,7 @@ public class TopKRecommendations {
                 } else if (recommender.equals("itemuseraverage")) {
                     return new ItemUserAverageRecommender(model);
                 } else if (recommender.equals("svd")) {
-                    ALSWRFactorizer factorizer = new ALSWRFactorizer(model, 20, 100, 5, true, 20);
+                    ALSWRFactorizer factorizer = new ALSWRFactorizer(model, 100, 100, 15, true, 10);
                     return new SVDRecommender(model, factorizer);
                 } else if (recommender.equals("loglikelihood")) {
                     ItemSimilarity similarity = new LogLikelihoodSimilarity(model);
@@ -109,7 +109,7 @@ public class TopKRecommendations {
                 			found = true;
                 		}
                 	}
-            		
+
             	} catch(NoSuchUserException e){
             		found = true;
             		//System.out.println(e);

@@ -61,7 +61,7 @@ def prepareEvauationScoreToLaTeX(filename,us_coverage,is_coverage,auc,mapk,eStat
     f.write('14MAP_p:' + str(eStats[13]) + "\n")
     f.write('15us_coverage:' + str(eStats[14]) + "\n")
     f.write('16is_coverage:' + str(eStats[15]) + "\n")
-    f.write('k:' + str(eStats[15]) + "\n")
+    f.write('k:' + str(eStats[16]) + "\n")
     f.close()
 
     print ("wrote to %s" % saveName)

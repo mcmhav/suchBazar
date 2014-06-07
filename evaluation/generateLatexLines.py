@@ -28,7 +28,7 @@ def main():
     makeLaTeXTableColdstart(preLatexObjCold)
     makeLaTeXTable(preLatexObj,tops)
 
-def makeLaTeXTable(preLatexObj,tops,delimiter="\t&\t"):
+def makeLaTeXTable(preLatexObj,tops,delimiter=" &\t"):
     '''
     input:
         01auc:0.692771753958
@@ -46,20 +46,35 @@ def makeLaTeXTable(preLatexObj,tops,delimiter="\t&\t"):
         13MAP_w:0.00340725806452
         14MAP_p:0.00490196078431
     '''
+
     for rec in preLatexObj:
         for r in preLatexObj[rec]:
             print ('\\begin{table}\\centering\\resizebox{\columnwidth}{!}{\\begin{tabular}{*{19}l}\\toprule')
             print (tops + " \\\\")
             print ('\\midrule')
+            avg = [0] * 14
+            tc = 0
             for ra in preLatexObj[rec][r]:
                 line = ra + delimiter
                 s_sorted = sorted(preLatexObj[rec][r][ra].items(), key=operator.itemgetter(0))
+                c = 0
                 for s in s_sorted[:(len(s_sorted)-3)]:
                     tmp = str(('%.6f' % (float(s[1]))))
+                    avg[c] += (float(s[1]))
                     tmp = tmp.rstrip('0').rstrip('.') if '.' in tmp else tmp
                     line += tmp + delimiter
+                    c += 1
+                tc += 1
                 line += ' \\\\'
                 print (line)
+
+            avgline = 'avgs\t\t\t\t' + delimiter
+            for a in avg:
+                tmp = str(('%.6f' % (float(a/tc))))
+                tmp = tmp.rstrip('0').rstrip('.') if '.' in tmp else tmp
+                avgline += tmp + delimiter
+            avgline += '\\\\'
+            print (avgline)
             print ('\\bottomrule\\end{tabular}}\\caption{%s %s}\\end{table}'  % (r, rec))
 
 def makeLaTeXTableColdstart(preLatexObj):
@@ -78,6 +93,7 @@ def makeLaTeXTableColdstart(preLatexObj):
             e = open(folder + 'latextable' + nameID + '.tmptex','w')
             tmp = {}
             split_sorted = sorted(key[1].items(), key=operator.itemgetter(0))
+
             for split in split_sorted:
                 for score in split[1]:
                     if score not in tmp:
@@ -164,7 +180,7 @@ def readFromScoreFolder(path):
     preLatexObj = {}
 
     if len(files) == 0:
-        return {},{},[]
+        return {},{},''
 
     for f in files:
         # if isColdSplit(f):
@@ -232,6 +248,7 @@ def getIdsFromFileName(f):
             ids.append(getRecommender(fs) + '-' + getRecommenderAlg(f))
             ids.append(getRatingFile(fs))
             ids.append(getSplit(fs))
+            # sys.exit()
         else:
             ids = getIDFromFileName(f)
     else:
@@ -289,11 +306,8 @@ def getRecommenderAlg(filename):
 def getRatingFile(fs):
     '''
     '''
-    # rfn = ratingFileNames()
-    # for r in rfn:
-    #     if r in f:
-    #         return rfn[r]
-    return ratingFileNames(fs[1])
+    ratingName = fs[1].split('.')[0].replace('_',' ').title()
+    return ratingName
 
 def ratingFileNames(rf):
     return {

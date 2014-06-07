@@ -25,3 +25,4 @@ mahout/jars/*
 *.conf
 *.sh~
 evaluation/testur.py
+yoloswag.sh

@@ -191,7 +191,7 @@ main() {
           TRAINFILE="${FILENAME_NOEXT}-9.txt";
           trainTestTuples+="${TRAINFILE}:${TESTFILE} ";
       elif [ "$SPLIT" == "time" ]; then
-          python2.7 $ROOT/evaluation/simpleTimeSplit.py -i $FILE;
+          python2.7 $ROOT/evaluation/simpleTimeSplit.py -i $FILE -s "0.2";
           TESTFILE="${FILENAME_NOEXT}_timetest.txt";
           TRAINFILE="${FILENAME_NOEXT}_timetrain.txt";
           trainTestTuples+="${TRAINFILE}:${TESTFILE} ";

@@ -28,7 +28,7 @@ def main():
     makeLaTeXTableColdstart(preLatexObjCold)
     makeLaTeXTable(preLatexObj,tops)
 
-def makeLaTeXTable(preLatexObj,tops):
+def makeLaTeXTable(preLatexObj,tops,delimiter="\t&\t"):
     '''
     input:
         01auc:0.692771753958
@@ -52,14 +52,12 @@ def makeLaTeXTable(preLatexObj,tops):
             print (tops + " \\\\")
             print ('\\midrule')
             for ra in preLatexObj[rec][r]:
-                line = ra + "\t&\t"
-                # line = ra + ","
+                line = ra + delimiter
                 s_sorted = sorted(preLatexObj[rec][r][ra].items(), key=operator.itemgetter(0))
                 for s in s_sorted[:(len(s_sorted)-3)]:
                     tmp = str(('%.6f' % (float(s[1]))))
                     tmp = tmp.rstrip('0').rstrip('.') if '.' in tmp else tmp
-                    line += tmp + " &\t"
-                    # line += tmp + ","
+                    line += tmp + delimiter
                 line += ' \\\\'
                 print (line)
             print ('\\bottomrule\\end{tabular}}\\caption{%s %s}\\end{table}'  % (r, rec))
@@ -229,7 +227,13 @@ def getIdsFromFileName(f):
         ids.append(getRatingFile(fs))
         ids.append(getSplit(fs))
     elif len(fs) == 6:
-        ids = getIDFromFileName(f)
+        if fs[3] == 'time':
+            fs.insert(2,'')
+            ids.append(getRecommender(fs) + '-' + getRecommenderAlg(f))
+            ids.append(getRatingFile(fs))
+            ids.append(getSplit(fs))
+        else:
+            ids = getIDFromFileName(f)
     else:
         ids.append("old format")
         ids.append("old format")

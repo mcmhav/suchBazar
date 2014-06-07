@@ -68,7 +68,7 @@ def makeLaTeXTable(preLatexObj,tops,delimiter=" &\t"):
                 line += ' \\\\'
                 print (line)
 
-            avgline = 'avgs\t\t\t\t' + delimiter
+            avgline = 'avgs\t' + delimiter
             for a in avg:
                 tmp = str(('%.6f' % (float(a/tc))))
                 tmp = tmp.rstrip('0').rstrip('.') if '.' in tmp else tmp
@@ -237,6 +237,7 @@ def getIdsFromFileName(f):
     '''
     ids = []
     fs = f.split('-')
+    print (fs)
     # check if on the freshest form
     if len(fs) == 7:
         ids.append(getRecommender(fs) + '-' + getRecommenderAlg(f))

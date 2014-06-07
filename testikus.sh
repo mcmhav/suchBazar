@@ -227,7 +227,7 @@ main() {
   fi
 
   # Generate Latex-lines based on scoring files.
-  python $ROOT/evaluation/generateLatexLinesNormSplits.py;
+  python $ROOT/evaluation/generateLatexLines.py;
 }
 
 ###

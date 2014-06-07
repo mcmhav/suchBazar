@@ -139,6 +139,7 @@ def groupSessions(col):
             checkIfSessionMatchWithSessions([x[1] for x in sorted_events],uniqueSessions)
         count += 1
         helpers.printProgress(count,total)
+
     return uniqueSessions
 
 def drawTopSessions(uniqueSessions,mostPopularCap=6000,minCap=12,maxCap=14):
@@ -266,6 +267,12 @@ def drawCirclesAndStuff(uniqueSessions,reduced):
 
     edges = {}
     # {form:node, to:node, count:count}
+    counts = [int(x['count']) for x in uniqueSessions]
+    # print (counts)
+    # print (sum(counts))
+    # print (max(counts))
+    # print (len(uniqueSessions))
+    # sys.exit()
     for session in uniqueSessions:
         prevNode = ''
         for event in session['session']:
@@ -403,11 +410,16 @@ def checkIfSessionMatchWithSessions(session,uniqueSessions):
     # else:
     #     uniqueSessions['session'] = 1
 
+
     for uSession in uniqueSessions:
         # print (uSession)
         # sys.exit()
+
+        # test = sum([1 for i,j in zip(session,uSession['session']) if i==j])
+
+        # if test == max(len(session),len(uSession['session'])):
         if session == uSession['session']:
-            # uniqueSessions[uSession]['count'] +=1
+            # uniqueSessionsions[uSession]['count'] +=1
             uSession['count'] += 1
             return True
     tmp = {'session':session, 'count' :1}

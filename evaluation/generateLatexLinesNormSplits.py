@@ -53,11 +53,13 @@ def makeLaTeXTable(preLatexObj,tops):
             print ('\\midrule')
             for ra in preLatexObj[rec][r]:
                 line = ra + "\t&\t"
+                # line = ra + ","
                 s_sorted = sorted(preLatexObj[rec][r][ra].items(), key=operator.itemgetter(0))
                 for s in s_sorted[:(len(s_sorted)-3)]:
                     tmp = str(('%.6f' % (float(s[1]))))
                     tmp = tmp.rstrip('0').rstrip('.') if '.' in tmp else tmp
                     line += tmp + " &\t"
+                    # line += tmp + ","
                 line += ' \\\\'
                 print (line)
             print ('\\bottomrule\\end{tabular}}\\caption{%s %s}\\end{table}'  % (r, rec))
@@ -162,6 +164,9 @@ def readFromScoreFolder(path):
 
     preColdLatexObj = {}
     preLatexObj = {}
+
+    if len(files) == 0:
+        return {},{},[]
 
     for f in files:
         # if isColdSplit(f):

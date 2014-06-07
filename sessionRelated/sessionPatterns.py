@@ -255,7 +255,8 @@ def drawCirclesAndStuff(uniqueSessions,reduced):
     dot.node('F', 'product_wanted')
 
     if reduced:
-        dot.node('O', 'others')
+        print ()
+        # dot.node('O', 'others')
     else:
         dot.node('G', 'activity_clicked')
         dot.node('H', 'around_me_clicked')
@@ -288,6 +289,8 @@ def drawCirclesAndStuff(uniqueSessions,reduced):
         nodeFrom = edge[0]
         nodeTo = edge[1]
         if nodeFrom == 'A' and nodeTo not in nextFromInit:
+            continue
+        if nodeFrom == 'O' or nodeTo == 'O':
             continue
         color = coloMapper(nodeFrom)
         if edges[edge] < 100:

@@ -73,8 +73,7 @@ def main():
   offers_url = get_offer_url(1, cursor_key)
   page_size = sniff_page_size(offers_url)
 
-  #while current < page_size:
-  while current < 1001:
+  while current < page_size:
     # Increase counter and give status to user
     print ("Getting offer %s to %s (total: %s)" % (current, current + increment, page_size))
     current += increment

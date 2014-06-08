@@ -21,6 +21,8 @@ OPTIONS:
   -i <input file>         The absolute path to the event log file.
   -f <product features>   The absolute path to file containing all product
                           features obtained from the product DB.
+  -d <product file>       Where to find product file with JSON-data, used with
+                          cold-start splits. Defaults to 'generated/products.txt'
   -r <rank recommenders>  Which rank recommenders to user with MyMediaLite.
   -p <item recommenders>  Which item recommenders to use with MyMediaLite.
   -m <mahout algorithms>  Which recommender algorithms to use with mahout.

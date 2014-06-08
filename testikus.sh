@@ -28,6 +28,8 @@ OPTIONS:
                           'time' or 'random'.
   -k <k values>           When using ItemKNN, control which k-values to use, as
                           a string of integers. E.g. '10 20 50'
+  -a <filterbot settings> A string defining which filterbots to enable.
+                          Defaults to '0,0,0,0,0'.
   -b                      Convert all ratings to binary (all ratings to 1)
   -c                      Clean existing rating, prediction and scoring files
                           before running.
@@ -65,6 +67,9 @@ Examples:
 
   Split on time and use itemKNN with various K-values to do recommendations:
   $0 -i ../somefile.tab -s time -p 'ItemKNN' -k '10 20 50'
+
+  Split with cold start and use some filterbots:
+  $0 -i ../somefile.tab -s cold -m 'userbased' -a '1,1,1,0,0'
 EOL
 exit 1;
 }
@@ -85,9 +90,13 @@ ITEMRECOMMENDERS=""
 RANKRECOMMENDERS=""
 MAHOUTRECOMMENDERS=""
 COLDTIME=""
+BOTSETTINGS="0,0,0,0,0"
 
-while getopts "i:p:s:f:r:m:k:bcqht:" o; do
+while getopts "i:p:s:f:r:m:k:t:a:bcqh" o; do
   case "${o}" in
+    a)
+      BOTSETTINGS="${OPTARG}"
+      ;;
     i)
       INFILE="${OPTARG}"
       ;;
@@ -180,7 +189,7 @@ main() {
     trainTestTuples+="blend_usertrain3.txt:blend_usertest3.txt ";
     OPT=(--coldstart-split $BLEND_FILE);
     OPT+=(--feature-file $FEATURE_FILE);
-    python2.7 $ROOT/evaluation/evaluation.py "${OPT[@]}" $COLDTIME -fb '1,1,1,0,0';
+    python2.7 $ROOT/evaluation/evaluation.py "${OPT[@]}" "$COLDTIME" -fb "$BOTSETTINGS";
   else
     for FILE in "$GENERATED"/ratings/*; do
       FILENAME=$(basename $FILE);

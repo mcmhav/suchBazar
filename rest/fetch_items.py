@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import urllib2, base64, time, json, sys, os
+import urllib2, base64, time, json, sys, os, argparse
 
 # Settings
 base_url = "https://goodiez-staging.appspot.com/api/goodiez"
@@ -9,9 +9,18 @@ increment = 1000
 mode = 'file'
 
 # This folder
-base_dir = os.path.dirname(os.path.realpath(__file__))
-root_dir = os.path.dirname(base_dir)
-output_file = "%s/%s/%s" % (root_dir, 'generated', 'products_json.txt')
+# base_dir = os.path.dirname(os.path.realpath(__file__))
+# root_dir = os.path.dirname(base_dir)
+
+# Parse arguments
+parser = argparse.ArgumentParser(description = 'Blend ratings')
+parser.add_argument('-o', dest='outfile', help="Absolute path to output file, containing products in JSON.")
+args = parser.parse_args()
+
+if not args.outfile:
+  print "You need to specify where to save the product file. Aborting"
+  sys.exit(1)
+output_file = args.outfile
 
 def get_empty_mongo_db(db):
   # Reset it and return col-object.
@@ -64,7 +73,8 @@ def main():
   offers_url = get_offer_url(1, cursor_key)
   page_size = sniff_page_size(offers_url)
 
-  while current < page_size:
+  #while current < page_size:
+  while current < 1001:
     # Increase counter and give status to user
     print ("Getting offer %s to %s (total: %s)" % (current, current + increment, page_size))
     current += increment

@@ -81,6 +81,7 @@ GENERATED="$ROOT/generated"
 # Some parameters changable in the opts.
 INFILE="../datasets/v3/sobazar_events_prod_cleaned_formatted.tab"
 FEATURE_FILE="$GENERATED/itemFeatures.txt"
+PRODUCT_FILE="$GENERATED/products.txt"
 CLEAN=0
 SPLIT=""
 BINARY=0
@@ -89,10 +90,10 @@ KRANGE=""
 ITEMRECOMMENDERS=""
 RANKRECOMMENDERS=""
 MAHOUTRECOMMENDERS=""
-COLDTIME=""
-BOTSETTINGS="0,0,0,0,0"
+COLDTIME="";
+BOTSETTINGS="0,0,0,0,0";
 
-while getopts "i:p:s:f:r:m:k:t:a:bcqh" o; do
+while getopts "i:p:s:f:r:m:k:t:a:d:bcqh" o; do
   case "${o}" in
     a)
       BOTSETTINGS="${OPTARG}"
@@ -111,6 +112,9 @@ while getopts "i:p:s:f:r:m:k:t:a:bcqh" o; do
       ;;
     m)
       MAHOUTRECOMMENDERS="${OPTARG}"
+      ;;
+    d)
+      PRODUCT_FILE="${OPTARG}"
       ;;
     s)
       SPLIT="${OPTARG}"
@@ -168,13 +172,27 @@ main() {
   elif [ "$SPLIT" == "cold" ]; then
     # Where to find blend file.
     BLEND_FILE="$GENERATED/ratings/blend.txt";
+    if [ ! -f "$BLEND_FILE" ]; then
+      echo "Need blend file ($BLEND_FILE) in order to do cold start splits. Aborting."; exit 1;
+    fi
 
     # Check that necessary files are OK.
     if [ ! -f "$FEATURE_FILE" ]; then
-      echo "Need featurefile defined with '-f <featurefile>' in order to do cold start splits. $FEATURE_FILE not found. Aborting."; exit 1;
-    fi
-    if [ ! -f "$BLEND_FILE" ]; then
-      echo "Need blend file ($BLEND_FILE) in order to do cold start splits. Aborting."; exit 1;
+
+      # We need to have a product file containing all our data. Ask if user wants to download it.
+      if [ ! -f "$PRODUCT_FILE" ]; then
+        echo "No featurefile defined. Trying to create it, but you do not have a product DB downloaded."
+        read -p "Do you wish to download product data from the SoBazaar API? " yn
+        case $yn in
+          [Yy]*) create_productfile "$PRODUCT_FILE";;
+          [Nn]*) echo "Ok. Then I have to abort, as I can not do cold-start splits."; exit;;
+          *) echo "Please answer yes or no [y/n]"; exit 1;;
+        esac
+      fi
+
+      # At this point we are guaranteed a product file. So we can create the featurefile as well.
+      echo "No featurefile found! Creating from ${BLEND_FILE} and ${PRODUCT_FILE}, as: '$FEATURE_FILE'";
+      create_featurefile "$FEATURE_FILE" "$PRODUCT_FILE" "$BLEND_FILE";
     fi
 
     # Cold start split
@@ -189,7 +207,7 @@ main() {
     trainTestTuples+="blend_usertrain3.txt:blend_usertest3.txt ";
     OPT=(--coldstart-split $BLEND_FILE);
     OPT+=(--feature-file $FEATURE_FILE);
-    python2.7 $ROOT/evaluation/evaluation.py "${OPT[@]}" "$COLDTIME" -fb "$BOTSETTINGS";
+    python2.7 $ROOT/evaluation/evaluation.py "${OPT[@]}" -fb "$BOTSETTINGS" $COLDTIME;
   else
     for FILE in "$GENERATED"/ratings/*; do
       FILENAME=$(basename $FILE);
@@ -390,6 +408,18 @@ mahoutPredict() {
   done;
   cd -
   wait;
+}
+
+create_featurefile() {
+  # Argument 1: The featurefile to create.
+  FEATURE_FILE="$1";
+  PRODUCT_FILE="$2";
+  python2.7 $ROOT/contentBased/main.py -o $FEATURE_FILE -i $PRODUCT_FILE;
+}
+
+create_productfile() {
+  echo "Creating product file, saving it as: '$PRODUCT_FILE'"
+  python2.7 $ROOT/rest/fetch_items.py -o "$PRODUCT_FILE"
 }
 
 split() {

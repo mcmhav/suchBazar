@@ -6,6 +6,7 @@ import re
 import pymongo
 import sys
 import os
+import argparse
 # from nltk.stem.snowball import NorwegianStemmer
 # from nltk.stem.snowball import EnglishStemmer
 # from nltk import wordpunct_tokenize
@@ -499,22 +500,38 @@ def writeProductsToFile(filename, products):
         writer.writerows(products)
 
 def main():
+    # Parse arguments.
+    parser = argparse.ArgumentParser(description = 'Create contentbased featurefile')
+    parser.add_argument('-i', dest='productfile', help="Path to the 'database' file containing all products.")
+    parser.add_argument('-o', dest='outfile', help="Absolute path to output file, containing product features.")
+    parser.add_argument('-r', dest='ratingfile', help="Absolute path to a rating file")
+    args = parser.parse_args()
+
+    # Some configs for path handling.
     SCRIPT_FOLDER = os.path.dirname(os.path.realpath(__file__))
     ROOT_FOLDER = os.path.dirname(SCRIPT_FOLDER)
     GENERATED_LOCATION = 'generated'
 
+    # Default to using MongoDB.
+    MONGO_DB, col = True, 'items'
+
+    # Ensure the arguments to the program are correct, and build paths.
     RATING_FILE = ROOT_FOLDER + '/' + GENERATED_LOCATION + '/' + 'ratings/blend.txt'
     OUT_FILE = ROOT_FOLDER + '/' + GENERATED_LOCATION + '/' + 'itemFeatures.txt'
-    products_json = None
-
-    # Check if we want to generate from file or mongodb
-    MONGO_DB, col = True, 'items'
     PRODUCT_FILE = ''
-    if len(sys.argv) > 1:
-      PRODUCT_FILE = sys.argv[1]
+    if args.productfile and args.outfile:
+      OUT_FILE = args.outfile
+      PRODUCT_FILE = args.productfile
+
+      # And this means that we do not want to use MongoDB.
       MONGO_DB, col = False, None
 
+    # The rating file can be specified too.
+    if args.ratingfile:
+      RATING_FILE = args.ratingfile
+
     # Read the JSON-data of product descriptions from file or DB.
+    products_json = None
     if MONGO_DB:
       col = get_mongo_db()
       products_json = getProductsMongoDb(col)

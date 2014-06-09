@@ -63,7 +63,7 @@ def testWithMapReduce(col):
     result = col.map_reduce(mapper, reducer, "myresults")
     return result.find()
 
-def main(prodDB='prodR',sessionDB='sessionsNew3'):
+def main(prodDB='prodR',sessionDB='sessionsNew4'):
     print ("Adding session numbers to the events")
     col = helpers.getCollection(prodDB)
     sessCol = helpers.getCollection(sessionDB,True)
@@ -76,6 +76,12 @@ def main(prodDB='prodR',sessionDB='sessionsNew3'):
     #                             {'event_id':'product_detail_clicked'}
     #                         ]})
     # print (len(users))
+
+    # saf = testWithMapReduce(col)
+
+    # for s in saf:
+    #     print (s)
+    # sys.exit()
 
     users = [x['_id'] for x in testWithMapReduce(col)]
 

@@ -90,11 +90,12 @@ def main(sessDB='sessionsNew3',show=False,save=False):
     groups = helpers.getKGroups(k,sessDB)
     ks, counts = preprocessGroups(k,groups)
     ks,counts = sortUsersOnEvenCount(ks,counts,maximum)
+    ks = ks[1:]
     xTicks = makeTicks(yMax=maximum)
     helpers.makePlot(
                         k,
-                        ks,
-                        yaxis=ks,
+                        ks[1:],
+                        yaxis=ks[1:],
                         # title='Distribution of events for users',
                         ylabel='User count',
                         xlabel='Event count',
@@ -110,9 +111,15 @@ def main(sessDB='sessionsNew3',show=False,save=False):
     ks = []
     maximum = 250
     groups = helpers.getKGroups(k,sessDB)
-    ks = [int(x[k]) for x in groups]
+
     ks, counts = preprocessGroups(k,groups)
-    ks,yTicks,xTicks = sortUsersOnEvenCountCum(ks,counts,maximum)
+
+    ks,xss,xticks = groupProductsOnCounts(ks,counts,cap=maximum)
+    yticks = helpers.makeTicks(yMax=max(ks),steps=10)
+    yticksl = helpers.makeTicks(yMax=100,steps=10)
+    xticks = helpers.makeTicks(yMax=len(ks),steps=10)
+    # ks,yTicks,xTicks = sortUsersOnEvenCountCum(ks,counts,maximum)
+    ks = ks[2:]
     helpers.makePlot(
                         k + 'cum',
                         ks,
@@ -122,9 +129,9 @@ def main(sessDB='sessionsNew3',show=False,save=False):
                         xlabel='Event count',
                         show=show,
                         grid=True,
-                        yticks=yTicks,
-                        xticks=xTicks,
-                        save=save
+                        xticks=[xticks,xticks],
+                        yticks=[yticks,yticksl],
+                        save=True
                         # labels=[1,5,10],
                         # ticks=[[1,5,10],[1,5,10]]
                     )
@@ -314,7 +321,6 @@ def sortHours(k,ks,counts):
 def sortCountOnKSS(ks,counts,cap):
     ks = sorted(ks,reverse=False)
     counts = sorted(counts,reverse=False)
-    print (ks)
     tmp = []
     cv = 0
     prev = 0
@@ -325,8 +331,6 @@ def sortCountOnKSS(ks,counts,cap):
         else:
             tmp.append(0)
         prev = k
-    print (tmp)
-    sys.exit()
     tmp_count = []
     for c in counts:
         if c > cap:
@@ -334,8 +338,6 @@ def sortCountOnKSS(ks,counts,cap):
         tmp_count.append(c)
     ks = tmp[::-1]
     ks = ks[:len(tmp_count)]
-    print (ks)
-    print (sum(ks))
     return ks,tmp_count
 
 def sortCountOnKS(ks,counts,cap):
@@ -369,6 +371,7 @@ def sortUsersOnEvenCount(ks,counts,cap,reverse=False):
     for c in counts_sorted:
         ks[c] += 1
         i += 1
+
 
     return ks[1:len(ks)],tmp
 

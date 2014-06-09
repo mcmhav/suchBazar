@@ -108,7 +108,6 @@ def writeToFile(uniqueSessions,filename):
         e.write(json.dumps(x) + "\n")
     e.close()
     print ("Done writing")
-    sys.exit()
 
 def getFromFile(filename):
     '''
@@ -211,6 +210,7 @@ def allInOneWithFlow(uniqueSessions):
 
 def renderDot(dotSource, name):
     dotSource.render(savePath + name + '-gvfile', view=False)
+    print ("Saved to %s%s-gvfile" % (savePath,name))
 
 def drawSeparateSession(session,sid,lol):
     dot = Digraph(comment='Session' + str(sid))

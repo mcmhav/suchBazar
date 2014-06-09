@@ -8,11 +8,11 @@ import numpy as np
 import math
 import longTailSomething
 
-def main(sessDB='sessionsNew'):
+def main(sessDB='sessionsNew3'):
     '''
     '''
     longTailSomething.main()
-    thresholds = np.arange(0,1.0001,0.0001)
+    thresholds = np.arange(0,1.001,0.001)
     threshold = .30
     countsOnItems = helpers.getKGroups('product_id',sessDB)
     print ()

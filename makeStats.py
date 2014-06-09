@@ -12,13 +12,13 @@ from statsMakers import itemTimeSpan
 from statsMakers import timeSpentOnItemBeforeAction
 from statsMakers import ratingsPerUser
 from statsMakers import userAges
-# from statsMakers import makeSimpleStats
+from statsMakers import makeSimpleStats
 
 def main():
     print ("start")
-    db = 'sessionsNew2'
-    show = True
-    save = False
+    db = 'sessionsNew3'
+    show = False
+    save = True
     makeNew = False
     eventCountDistributions.main(sessDB=db,show=show, save=save)
     eventPerDay.main(sessDB=db,show=show, save=save)
@@ -31,7 +31,7 @@ def main():
     simpleGeoPlotter.main(sessDB=db,show=show, save=save)
     timeSpentOnItemBeforeAction.main(sessDB=db,makeNew=makeNew,show=show, save=save)
     userAges.main(sessDB=db,show=show, save=save)
-    # makeSimpleStats.main()
+    makeSimpleStats.main(sessDB=db)
     print ("Done!")
 
 

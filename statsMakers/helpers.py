@@ -132,11 +132,13 @@ def getKGroups(k,sessDB):
 
     groups = col.group(
                            key={k:1},
-                           condition={'$and':[
+                           condition={
+                           '$and':[
                                 {k:{'$ne':'NULL'}},
                                 {k:{'$ne':'N/A'}},
                                 {k:{'$ne':''}},
-                            ]},
+                            ]
+                            },
                            reduce=reducer,
                            initial={'count':0}
                        )

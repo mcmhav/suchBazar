@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 
-def main(sessDB='sessionsNew2',show=False,save=False):
+def main(sessDB='sessionsNew3',show=False,save=False):
 
     k = 'product_id'
     groups = helpers.getKGroups(k,sessDB)
@@ -79,7 +79,7 @@ def main(sessDB='sessionsNew2',show=False,save=False):
                      ylabel='Event count',
                      xlabel='Time of day',
                      labels=ks,
-                     show=True,
+                     show=show,
                      xticks=[],
                      steps=len(counts),
                      save=save
@@ -150,7 +150,7 @@ def main(sessDB='sessionsNew2',show=False,save=False):
                         # title='Cumulative distribution of sessions for users',
                         ylabel='Amount of users',
                         xlabel='Session count',
-                        show=True,
+                        show=show,
                         grid=True,
                         xticks=[xTicks,xTicks],
                         yticks=yTicks,

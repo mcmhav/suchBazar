@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-def main(sessDB='sessionsNew2',show=False,save=False):
+def main(sessDB='sessionsNew3',show=False,save=False):
     '''
     '''
     cap = 150
@@ -22,10 +22,11 @@ def main(sessDB='sessionsNew2',show=False,save=False):
     avgCount = helpers.getAvgOfCount(counts)
 
     xaxis = groupEventCountsOnCount(counts,cap)
-
+    xaxis = xaxis[1:]
     plotRatingCounts(xaxis,'ratingsPerUser',ylabel='Amount of Users',xlabel='Amount of item interactions',show=show,save=save)
 
     xaxis = groupEventCountsOnCountCum(counts,len(xaxis))
+    xaxis = xaxis[1:]
     yticks = [helpers.makeTicks(yMax=max(xaxis),steps=10),helpers.makeTicks(yMax=100,steps=10)]
     plotRatingCounts(xaxis,'ratingsPerUsercum',ylabel='Percentage of Users',xlabel='Amount of item interactions',yticks=yticks,show=show,save=save)
 

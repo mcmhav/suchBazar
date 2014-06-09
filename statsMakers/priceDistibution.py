@@ -8,9 +8,25 @@ import os
 import sys
 import math
 import operator
+import numpy as np
 
-def main(sessDB='sessionsNew',show=False,save=False, writeLocation='data/stats/priceDistribution'):
+def main(sessDB='sessionsNew3',show=False,save=False, writeLocation='data/stats/priceDistribution'):
     priceCounts = findPriceForItems(sessDB)
+
+    # tot = 0
+    # c = 0
+    # prices = []
+    # for p in priceCounts:
+    #     tot += p*priceCounts[p]
+    #     c += priceCounts[p]
+    #     for x in range(0,priceCounts[p]):
+    #         prices.append(p)
+
+    # avg = tot/c
+    # print (avg)
+    # median = np.median(prices)
+    # print (median)
+    # sys.exit()
 
     buckets=25
     bucketSize=100

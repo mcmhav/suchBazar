@@ -6,9 +6,6 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-import ratingsPerUser
-import longTailSomething
-from collections import OrderedDict
 
 def main(sessDB='sessionsNew3'):
     '''

@@ -237,7 +237,7 @@ def getIdsFromFileName(f):
     '''
     ids = []
     fs = f.split('-')
-    print (fs)
+    # print (fs)
     # check if on the freshest form
     if len(fs) == 7:
         ids.append(getRecommender(fs) + '-' + getRecommenderAlg(f))

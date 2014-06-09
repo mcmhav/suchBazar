@@ -93,7 +93,7 @@ ITEMRECOMMENDERS=""
 RANKRECOMMENDERS=""
 MAHOUTRECOMMENDERS=""
 COLDTIME="";
-BOTSETTINGS="0,0,0,0,0";
+BOTSETTINGS="1,1,1,1,1";
 
 while getopts "i:p:s:f:r:m:k:t:a:d:bcqh" o; do
   case "${o}" in
@@ -223,6 +223,8 @@ main() {
           python2.7 $ROOT/evaluation/simpleTimeSplit.py -i $FILE -s "0.2";
           TESTFILE="${FILENAME_NOEXT}_timetest.txt";
           TRAINFILE="${FILENAME_NOEXT}_timetrain.txt";
+          # if [ "$FILENAME" == "blend.txt" ]; then
+          # fi
           trainTestTuples+="${TRAINFILE}:${TESTFILE} ";
       fi
     done

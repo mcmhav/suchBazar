@@ -9,7 +9,7 @@ import sys
 import math
 import operator
 
-def main(sessDB='sessionsNew', writeLocation='data/stats/priceDistribution'):
+def main(sessDB='sessionsNew',show=False,save=False, writeLocation='data/stats/priceDistribution'):
     priceCounts = findPriceForItems(sessDB)
 
     buckets=25
@@ -18,13 +18,13 @@ def main(sessDB='sessionsNew', writeLocation='data/stats/priceDistribution'):
 
     priceBuckets = makeBuckets(priceCounts,buckets,maxPrice)
     yTicksl = helpers.makeTicks(yMax=maxPrice,steps=10)
-    makePlot(priceBuckets,maxPrice,yTicksl,"priceDistribution")
+    makePlot(priceBuckets,maxPrice,yTicksl,"priceDistribution",show=show,save=save)
 
     priceBuckets = makeCumBuckets(priceCounts,buckets,bucketSize)
     yTicksl = helpers.makeTicks(yMax=100,steps=10)
-    makePlot(priceBuckets,maxPrice,yTicksl,"cumpriceDistribution")
+    makePlot(priceBuckets,maxPrice,yTicksl,"cumpriceDistribution",show=show,save=save)
 
-def makePlot(priceBuckets,maxPrice,yTicksl,name):
+def makePlot(priceBuckets,maxPrice,yTicksl,name,show=False,save=False):
     xticks = helpers.makeTicks(yMax=len(priceBuckets))
     xticksl = helpers.makeTicks(yMax=maxPrice)
     yTicks = helpers.makeTicks(yMax=max(priceBuckets),steps=10)
@@ -39,7 +39,9 @@ def makePlot(priceBuckets,maxPrice,yTicksl,name):
                     # show=True,
                     grid=True,
                     xticks=[xticks,xticksl],
-                    yticks=[yTicks,yTicksl]
+                    yticks=[yTicks,yTicksl],
+                    show=show,
+                    save=save
                     # labels=[1,5,10],
                     # ticks=[[1,5,10],[1,5,10]]
                 )

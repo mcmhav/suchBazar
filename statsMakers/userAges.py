@@ -8,16 +8,16 @@ import matplotlib.pyplot as plt
 import os
 from pylab import *
 
-def main(sessDB='sessionsNew'):
+def main(sessDB='sessionsNew',show=False,save=False):
     '''
     '''
     col = helpers.getCollection(sessDB)
     groups = getMaxMinForUsers(col)
     timeSpans = [int(x['timespan']) for x in groups]
-    plotItemTimeSpans(timeSpans)
-    doublePlotAVG(groups)
+    plotItemTimeSpans(timeSpans,show=show,save=save)
+    doublePlotAVG(groups,show=show,save=save)
 
-def doublePlotAVG(groups):
+def doublePlotAVG(groups,show=False,save=False):
     '''
     '''
     counts = [int(x['count']) for x in groups]
@@ -65,10 +65,12 @@ def doublePlotAVG(groups):
 
     plot(xr,yr, 'yo', xr, fit_fn(xr), '--k',color='r',markersize=0)
 
-    location = os.path.dirname(os.path.abspath(__file__)) + "/../../muchBazar/src/image/avglifetimeoncountuser.png"
-    plt.savefig(location)
-    print ('Distribution written to: %s' % location)
-
+    if save:
+        location = os.path.dirname(os.path.abspath(__file__)) + "/../../muchBazar/src/image/avglifetimeoncountuser.png"
+        plt.savefig(location)
+        print ('Distribution written to: %s' % location)
+    if show:
+        plt.show()
     # helpers.makePlot(
     #     'avglifetimeoncount',
     #     bars[::-1],
@@ -83,7 +85,7 @@ def cutTopN(listur,N):
         listur.remove(max(listur))
     return listur
 
-def plotItemTimeSpans(timeSpans):
+def plotItemTimeSpans(timeSpans,show=False,save=False):
     '''
     '''
     buckets,xTicks = makeBuckets(timeSpans)
@@ -95,7 +97,8 @@ def plotItemTimeSpans(timeSpans):
         # title='Time between first event on item till the last',
         ylabel='Amount of users',
         xlabel='Time in weeks',
-        show=False,
+        show=show,
+        save=save,
         grid=True,
         xticks=xTicks
     )

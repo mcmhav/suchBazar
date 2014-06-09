@@ -60,7 +60,7 @@ public class TopKRecommendations {
                 } else if (recommender.equals("itemuseraverage")) {
                     return new ItemUserAverageRecommender(model);
                 } else if (recommender.equals("svd")) {
-                    ALSWRFactorizer factorizer = new ALSWRFactorizer(model, 100, 100, 15, true, 10);
+                    ALSWRFactorizer factorizer = new ALSWRFactorizer(model, 100, 150, 15, true, 10);
                     return new SVDRecommender(model, factorizer);
                 } else if (recommender.equals("loglikelihood")) {
                     ItemSimilarity similarity = new LogLikelihoodSimilarity(model);

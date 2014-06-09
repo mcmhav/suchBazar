@@ -12,9 +12,9 @@ import matplotlib.ticker as ticker
 import operator
 import os
 
-def main(sessDB='sessionsNew', writeLocation='stats/eventsPerDay'):
+def main(sessDB='sessionsNew', show=False, save=False, writeLocation='stats/eventsPerDay'):
   eventGroups = eventsPerDay(sessDB)
-  makePlot(eventGroups)
+  makePlot(eventGroups,show=show,save=save)
 
 def writeEventsToFile(eventGroups):
   c = helpers.getCSVWriter(args.d + '/' + 'eventsPerDay')
@@ -46,7 +46,7 @@ def eventsPerDay(sessDB):
                      )
   return eventGroups
 
-def makePlot(eventGroups):
+def makePlot(eventGroups,show=False,save=False):
   # datafile = cbook.get_sample_data('aapl.csv', asfileobj=False)
   # print ('loading %s' % datafile)
   # dy_s = sorted(eventGroups, cmp=lambda d,m,y: k['dy'], reverse=True)
@@ -83,8 +83,12 @@ def makePlot(eventGroups):
   plt.grid(True)
 
   location = os.path.dirname(os.path.abspath(__file__)) + "/../../muchBazar/src/image/eventsPerDay.png"
-  plt.savefig(location)
-  print ("Event per day written to: %s" % location)
+  if save:
+    plt.savefig(location)
+    print ("Event per day written to: %s" % location)
+
+  if show:
+    plt.show()
 
 if __name__ == "__main__":
     main()

@@ -31,9 +31,8 @@ total = 0
 usersOver19 =0
 
 PERCENTAGE_MATCH=100
-makeNew = False
 
-def main(sessDB='sessionsNew'):
+def main(sessDB='sessionsNew3',makeNew=False):
     '''
         Make easy to change from "product_purchase_intended" to "product_purchased"
 

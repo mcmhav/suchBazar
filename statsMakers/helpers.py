@@ -68,7 +68,8 @@ def makePlot(
                 grid=True,
                 xticks=[],
                 yticks=[],
-                steps=5
+                steps=5,
+                save=False
             ):
     '''
     '''
@@ -108,10 +109,11 @@ def makePlot(
     plt.axis([0, len(yaxis), 0, max(counts) + (max(counts)/100)])
     plt.grid(grid)
     location = ROOT_FOLDER + "/../muchBazar/src/image/" + k + "distribution.png"
-    plt.savefig(location)
+    if save:
+        plt.savefig(location)
+        print ('Distribution written to: %s' % location)
     if show:
         plt.show()
-    print ('Distribution written to: %s' % location)
 
 def makeTicks(yMin=0,yMax=100,steps=5):
     '''
@@ -182,7 +184,8 @@ def plotAverageSomething(
         capAtEnd=False,
         bucTuner=4,
         capVal=0,
-        addCapped=False
+        addCapped=False,
+        save=False
     ):
     '''
     '''
@@ -202,7 +205,8 @@ def plotAverageSomething(
         xlabel=xlabel,
         show=show,
         grid=grid,
-        xticks=xTicks
+        xticks=xTicks,
+        save=save
     )
 
 def capIt(avgs,capVal,addCapped=False):
@@ -254,6 +258,34 @@ def removeTrailing0Buckets(buckets):
 
 def getAvgOfCount(counts):
     return sum(counts)/len(counts)
+
+def getUserEventOnItemCounts(sessDB):
+    col = helpers.getCollection(sessDB)
+    reducer = Code("""
+                    function (cur,result) {
+                        tmp = [
+                            'product_purchase_intended',
+                            'product_wanted',
+                            'product_detail_clicked'
+                        ];
+                        hasProp = (tmp.indexOf(cur.event_id) > -1);
+                        if (hasProp) {
+                            result.count += 1
+                        }
+                    }
+                   """)
+    k = 'user_id'
+    groups = col.group(
+                           key={k:1},
+                           condition={'$and':[
+                                {k:{'$ne':'NULL'}},
+                                {k:{'$ne':'N/A'}},
+                                {k:{'$ne':''}}
+                            ]},
+                           reduce=reducer,
+                           initial={'count':0}
+                       )
+    return groups
 
 if __name__ == "__main__":
     main()

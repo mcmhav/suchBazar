@@ -6,7 +6,6 @@ from mongoDBAdders import *
 from statsMakers import priceDistibution
 from statsMakers import eventPerDay
 from statsMakers import simpleGeoPlotter
-from statsMakers import globalSessionsCounter
 from statsMakers import eventCountDistributions
 from statsMakers import huntNegativeFeedback
 from statsMakers import itemTimeSpan
@@ -17,16 +16,21 @@ from statsMakers import userAges
 
 def main():
     print ("start")
-    priceDistibution.main()
-    eventPerDay.main()
-    simpleGeoPlotter.main()
-    globalSessionsCounter.main()
-    eventCountDistributions.main()
-    huntNegativeFeedback.main()
-    itemTimeSpan.main()
-    timeSpentOnItemBeforeAction.main()
-    ratingsPerUser.main()
-    userAges.main()
+    db = 'sessionsNew2'
+    show = True
+    save = False
+    makeNew = False
+    eventCountDistributions.main(sessDB=db,show=show, save=save)
+    eventPerDay.main(sessDB=db,show=show, save=save)
+    huntNegativeFeedback.main(sessDB=db,show=show, save=save, makeNew=makeNew)
+
+    itemTimeSpan.main(sessDB=db,show=show, save=save)
+
+    priceDistibution.main(sessDB=db,show=show, save=save)
+    ratingsPerUser.main(sessDB=db,show=show, save=save)
+    simpleGeoPlotter.main(sessDB=db,show=show, save=save)
+    timeSpentOnItemBeforeAction.main(sessDB=db,makeNew=makeNew,show=show, save=save)
+    userAges.main(sessDB=db,show=show, save=save)
     # makeSimpleStats.main()
     print ("Done!")
 

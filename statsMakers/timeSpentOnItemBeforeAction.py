@@ -15,17 +15,17 @@ folder = SCRIPT_FOLDER + '/' + DATA_FOLDER
 if not os.path.exists(folder):
         os.makedirs(folder)
 
-def main(sessDB='sessionsNew'):
+def main(sessDB='sessionsNew3',makeNew=False,show=False,save=False):
     col = helpers.getCollection(sessDB)
     capVal=12
-    actionTime('product_purchase_intended',col,"before purchase",capVal=capVal)
-    actionTime('product_wanted',col,"before want",capVal=capVal)
+    actionTime('product_purchase_intended',col,"before purchase",capVal=capVal,makeNew=makeNew,show=show,save=save)
+    actionTime('product_wanted',col,"before want",capVal=capVal,makeNew=makeNew,show=show,save=save)
 
-def actionTime(action,col,name,makeNew=False,capVal=0):
+def actionTime(action,col,name,makeNew=False,capVal=0,save=False,show=True):
     cap = 2000
     maxBucket = 50
 
-    if os.path.isfile(folder + '/' + action + '.csv'):
+    if os.path.isfile(folder + '/' + action + '.csv') and not makeNew:
         userAverages = getActionFile(action)
     else:
         userAverages,buckets = makeUserAverage(action,cap,maxBucket,col)
@@ -42,9 +42,10 @@ def actionTime(action,col,name,makeNew=False,capVal=0):
         # title='Time looked at item ' + name,
         ylabel='Amount of Users',
         xlabel='View time ',
-        show=False,
+        show=show,
         capAtEnd=True,
-        capVal=capVal
+        capVal=capVal,
+        save=save
     )
 
 # [70, 94, 78, 48, 43, 20, 28, 15, 12, 6, 12, 3, 6, 4, 2, 3, 4, 4, 0, 1]

@@ -14,13 +14,13 @@ folder = SCRIPT_FOLDER + '/' + DATA_FOLDER
 if not os.path.exists(folder):
         os.makedirs(folder)
 
-def main(sessDB='sessionsNew'):
+def main(sessDB='sessionsNew3',show=False, save=False,makeNew=False):
     col = helpers.getCollection(sessDB)
-    findTimeFor("product_detail_clicked",col)
+    findTimeFor("product_detail_clicked",col,makeNew=makeNew,show=show,save=save)
 
-def findTimeFor(action,col):
+def findTimeFor(action,col,makeNew=False,show=False, save=False):
 
-    if os.path.isfile(folder + '/' + action + '.csv'):
+    if os.path.isfile(folder + '/' + action + '.csv') and not makeNew:
         avgTimeForUser = getActionFile(action)
     else:
         avgTimeForUser = findUserAVGS(action,col)
@@ -32,7 +32,8 @@ def findTimeFor(action,col):
         # title='Bounce rate',
         ylabel='Amount of Users',
         xlabel='View time',
-        show=False,
+        show=show,
+        save=save,
         capAtEnd=True,
         capVal=70,
         # addCapped=True
@@ -92,7 +93,6 @@ def findUserAVGS(action,col):
     print (zeroC)
     print (count)
     print (globalTot)
-    # e.close()
     return avgTimeForUser
 
 def getActionFile(action):

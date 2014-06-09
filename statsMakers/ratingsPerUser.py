@@ -7,23 +7,30 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-def main(sessDB='sessionsNew'):
+def main(sessDB='sessionsNew2',show=False,save=False):
     '''
     '''
     cap = 150
     counts = getCounts(sessDB)
+
+    # print (len(counts))
+
+    # print (np.mean(counts))
+    # print (np.median(counts))
+
+    # sys.exit()
     avgCount = helpers.getAvgOfCount(counts)
 
     xaxis = groupEventCountsOnCount(counts,cap)
 
-    plotRatingCounts(xaxis,'ratingsPerUser',ylabel='Amount of Users',xlabel='Amount of item interactions')
+    plotRatingCounts(xaxis,'ratingsPerUser',ylabel='Amount of Users',xlabel='Amount of item interactions',show=show,save=save)
 
     xaxis = groupEventCountsOnCountCum(counts,len(xaxis))
     yticks = [helpers.makeTicks(yMax=max(xaxis),steps=10),helpers.makeTicks(yMax=100,steps=10)]
-    plotRatingCounts(xaxis,'ratingsPerUsercum',ylabel='Percentage of Users',xlabel='Amount of item interactions',yticks=yticks)
+    plotRatingCounts(xaxis,'ratingsPerUsercum',ylabel='Percentage of Users',xlabel='Amount of item interactions',yticks=yticks,show=show,save=save)
 
 def getCounts(sessDB):
-    ueic = getUserEventOnItemCounts(sessDB)
+    ueic = helpers.getUserEventOnItemCounts(sessDB)
 
     ueic_sorted = sorted(ueic, key=lambda k: k['count'],reverse=True)
     counts = [int(x['count']) for x in ueic_sorted]
@@ -62,7 +69,8 @@ def plotRatingCounts(
         show=False,
         ylabel='',
         xlabel='',
-        yticks=[]
+        yticks=[],
+        save=False
     ):
     '''
     '''
@@ -76,36 +84,10 @@ def plotRatingCounts(
         show=show,
         grid=True,
         yticks=yticks,
-        xticks=[helpers.makeTicks(yMax=len(xaxis)),helpers.makeTicks(yMax=len(xaxis))]
+        xticks=[helpers.makeTicks(yMax=len(xaxis)),helpers.makeTicks(yMax=len(xaxis))],
+        save=save
     )
 
-def getUserEventOnItemCounts(sessDB):
-    col = helpers.getCollection(sessDB)
-    reducer = Code("""
-                    function (cur,result) {
-                        tmp = [
-                            'product_purchase_intended',
-                            'product_wanted',
-                            'product_detail_clicked'
-                        ];
-                        hasProp = (tmp.indexOf(cur.event_id) > -1);
-                        if (hasProp) {
-                            result.count += 1
-                        }
-                    }
-                   """)
-    k = 'user_id'
-    groups = col.group(
-                           key={k:1},
-                           condition={'$and':[
-                                {k:{'$ne':'NULL'}},
-                                {k:{'$ne':'N/A'}},
-                                {k:{'$ne':''}}
-                            ]},
-                           reduce=reducer,
-                           initial={'count':0}
-                       )
-    return groups
 
 if __name__ == "__main__":
     main()

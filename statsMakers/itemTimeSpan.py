@@ -11,22 +11,22 @@ from pylab import *
 
 
 
-def main(sessDB='sessionsNew'):
+def main(sessDB='sessionsNew',show=False, save=False):
     groups = makeGroups(sessDB,'product_id')
 
     timeSpans = [int(x['timespan']) for x in groups]
     counts = [int(x['count']) for x in groups]
-    # plotItemTimeSpans(timeSpans)
-    plotItemTimeSpansSortedOnCount(groups)
+    plotItemTimeSpans(timeSpans,show=show,save=save)
+    plotItemTimeSpansSortedOnCount(groups,show=show,save=save)
 
-def plotItemTimeSpansSortedOnCount(groups):
+def plotItemTimeSpansSortedOnCount(groups,show=False, save=False):
     '''
     '''
-    doublePlotLol(groups)
-    # doublePlotAVG(groups)
-    # plotAVGforCOuntAtleast(groups)
+    doublePlotLol(groups,show=show,save=save)
+    doublePlotAVG(groups,show=show,save=save)
+    # plotAVGforCOuntAtleast(groups,show=show,save=save)
 
-def plotAVGforCOuntAtleast(groups):
+def plotAVGforCOuntAtleast(groups,show=False, save=False):
     '''
     '''
     groups = sorted(groups, key=lambda k: k['count'],reverse=False)
@@ -71,11 +71,12 @@ def plotAVGforCOuntAtleast(groups):
         # xticks=[helpers.makeTicks(yMax=len(bars)),list(helpers.makeTicks(yMax=maxikus))[::-1]],
         ylabel='Average lifetime in weeks',
         xlabel='Count of event',
-        show=False
+        show=show,
+        save=save
     )
 
 
-def doublePlotAVG(groups):
+def doublePlotAVG(groups,show=False, save=False):
     '''
     '''
     counts = [int(x['count']) for x in groups]
@@ -121,10 +122,12 @@ def doublePlotAVG(groups):
 
     plot(xr,yr, 'yo', xr, fit_fn(xr), '--k',color='r',markersize=0)
 
-    location = os.path.dirname(os.path.abspath(__file__)) + "/../../muchBazar/src/image/avglifetimeoncount.png"
-    plt.savefig(location)
-    print ('Distribution written to: %s' % location)
-
+    if save:
+        location = os.path.dirname(os.path.abspath(__file__)) + "/../../muchBazar/src/image/avglifetimeoncount.png"
+        plt.savefig(location)
+        print ('Distribution written to: %s' % location)
+    if show:
+        plt.show()
 
     # helpers.makePlot(
     #     'avglifetimeoncount',
@@ -136,7 +139,7 @@ def doublePlotAVG(groups):
     # )
 
 
-def doublePlotLol(groups):
+def doublePlotLol(groups,show=False, save=False):
     '''
     '''
     groups_sorted = sorted(groups, key=lambda k: k['timespan'],reverse=True)
@@ -167,11 +170,13 @@ def doublePlotLol(groups):
 
     plt.xticks([])
 
-    location = os.path.dirname(os.path.abspath(__file__)) + "/../../muchBazar/src/image/itemTimeSpansortedoneventcount.png"
-    plt.savefig(location)
-    print ('Distribution written to: %s' % location)
+    if save:
+        location = os.path.dirname(os.path.abspath(__file__)) + "/../../muchBazar/src/image/itemTimeSpansortedoneventcount.png"
+        plt.savefig(location)
+        print ('Distribution written to: %s' % location)
+    if show:
+        plt.show()
 
-    # plt.show()
 
 def makeCountsXticks(counts):
     xticks = helpers.makeTicks(0,len(counts))
@@ -181,7 +186,7 @@ def makeCountsXticks(counts):
     xTicks.append(xticksLabels)
     return xTicks
 
-def plotItemTimeSpans(timeSpans):
+def plotItemTimeSpans(timeSpans,show=False, save=False):
     '''
     '''
     buckets,xTicks = makeBuckets(timeSpans)
@@ -193,7 +198,8 @@ def plotItemTimeSpans(timeSpans):
         # title='Time between first event on item till the last',
         ylabel='Amount of items',
         xlabel='Time in weeks',
-        show=False,
+        show=show,
+        save=save,
         grid=True,
         xticks=xTicks
     )

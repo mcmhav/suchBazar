@@ -12,7 +12,7 @@ def main(sessDB='sessionsNew'):
     '''
     '''
     longTailSomething.main()
-    thresholds = np.arange(0,1.01,0.01)
+    thresholds = np.arange(0,1.0001,0.0001)
     threshold = .30
     countsOnItems = helpers.getKGroups('product_id',sessDB)
     print ()

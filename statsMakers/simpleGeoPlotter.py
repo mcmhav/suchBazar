@@ -4,15 +4,15 @@ import helpers
 import argparse
 import os
 
-def main(sessDB='sessionsNew'):
+def main(sessDB='sessionsNew',show=False,save=False):
     m = makeNorwayMap()
-    plotOnMap(m,sessDB,'Norway')
+    plotOnMap(m,sessDB,'Norway',show=show,save=save)
 
     m = makeWorldMap()
-    plotOnMap(m,sessDB,'world')
+    plotOnMap(m,sessDB,'world',show=show,save=save)
 
 
-def plotOnMap(m,sessDB,name):
+def plotOnMap(m,sessDB,name,show=False,save=False):
     sessCol = helpers.getCollection(sessDB)
     locations = sessCol.distinct('event_data.location')
     c = 0
@@ -32,9 +32,12 @@ def plotOnMap(m,sessDB,name):
     plt.ylabel('')
     plt.xlabel('')
 
-    location = os.path.dirname(os.path.abspath(__file__)) + "/../../muchBazar/src/image/simpleGeoPlot" + name + ".png"
-    plt.savefig(location)
-    print ("Simple geo plot written to: %s" % location)
+    if save:
+        location = os.path.dirname(os.path.abspath(__file__)) + "/../../muchBazar/src/image/simpleGeoPlot" + name + ".png"
+        plt.savefig(location)
+        print ("Simple geo plot written to: %s" % location)
+    if show:
+        plt.show()
 
 def makeWorldMap():
     m = Basemap(projection='robin', lat_0=0, lon_0=10,resolution='l', area_thresh=1000.0)

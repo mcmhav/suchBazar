@@ -98,7 +98,7 @@ def makePlot(
         # ax.set_yticks(np.arange(0,100,10))
         print ('Done making yticks')
 
-    plt.xticks(xticks[0], xticks[1])
+    plt.xticks(xticks[0]+width/2., xticks[1])
     plt.ylabel(ylabel)
     plt.xlabel(xlabel)
     # ax.set_xticks(range(0,len(counts)+2))
@@ -288,6 +288,58 @@ def getUserEventOnItemCounts(sessDB):
                            initial={'count':0}
                        )
     return groups
+
+# def getUserAVGPrice(sessDB):
+#     col = helpers.getCollection(sessDB)
+#     reducer = Code("""
+#                     function (cur,result) {
+#                         cur.price
+#                         tmp = [
+#                             'product_purchase_intended',
+#                             'product_wanted',
+#                             'product_detail_clicked'
+#                         ];
+#                         hasProp = (tmp.indexOf(cur.event_id) > -1);
+#                         if (hasProp) {
+#                             result.count += 1
+#                         }
+#                     }
+#                    """)
+#     k = 'user_id'
+#     groups = col.group(
+#                            key={k:1},
+#                            condition={'$and':[
+#                                 {k:{'$ne':'NULL'}},
+#                                 {k:{'$ne':'N/A'}},
+#                                 {k:{'$ne':''}}
+#                             ]},
+#                            reduce=reducer,
+#                            initial={'count':0}
+#                        )
+#     return groups
+
+def getUserAVGPrice(sessDB):
+    col = helpers.getCollection(sessDB)
+    mapper = Code(  """
+                    function () {
+                        if (this.price != 'NULL' && this.price > 0){
+                            emit(this.user_id, this.price);
+                        }
+                    }
+                    """)
+
+    reducer = Code( """
+                    function (key, values) {
+                        var total = 0;
+                        for (var i = 0; i < values.length; i++) {
+                            total += values[i];
+                        }
+                        avg = total/values.length;
+                        return avg;
+                    }
+                    """)
+    result = col.map_reduce(mapper, reducer, "myresults")
+    return result.find()
 
 if __name__ == "__main__":
     main()

@@ -13,6 +13,7 @@ def main(sessDB='sessionsNew3',show=False,save=False):
     k = 'product_id'
     groups = helpers.getKGroups(k,sessDB)
     ks, counts = preprocessGroups(k,groups)
+    print (max(counts))
     ks,xss,xticks = groupProductsOnCounts(ks,counts,cap=50)
     yticks = helpers.makeTicks(yMax=max(ks),steps=10)
     yticksl = helpers.makeTicks(yMax=100,steps=10)
@@ -61,11 +62,11 @@ def main(sessDB='sessionsNew3',show=False,save=False):
                      save=save
                      )
 
-    k = 'storefront_name'
-    groups = helpers.getKGroups(k,sessDB)
-    ks,counts = preprocessGroups(k,groups)
-    ks,counts = handleStoreFront(ks,counts)
-    eventsOnStorDistr(k,ks,counts,sessDB,show=show,save=save)
+    # k = 'storefront_name'
+    # groups = helpers.getKGroups(k,sessDB)
+    # ks,counts = preprocessGroups(k,groups)
+    # ks,counts = handleStoreFront(ks,counts)
+    # eventsOnStorDistr(k,ks,counts,sessDB,show=True,save=True)
 
     k = 'hr'
     groups = helpers.getKGroups(k,sessDB)
@@ -119,7 +120,7 @@ def main(sessDB='sessionsNew3',show=False,save=False):
     yticksl = helpers.makeTicks(yMax=100,steps=10)
     xticks = helpers.makeTicks(yMax=len(ks),steps=10)
     # ks,yTicks,xTicks = sortUsersOnEvenCountCum(ks,counts,maximum)
-    ks = ks[2:]
+    # ks = ks[2:]
     helpers.makePlot(
                         k + 'cum',
                         ks,
@@ -131,7 +132,7 @@ def main(sessDB='sessionsNew3',show=False,save=False):
                         grid=True,
                         xticks=[xticks,xticks],
                         yticks=[yticks,yticksl],
-                        save=True
+                        save=False
                         # labels=[1,5,10],
                         # ticks=[[1,5,10],[1,5,10]]
                     )
@@ -421,7 +422,8 @@ def eventsOnStorDistr(k,ks,counts,sessDB,show=False,save=False):
     dicKs = convertListToDict(ks)
     # print (groups)
     groups = helpers.getKGroupsWithEventIdDistr(dicKs,k,sessDB)
-    print (groups)
+    # for g in groups:
+    #     print (g)
 
     ks = []
     for g in groups[0]['storeCount']:

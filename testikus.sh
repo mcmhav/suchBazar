@@ -18,6 +18,10 @@ This program can do the following depending on the options provided:
   - Write the result to a latex-table, for easy exporting to a report.
 
 OPTIONS:
+  -a <filterbot settings> A string defining which filterbots to enable.
+                          Defaults to '0,0,0,0,0'.
+  -c                      Clean existing rating, prediction and scoring files
+                          before running.
   -i <input file>         The absolute path to the event log file.
   -f <product features>   The absolute path to file containing all product
                           features obtained from the product DB.
@@ -30,13 +34,10 @@ OPTIONS:
                           'time' or 'random'.
   -k <k values>           When using ItemKNN, control which k-values to use, as
                           a string of integers. E.g. '10 20 50'
-  -a <filterbot settings> A string defining which filterbots to enable.
-                          Defaults to '0,0,0,0,0'.
   -b                      Convert all ratings to binary (all ratings to 1)
-  -c                      Clean existing rating, prediction and scoring files
-                          before running.
   -q                      Send stdout and stderr to /dev/null (except result)
   -t                      Split coldstart on time
+  -l                      Run recommender on blend file only.
   -h                      Display this help-information.
 
 RANK RECOMMENDERS:
@@ -93,18 +94,19 @@ ITEMRECOMMENDERS=""
 RANKRECOMMENDERS=""
 MAHOUTRECOMMENDERS=""
 COLDTIME="";
-BOTSETTINGS="1,1,1,1,1";
+BOTSETTINGS="0,0,0,0,0";
+BLENDONLY=0;
 
-while getopts "i:p:s:f:r:m:k:t:a:d:bcqh" o; do
+while getopts "i:p:s:f:r:m:k:t:a:d:bcqhl" o; do
   case "${o}" in
     a)
       BOTSETTINGS="${OPTARG}"
       ;;
-    i)
-      INFILE="${OPTARG}"
-      ;;
     c)
       CLEAN=1
+      ;;
+    i)
+      INFILE="${OPTARG}"
       ;;
     p)
       ITEMRECOMMENDERS="${OPTARG}"
@@ -136,6 +138,9 @@ while getopts "i:p:s:f:r:m:k:t:a:d:bcqh" o; do
     t)
       COLDTIME="-t"
       ;;
+    l)
+      BLENDONLY=1
+      ;;
     h)
       usage
       ;;
@@ -144,6 +149,7 @@ while getopts "i:p:s:f:r:m:k:t:a:d:bcqh" o; do
       ;;
   esac
 done
+
 
 main() {
   # Check that the infile exists.
@@ -218,14 +224,24 @@ main() {
           split "$FILE" "$GENERATED/splits" "$FILENAME" "random";
           TESTFILE="${FILENAME_NOEXT}-1.txt";
           TRAINFILE="${FILENAME_NOEXT}-9.txt";
-          trainTestTuples+="${TRAINFILE}:${TESTFILE} ";
+          if [ $BLENDONLY -eq 1 ]; then
+            if [ "$FILENAME" == "blend.txt" ]; then
+              trainTestTuples+="${TRAINFILE}:${TESTFILE} ";
+            fi
+          else
+            trainTestTuples+="${TRAINFILE}:${TESTFILE} ";
+          fi
       elif [ "$SPLIT" == "time" ]; then
           python2.7 $ROOT/evaluation/simpleTimeSplit.py -i $FILE -s "0.2";
           TESTFILE="${FILENAME_NOEXT}_timetest.txt";
           TRAINFILE="${FILENAME_NOEXT}_timetrain.txt";
-          # if [ "$FILENAME" == "blend.txt" ]; then
-          # fi
-          trainTestTuples+="${TRAINFILE}:${TESTFILE} ";
+          if [ $BLENDONLY -eq 1 ]; then
+            if [ "$FILENAME" == "blend.txt" ]; then
+              trainTestTuples+="${TRAINFILE}:${TESTFILE} ";
+            fi
+          else
+            trainTestTuples+="${TRAINFILE}:${TESTFILE} ";
+          fi
       fi
     done
   fi

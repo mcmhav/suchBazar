@@ -13,12 +13,12 @@ def main(sessDB='sessionsNew3',show=False,save=False):
     cap = 150
     counts = getCounts(sessDB)
 
+    print (max(counts))
     # print (len(counts))
 
     # print (np.mean(counts))
     # print (np.median(counts))
 
-    # sys.exit()
     avgCount = helpers.getAvgOfCount(counts)
 
     xaxis = groupEventCountsOnCount(counts,cap)

@@ -268,12 +268,18 @@ def getIDFromFileName(filename):
     ids = []
     fs = filename.split('-')
     if len(fs) == 6:
+        # print (fs)
         recommender = getRecommenderAlg(filename)
         recSys = getRecommenderSystem(fs[4])
-        ids.append(recSys + '-' + recommender)
+        kval = fs[2]
+        # print (kval)
+        ids.append(recSys + '-' + recommender + "-" + kval)
 
-        headNumber = helpers.determineLatexHeaderNumber(filename)
+        headNumber = helpers.determineLatexHeaderNumber(fs[1])
         coldName = getColdstartNameFromFileName(filename)
+        # sys.exit()
+        # print (coldName)
+        # print (str(headNumber))
         ids.append(coldName  + '-' + str(headNumber))
 
         ids.append('cold')

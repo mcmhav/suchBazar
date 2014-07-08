@@ -172,6 +172,12 @@ main() {
     done
   fi
 
+  # make predictions folder
+  PREDICTIONSFOLDER="$GENERATED"/predictions
+  if [ ! -d "$PREDICTIONSFOLDER" ]; then
+    mkdir "$PREDICTIONSFOLDER";
+  fi
+
   # Splitting into training and test sets
   trainTestTuples=""
   if [ -z "$SPLIT" ]; then
@@ -332,6 +338,11 @@ execute_eval() {
   OPTS="${1}"
   RECOMMENDERSYS="${2}"
 
+
+  if [ -e "$file_name" ]; then
+    echo "File exists"
+  fi
+
   if [ $RECOMMENDERSYS == "item_recommendation" ]; then
     python2.7 $ROOT/evaluation/evaluation.py -b 2 -k 20 ${OPTS} -m &
   else
@@ -453,6 +464,10 @@ split() {
 
   METHOD="${4}";
   TMPFILE="/tmp/test_tmp.txt";
+
+  if [ ! -d "$OUTDIR" ]; then
+    mkdir "$OUTDIR";
+  fi
 
   if [ "$METHOD" == "random" ]; then
     perl -MList::Util -e 'print List::Util::shuffle <>' "$FILETOSPLIT" > "$TMPFILE";
